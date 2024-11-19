@@ -1,0 +1,49 @@
+@startuml
+'https://plantuml.com/class-diagram
+package algs4 {
+     class PrimMST {
+     }
+    class EdgeWeightedGraph {
+    }
+}
+class Display {
+    + {static}StdDraw(points, lines)
+    + {static}readRouteFile(file:  calculatedRoute.txt)
+    + {static}writeNodeFile(file:  nodePositions.txt)
+}
+class GridGraphConverter {
+    + {static} <Edge> convert(GridGraph::pathlength)
+    + {static}
+}
+
+class Int2D{
+    +int manhattan(Int2D: p, q)
+}
+Int2D -* GridGraph
+class GridGraph {
+    + {static} <Int2D> readNodeFile()
+    + minimumDetourPath(Stack<Int2D>: qNegative, qPositive, )
+}
+
+file Route as "
+    calculatedRoute.txt
+    ---
+    minimum spanning tree path list
+"
+file NodeList as "
+    nodePositions.txt
+    --
+    absolute positions of nodes
+"
+Route -- Display
+NodeList -- Display
+' Relationships
+'*-- is Composition ('has a' - relationship)
+GridGraph .-. NodeList
+PrimMST *-- EdgeWeightedGraph
+GridGraph -- GridGraphConverter
+Display *--   GridGraphConverter
+Display *-- Draw
+EdgeWeightedGraph *-- GridGraphConverter
+PrimMST -- GridGraphConverter
+@enduml
