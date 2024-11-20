@@ -3,11 +3,15 @@ package autoRouter;
 import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.Draw;
 
+/// Wraps `algs4.Draw` shape painting methods, to simplify painting data defined from `SquareGrid`.
+/// TODO add listeners for mouse events, Get position of mouse on gridmap during click -> add location to node list.
+/// TODO drop-down menu for some predefined examples
+/// TODO button to generate random nodes
+/// TODO nametags for nodes or unique node colors with legend
 public class Display implements Runnable{
 
         Draw pane;
-        Draw paneAlt;
-        Draw paneDebug;
+
     /// Displays information provided by the Plane object (node positions as circles, edges as lines)
 
         static final int width = 600; static final int height = 600;
@@ -101,7 +105,14 @@ public class Display implements Runnable{
         private static void drawCirclesMini(Iterable<Int2D> points, Draw pane){
             points.forEach(p -> drawCircle(p, pane));
         }
-
+        public static void drawBlock(Int2D p, Draw pane){
+            pane.setPenColor();
+            pane.square(
+                    p.x() * unit,
+                    p.y() * unit,
+                    0.5* unit
+                    );
+        }
         public static void init(Draw pane){
             pane.enableDoubleBuffering();        // defer rendering until show() is called. Draws noticeably faster and allows animation
             pane.setCanvasSize(width, height);

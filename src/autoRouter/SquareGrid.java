@@ -1,25 +1,28 @@
 package autoRouter;
 
 import edu.princeton.cs.algs4.*;
-
-
 import java.util.Arrays;
 import java.util.HashSet;
 
-import static autoRouter.Display.drawCircle;
-import static autoRouter.Display.drawPoints;
+import static autoRouter.Display.*;
 import static autoRouter.Int2D.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
+/// Defines the grid
 public class SquareGrid {
 
-    static final int squares = 20;              // number of square tiles along an axis, global used by Display
+    static final int squares = 20;                    // number of square tiles along an axis, global used by Display
+    static final int border = 1;                      // width unusable border
     private static final int boundsLower = 0;         // exclusive lower bounds
     private static final int boundsUpper = squares;   // exclusvie upper bounds
 
     public static void main(String[] args) {
-
+        Int2D[] walls = {
+                new Int2D(5 ,1 ),
+                new Int2D(8 , 9 ),
+                new Int2D(4 ,4 ),
+                new Int2D(5 ,10 ),
+                new Int2D(15,5 ),
+                new Int2D(8 ,5)};
         Int2D[] nodes = {
                 new Int2D(1 ,1 ),
                 new Int2D(3 ,1 ),
@@ -29,12 +32,17 @@ public class SquareGrid {
                 new Int2D(17,5 ),
                 new Int2D(8 ,11)
         };
+
         Draw pane = new Draw();
         Display.init(pane);
         MinimumDetour md = new MinimumDetour();
-        Iterable<Stack<Int2D>> routes = md.getRoute(nodes);
+        md.weightMapInit(nodes, walls);
+        Iterable<Stack<Int2D>> routes = md.findRoute(nodes);
         for(Int2D n : nodes){
             drawCircle(n, pane);
+        }
+        for(Int2D w : walls){
+            drawBlock(w, pane);
         }
         pane.pause(200);
         routes.forEach(s-> drawPoints(s,200, pane));
@@ -60,7 +68,6 @@ public class SquareGrid {
 //            for(Int2D step : manhattanPath(nodes[i-1], nodes[i])){
 //                pathalt.enqueue(step);
 //                pathCost++;
-//
 //            }
             totalCostB+=pathCost;
             System.out.println(pathCost);
@@ -70,20 +77,20 @@ public class SquareGrid {
 
 //        System.out.print("\nPaths: ");
 //        print(paths);
-        //@formatter:on
+        // @formatter:on
     }
 
-    // Sorts by x-values or y-values first
-    private static void sortBy(boolean preferX, Int2D[] nodes) {
-        if(preferX){
-            Arrays.sort(nodes, byY);
-            Arrays.sort(nodes, byX);
-        }
-        else {
-            Arrays.sort(nodes, byY);
-            Arrays.sort(nodes, byX);
-        }
-    }
+//    // Sorts by x-values or y-values first
+//    private static void sortBy(boolean preferX, Int2D[] nodes) {
+//        if(preferX){
+//            Arrays.sort(nodes, byY);
+//            Arrays.sort(nodes, byX);
+//        }
+//        else {
+//            Arrays.sort(nodes, byY);
+//            Arrays.sort(nodes, byX);
+//        }
+//    }
     // Generates a random set of unique nodes within the grid range.
     private static Int2D[] generateNodes(int length){
         HashSet<Int2D> uniqueNodes = new HashSet<>();
@@ -113,18 +120,14 @@ public class SquareGrid {
         Int2D from(Int2D u) {
             return u.plus(this.direction);
         }
-        Adjacent next() {
-            int i = this.ordinal();
-            return values()[++i % values().length];
-        }
-        // check 'v' is within bounds
+        // check nodes to 'v' are within bounds
         boolean bounds(Int2D v){
             boolean b = false;
             switch (this) {
-                case LEFT   -> b = v.x() - 1 > boundsLower;
-                case RIGHT  -> b = v.x() + 1 < boundsUpper;
-                case UP     -> b = v.y() + 1 < boundsUpper;
-                case DOWN   -> b = v.y() - 1 > boundsLower;
+                case LEFT   -> b = v.x() /*- 1 */> boundsLower;
+                case RIGHT  -> b = v.x() /*+ 1 */< boundsUpper;
+                case UP     -> b = v.y() /*+ 1 */< boundsUpper;
+                case DOWN   -> b = v.y() /*- 1 */> boundsLower;
             }
             return b;
         }
