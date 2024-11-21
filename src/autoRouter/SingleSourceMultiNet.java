@@ -1,9 +1,20 @@
 package autoRouter;
 
-import edu.princeton.cs.algs4.*;
+/*  import edu.princeton.cs.algs4.Graph;
+    import edu.princeton.cs.algs4.BreadthFirstPaths;
+    import edu.princeton.cs.algs4.Draw;
+    import edu.princeton.cs.algs4.Bag;
+    import edu.princeton.cs.algs4.IndexMinPQ;
+    import java.awt.Color;
+*/
+import edu.princeton.cs.algs4.Graph;
+import edu.princeton.cs.algs4.BreadthFirstPaths;
+import edu.princeton.cs.algs4.Draw;
+import edu.princeton.cs.algs4.Bag;
+import edu.princeton.cs.algs4.IndexMinPQ;
+import java.awt.Color;
 
 
-import java.awt.*;
 
 import static java.lang.Math.abs;
 /// Goal
