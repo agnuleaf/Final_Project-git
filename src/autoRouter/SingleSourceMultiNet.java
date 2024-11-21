@@ -1,18 +1,12 @@
 package autoRouter;
 
-/*  import edu.princeton.cs.algs4.Graph;
-    import edu.princeton.cs.algs4.BreadthFirstPaths;
-    import edu.princeton.cs.algs4.Draw;
-    import edu.princeton.cs.algs4.Bag;
-    import edu.princeton.cs.algs4.IndexMinPQ;
-    import java.awt.Color;
-*/
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.BreadthFirstPaths;
 import edu.princeton.cs.algs4.Draw;
 import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.IndexMinPQ;
 import java.awt.Color;
+// TODO find interval bounding box of p, q0 , q1  // import edu.princeton.cs.algs4.Interval2D;
 import static java.lang.Math.abs;
 /// # Background
 /// A square grid graph contains equally distanced nodes, connected only to vertically or horizontally adjacent nodes.
@@ -143,7 +137,7 @@ public class SingleSourceMultiNet {
             int dx = nodes[i+2] - nodes[0];
             int dy = nodes[i+3] - nodes[1];
             System.out.println(dx + " " + dy);
-            Display.drawCircle(dx + nodes[0],nodes[1], Color.BLUE,pane);     // VISUAL: virtual node to coerce bfs
+            Display.drawCircle(dx + nodes[0],nodes[1], Color.BLUE,pane); // VISUAL: virtual node to coerce bfs
             Display.drawCircle(nodes[0],dy + nodes[1], Color.BLUE,pane);
             pane.show();
             //System.out.println(minDistance.delMin());
@@ -187,7 +181,7 @@ public class SingleSourceMultiNet {
 
     /// Converts a 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
     static int indexOf(int row, int col){
-        if(row == 0 || col == 0) return -1;     // TODO: Remove and add bounds check elsewhere like file input conversion
+        if(row == 0 || col == 0) return -1; // TODO: Remove and add bounds check elsewhere like file input conversion
         return (row - 1) * dim + (col - 1);
     }
     /// Converts a 0-based indexed vertex in `Graph` to 1-based (x, y) coordinates of node.
