@@ -3,14 +3,20 @@ package autoRouter;
 import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.Draw;
 
+import java.awt.*;
+
+/// Wraps `algs4.Draw` shape painting methods, to simplify painting data defined from `SquareGrid`.
+/// TODO add listeners for mouse events, Get position of mouse on gridmap during click -> add location to node list.
+/// TODO drop-down menu for some predefined examples
+/// TODO button to generate random nodes
+/// TODO nametags for nodes or unique node colors with legend
 public class Display implements Runnable{
 
         Draw pane;
-        Draw paneAlt;
-        Draw paneDebug;
+
     /// Displays information provided by the Plane object (node positions as circles, edges as lines)
 
-        static final int width = 600; static final int height = 600;
+        static final int width = 300; static final int height = 300;
         static final double gridCount = SquareGrid.squares;
         static final double unit = 1 / gridCount;   // dimensions of unit square , gives a 20 x 20 grid
         static double pointDiameter = 0.5;          // point size
@@ -55,7 +61,24 @@ public class Display implements Runnable{
                     pointDiameter * unit * 0.5 );
             pane.setPenRadius();
         }
-
+    public static void drawCircle(int x, int y , Color color, Draw pane){
+        pane.setPenColor(color);
+        pane.setPenRadius(0.01);
+        pane.circle(
+                x * unit,
+                y * unit,
+                pointDiameter * unit * 0.5 );
+        pane.setPenRadius();
+    }
+    public static void drawCircle(int x, int y , Draw pane){
+        pane.setPenColor(Draw.PRINCETON_ORANGE);
+        pane.setPenRadius(0.01);
+        pane.circle(
+                x * unit,
+                y * unit,
+                pointDiameter * unit * 0.5 );
+        pane.setPenRadius();
+    }
         private static void drawCircle(Int2D v, double diameter, Draw pane){
             pane.setPenRadius(0.01);
             pane.circle(
@@ -72,6 +95,13 @@ public class Display implements Runnable{
                     p.y() * unit,
                     diameter * unit );
         }
+    public static void drawPoint(int x, int y, Draw pane){
+        double diameter = 0.1;
+        pane.filledCircle(
+                x * unit,
+                y * unit,
+                diameter * unit );
+    }
         public static void drawPoints(Int2D[] points, Draw pane){
             pane.setPenColor(pane.getPenColor().darker());
             for(Int2D p : points){
@@ -79,6 +109,21 @@ public class Display implements Runnable{
             }
             pane.setPenColor();
         }
+        ///  draws points from int[] assumed to be in the form x0, y0 ,x1, y1, ...xi ,yi
+    public static void drawPoints(int[] points, Draw pane){
+        pane.setPenColor(Draw.MAGENTA);
+        for(int i = 1; i< points.length; i+=2){
+                drawPoint(points[i-1],points[i], pane);
+            }
+            pane.setPenColor();
+    }
+    public static void drawCircles(int[] circles, Draw pane){
+        pane.setPenColor(pane.getPenColor().darker());
+        for(int i = 1; i < circles.length; i+=2){
+            drawCircle(circles[i-1],circles[i], pane);
+        }
+        pane.setPenColor();
+    }
     public static void drawPoints(Iterable<Int2D> points, int msPause, Draw pane) {
         pane.setPenColor(pane.getPenColor().darker());
         for (Int2D p : points) {
@@ -101,9 +146,16 @@ public class Display implements Runnable{
         private static void drawCirclesMini(Iterable<Int2D> points, Draw pane){
             points.forEach(p -> drawCircle(p, pane));
         }
-
+        public static void drawBlock(Int2D p, Draw pane){
+            pane.setPenColor();
+            pane.square(
+                    p.x() * unit,
+                    p.y() * unit,
+                    0.5* unit
+                    );
+        }
         public static void init(Draw pane){
-            pane.enableDoubleBuffering();        // defer rendering until show() is called. Draws noticeably faster and allows animation
+            pane.enableDoubleBuffering();        // defer rendering until show() is called
             pane.setCanvasSize(width, height);
             pane.clear(Draw.GRAY);        // set background
             grid(pane);
