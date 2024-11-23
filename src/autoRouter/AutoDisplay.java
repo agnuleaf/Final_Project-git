@@ -42,10 +42,10 @@ public class AutoDisplay extends JFrame {
 		pack(); // sets the size dynamically based on how big the graph is
 		
 		//everything past here is just testing feel free to remove everything past here
-		Int2D point = new Int2D(2, 1);
-		Int2D point2 = new Int2D(3, 1);
-		Int2D point3 = new Int2D(10, 3);
-		Queue<Int2D> q = new Queue<>(); // can use anything Iterable here
+		Point point =  new Point(2, 1);
+		Point point2 = new Point(3, 1);
+		Point point3 = new Point(10, 3);
+		Queue<Point> q = new Queue<>(); // can use anything Iterable here
 		q.enqueue(point);
 		q.enqueue(point2); 
 		q.enqueue(point3);

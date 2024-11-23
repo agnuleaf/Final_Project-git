@@ -18,7 +18,7 @@ public class GridPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private int width, height;
     private int scale;
-    private Set<Int2D> points = new HashSet<>(); // to insure that it doesn't add any points that are already on there
+    private Set<Point> points = new HashSet<>(); // to insure that it doesn't add any points that are already on there
     
     /**
      * Initializes the object
@@ -41,7 +41,7 @@ public class GridPanel extends JPanel {
         
         g2d.setColor(Color.ORANGE);
         // Iterates through the list and updates the display Dynamically
-        for (Int2D point : points) {
+        for (Point point : points) {
             int x = point.x() * scale;
             int y = point.y() * scale;
             g2d.fillOval(x-scale/4, y-scale/4, scale/2, scale/2); 
@@ -77,7 +77,7 @@ public class GridPanel extends JPanel {
      * Method to add a new circle point
      * @param point to add
      */
-    public void addCircle(Int2D point) {
+    public void addCircle(Point point) {
         points.add(point); // Note this wont do anything if it becomes out of bounds of the graph
         repaint(); // Trigger a repaint to reflect the added circle
     }
@@ -86,14 +86,13 @@ public class GridPanel extends JPanel {
      * Method to remove circle point
      * @param point to remove
      */
-    public void removeCircle(Int2D point) {
+    public void removeCircle(Point point) {
         points.remove(point);
         repaint(); // Trigger a repaint to reflect the removed circle
     }
 
     /**
      * Method to remove all points
-     * @param point to remove
      */
     public void clearCircles() {
         points.clear();
@@ -104,7 +103,7 @@ public class GridPanel extends JPanel {
      * Method to add multiple circles
      * @param points to add
      */
-    public void addCircle(Iterable<Int2D> points) {
+    public void addCircle(Iterable<Point> points) {
     	points.forEach(point -> addCircle(point));
     }
     
@@ -112,7 +111,7 @@ public class GridPanel extends JPanel {
      * Method to remove multiple circles
      * @param points to remove
      */
-    public void removeCircle(Iterable<Int2D> points) {
+    public void removeCircle(Iterable<Point> points) {
     	points.forEach(point -> removeCircle(point));
     }
     
