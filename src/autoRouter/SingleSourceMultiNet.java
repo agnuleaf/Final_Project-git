@@ -175,42 +175,13 @@ public class SingleSourceMultiNet {
     }
 
 
-    private record Point(int x, int y){
-        static final Point UP       = new Point( 0, 1);
-        static final Point DOWN     = new Point( 0,-1);
-        static final Point LEFT     = new Point(-1, 0);
-        static final Point RIGHT    = new Point( 1, 0);
-
-        Point minus(Point q) { return new Point(x - q.x(), y - q.y()); }
-        Point plus(Point q)  { return new Point(x + q.x(), y + q.y()); }
-
-        int magnitude(Point p){ return abs(p.x + p.y); }
-        static Comparator<Point> compareX = Comparator.comparingInt(Point::x);
-        static Comparator<Point> compareY = Comparator.comparingInt(Point::y);
-
-        /// Returns the bounding box of two `Point`s as an array { lowerLeft, upperRight }
-        public Point[] bounds(Point p , Point q){
-            if(q.x - p.x >=0 && q.y - p.y >= 0 ){   // p is already lower left and q is upper right
-                return new Point[]{p,q};
-            }
-            return null; //TODO
-
-        }
         //static Comparator<Point> byX = (q, p) -> { return q.x() - p.x();};
 //        Comparator<Point> byX = ( p,  q) -> {return p.x() - p.y(); };
 //        static Point[] bounds(Point p, Point q){
 //            if(q.minus(p)  0){
 //
 //            }
-        }
 
-
-    // swap coordinate axis values
-    private int[] boundingBox(int[] p, int[] q){
-
-            return new int[] { q[0], p[1], q[1], p[0]};
-
-    }
     // TODO: Decouple the following grid methods into its own 'final' library class of static methods.
     // Future docComment:
     // Provides methods to create an operate on a grid graph based up`algs4.Graph`. A dense graph is formed by
