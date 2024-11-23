@@ -18,7 +18,7 @@ public class GridPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private int width, height;
     private int scale;
-    private Set<Int2D> points = new HashSet<>();
+    private Set<Int2D> points = new HashSet<>(); // to insure that it doesn't add any points that are already on there
     
     /**
      * Initializes the object
@@ -38,11 +38,15 @@ public class GridPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         drawGrid(g2d);
+        
+        g2d.setColor(Color.ORANGE);
+        // Iterates through the list and updates the display Dynamically
         for (Int2D point : points) {
             int x = point.x() * scale;
             int y = point.y() * scale;
             g2d.fillOval(x-scale/4, y-scale/4, scale/2, scale/2); 
         }
+        g2d.setColor(Color.BLACK); // resets color to black for future use
     }
 
     /**
@@ -66,6 +70,7 @@ public class GridPanel extends JPanel {
             g2d.setStroke(new BasicStroke((y % 5 == 0) ? 2f : 0.5f));
             g2d.drawLine(0, yTick, width, yTick); 
         }
+        
         g2d.setColor(Color.BLACK); //reset color
     }
     /**
@@ -110,5 +115,7 @@ public class GridPanel extends JPanel {
     public void removeCircle(Iterable<Int2D> points) {
     	points.forEach(point -> removeCircle(point));
     }
+    
+    //TODO Add paths through some type of list
     
 }
