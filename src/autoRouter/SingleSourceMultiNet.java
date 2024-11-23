@@ -1,13 +1,12 @@
 package autoRouter;
 
-import edu.princeton.cs.algs4.Graph;
-import edu.princeton.cs.algs4.BreadthFirstPaths;
-import edu.princeton.cs.algs4.Draw;
-import edu.princeton.cs.algs4.Bag;
-import edu.princeton.cs.algs4.IndexMinPQ;
+import edu.princeton.cs.algs4.*;
+
 import java.awt.Color;
+import java.util.Comparator;
 // TODO find interval bounding box of p, q0 , q1  // import edu.princeton.cs.algs4.Interval2D;
 import static java.lang.Math.abs;
+
 /// # Background
 /// A square grid graph contains equally distanced nodes, connected only to vertically or horizontally adjacent nodes.
 /// This is unlike the familiar 2D Cartesian plane, where we define the distance between two points as the length of
@@ -72,13 +71,16 @@ import static java.lang.Math.abs;
 ///   -  -  -  q1 -  -  -  -      -  -  -  q1 -  -  -  -      -  -  -  q1 -  -  -  -
 ///   -  -  -  -  -  -  -  -      -  -  -  -  -  -  -  -      -  -  -  -  -  -  -  -
 /// ```
+///
 /// ## References
 ///
+/// - [Rectilinear Minimum Spanning Tree](https://en.wikipedia.org/wiki/Rectilinear_minimum_spanning_tree)
 /// - [Graph slides from University of Utah's CS 2420](https://github.com/tsung-wei-huang/cs2420)
 /// @author Wesley Miller
 public class SingleSourceMultiNet {
-    static int dim = 10;
-    // returns an array of the distance from the first node (coords[0],coords[1]) to the other pairs
+    static private SET<Integer> excludedV = new SET<>();
+    static final int dim = 10;
+
     static int[] distanceArray(int[] source, int[] coords){
         assert(coords.length %2 == 0);
         int[] distances = new int[(coords.length)/2];
@@ -87,6 +89,7 @@ public class SingleSourceMultiNet {
         }
         return distances;
     }
+    // returns an array of the distance from the first node (coords[0],coords[1]) to the other pairs
     static int[] distanceArray(int[] coords){
       return distanceArray(new int[]{coords[0], coords[1]}, coords);
     }
@@ -130,20 +133,26 @@ public class SingleSourceMultiNet {
         Display.init(pane);
         Display.drawCircles(nodes, pane);
         pane.show();
-        // need to add a virtual node in between p and q to ensure
+        // need to add a node in between p and q to
+        Bag<Integer> intermediateNodes = new Bag<>();
 
-        for (int i = 0; i < minDistance.size(); i+=2){
-            System.out.print(minDistance.keyOf(i/2) + " d:");
-            int dx = nodes[i+2] - nodes[0];
-            int dy = nodes[i+3] - nodes[1];
-            System.out.println(dx + " " + dy);
-            Display.drawCircle(dx + nodes[0],nodes[1], Color.BLUE,pane); // VISUAL: virtual node to coerce bfs
-            Display.drawCircle(nodes[0],dy + nodes[1], Color.BLUE,pane);
-            pane.show();
+//        for (int i = 3; i < nodes.length; i += 2){
+
+//            System.out.print(minDistance.keyOf(i/2) + " d:");
+//            int dx = nodes[i+2] - nodes[0];
+//            int dy = nodes[i+3] - nodes[1];
+//            System.out.println(dx + " " + dy);
+//            Display.drawCircle(nodes[i - 1], nodes[1], Color.BLUE,pane); // VISUAL: added node to define route
+//            Display.drawCircle(nodes[i - 3], nodes[0], Color.YELLOW,pane);
+
+//            pane.show();
             //System.out.println(minDistance.delMin());
-        }
 
+
+//        for()
         BreadthFirstPaths paths = new BreadthFirstPaths(grid, indexOf(nodes[0], nodes[1]));
+//        if(paths.hasPathTo(q))
+
 //      BreadthFirstPaths paths = new BreadthFirstPaths(grid,indicesOf(nodes));
 //        while(!minDistance.isEmpty()) {
 //            int min = minDistance.delMin();
@@ -165,19 +174,56 @@ public class SingleSourceMultiNet {
         }
     }
 
+
+    private record Point(int x, int y){
+        static final Point UP       = new Point( 0, 1);
+        static final Point DOWN     = new Point( 0,-1);
+        static final Point LEFT     = new Point(-1, 0);
+        static final Point RIGHT    = new Point( 1, 0);
+
+        Point minus(Point q) { return new Point(x - q.x(), y - q.y()); }
+        Point plus(Point q)  { return new Point(x + q.x(), y + q.y()); }
+
+        int magnitude(Point p){ return abs(p.x + p.y); }
+        static Comparator<Point> compareX = Comparator.comparingInt(Point::x);
+        static Comparator<Point> compareY = Comparator.comparingInt(Point::y);
+
+        /// Returns the bounding box of two `Point`s as an array { lowerLeft, upperRight }
+        public Point[] bounds(Point p , Point q){
+            if(q.x - p.x >=0 && q.y - p.y >= 0 ){   // p is already lower left and q is upper right
+                return new Point[]{p,q};
+            }
+            return null; //TODO
+
+        }
+        //static Comparator<Point> byX = (q, p) -> { return q.x() - p.x();};
+//        Comparator<Point> byX = ( p,  q) -> {return p.x() - p.y(); };
+//        static Point[] bounds(Point p, Point q){
+//            if(q.minus(p)  0){
+//
+//            }
+        }
+
+
+    // swap coordinate axis values
+    private int[] boundingBox(int[] p, int[] q){
+
+            return new int[] { q[0], p[1], q[1], p[0]};
+
+    }
     // TODO: Decouple the following grid methods into its own 'final' library class of static methods.
     // Future docComment:
     // Provides methods to create an operate on a grid graph based up`algs4.Graph`. A dense graph is formed by
-    // `generateDenseGrid`, where every edge is explicitly generated resulting in O(n*n) space complexity.
-    // TODO `generateSparse
+    // `generateDenseGrid`, where every edge is explicitly generated resulting in O(n*n) space complexity
     // returns the graphindices of all the coordinate pairs in nodes
-    static Iterable<Integer> indicesOf(int[] nodes){
+    static Iterable<Integer> indicesOf(int[] nodes) {
         Bag<Integer> indices = new Bag<>();
-        for(int i = 1 ; i < nodes.length ; i+=2){
+        for(int i = 1 ; i < nodes.length ; i+=2) {
             indices.add(indexOf(nodes[i-1], nodes[i]));
         }
         return indices;
     }
+
 
     /// Converts a 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
     static int indexOf(int row, int col){
@@ -188,8 +234,17 @@ public class SingleSourceMultiNet {
     static int[] nodeAt(int index){
         return new int[]{
                 (index ) / dim  + 1,
-                (index)  % dim  + 1
+                (index) % dim  + 1
         };
+    }
+
+    /// Converts nodes to graph vertices representing a recently formed net, that becomes an obstacle to all future
+    /// operations.
+    /// @param nodes - array of the all the nodes in the most recent spanning tree
+    void addWall(int[] nodes){
+        for(int i = 2; i < nodes.length; i += 2){
+            excludedV.add(indexOf(nodes[i], nodes[i-1]));
+        }
     }
 //    private void debugPrint() {
 //        for (int j = grid.V() - dim; j >= 0; j -= dim) {
@@ -201,18 +256,52 @@ public class SingleSourceMultiNet {
 //    }
     /// Assigns edges to adjacent nodes in a `dim` x `dim` grid, nodes in the grid are only connected horizontally and
     /// vertically to other adjacent nodes. Diagonal connections are NOT created.
-    /// More specifically, nodes at grid-corners will receive 2 edges, nodes along grid-borders receive 3, and central nodes receive 4.
-    /// The `Graph` vertices are comprised of the array in the range = [0, (dim*dim -1 )]
-    /// The `nodeAt` returns the '1-based indexed' grid coordinates (x, y), as an int[2] of its equivalent `Graph` vertex.
-    ///     - E.g. Node (1,1) is the zeroth vertex of `Graph`
+    /// Skips attaching edges to excluded vertices.
+    /// Nodes at grid-corners have 2 edges, nodes along grid-borders have 3, and internal nodes have 4.
+    /// The `Graph` vertices are indexed in the range = [0, (dim*dim -1 )]
     public static Graph generateDenseGrid() {
+//        for(int v = 0; v < dim * dim; v++){     // dim*dim - dim (skip top row, already attached)
+//            if(v < dim*dim - (dim)) grid.addEdge(v, v + dim);            // edge to above except on top row
+//            if((v + 1) % dim != 0)                  // edge to right except at rightmost spot
+//                grid.addEdge(v, (v+1));
+//        }
+//        return grid;
+//    }
         Graph grid = new Graph(dim*dim);
-        for(int v = 0; v < dim * dim; v++){     // dim*dim - dim (skip top row, already attached)
-            if(v < dim*dim - (dim)) grid.addEdge(v, v + dim);            // edge to above except on top row
-            if((v + 1) % dim != 0)                  // edge to right except at rightmost spot
-                grid.addEdge(v, (v+1));
+        for(int v = 0; v < dim*dim; v++){
+            if(!excludedV.contains(v)){
+                if(v < dim*dim - (dim)  && !excludedV.contains(v+dim)) // skip attaching beyond top bordder and excluded
+                    grid.addEdge(v, v + dim);
+                if((v + 1) % dim != 0   && !excludedV.contains(v+1)) // skip attaching beyond right border and excluded
+                    grid.addEdge(v, (v+1));
+            }
         }
         return grid;
+    }
+    /// Creates a subgraph of a grid graph using inclusive bounds defined by node (x,y) vertices ll(lower left)
+    /// and ur(upper right).
+    public static Graph subGraph(int[] ll, int[] ur, Graph graph){
+        if( ur[0] > ll[0] && ur[1] > ll[1])  throw new IllegalArgumentException("invalid bounds provided for subgraph");
+        Graph subGraph = new Graph((ur[0] - ll[0]) * (ur[1] - ll[1]));
+        for(int v = 0; v < dim * dim; v++){
+            int vx = nodeAt(v)[0];  int vy = nodeAt(v)[1];
+            if(( vx >= ll[0] && vx < ur[0]) && ( vy >= ll[1] && vy < ur[1] )) {
+                // attach vertex upward of v unless adding to top or exclude list
+                if (v < dim * dim - (dim)  && !excludedV.contains(v+dim))
+                    subGraph.addEdge(v, v + dim);
+                // attach vertex rightward of v edge to right except at rightmost spot
+                if ((v + 1) % dim != 0  && !excludedV.contains(v+1))
+                    subGraph.addEdge(v, (v + 1));
+            }
+        }
+        return subGraph;
+    }
+
+    private static boolean contained(int v, int[] ll, int[] ur){
+        int vx = nodeAt(v)[0];  int vy = nodeAt(v)[1];
+        if(( vx > ll[0] && vx < ur[0]) && ( vy > ll[1] && vy < ur[1] ))
+            return true;
+        return false;
     }
     static void printPairs(int[] array){
         for(int i = 1; i < array.length; i++){
@@ -224,6 +313,4 @@ public class SingleSourceMultiNet {
             System.out.print(i + " ");
         }
     }
-
-
 }
