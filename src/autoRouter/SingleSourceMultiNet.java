@@ -81,53 +81,30 @@ public class SingleSourceMultiNet {
     static private SET<Integer> excludedV = new SET<>();
     static final int dim = 10;
 
-    static int[] distanceArray(int[] source, int[] coords){
-        assert(coords.length %2 == 0);
-        int[] distances = new int[(coords.length)/2];
-        for(int i = 0; i < coords.length; i += 2 ){
-            distances[i/2] = distance(source[0], source[1], coords[i], coords[i + 1] );
-        }
-        return distances;
-    }
-    // returns an array of the distance from the first node (coords[0],coords[1]) to the other pairs
-    static int[] distanceArray(int[] coords){
-      return distanceArray(new int[]{coords[0], coords[1]}, coords);
-    }
-
-    static int distance(int x1, int y1, int x2, int y2){
-        return abs(x2 - x1) + abs(y2 - y1);
-    }
-
     public static void main(String[] args) {
         Graph grid = generateDenseGrid(); // dense dim x dim graph with unweighted edges connecting adjacent squares
-        //        int[] p = { 1, 1};
-        //        int[] nodes = {
-        //                3, 3,       // source
-        //                3, 5,
-        //                6, 7,
-        //                4, 5,
-        //                3, 9
-        //        };
-        //        int[] nodes = {
-        //                1, 1,       // source
-        //                1, 4,
-        //                3, 2,
-        //                2, 5,
-        //        };
+        int[] nodes = {   // |dist|
+                1, 8,     //   0
+                6, 6,     //   7
+                3, 1,     //   9
+        };                //
+        int[] exclude = {
+                8,8
+        };
+        for(int i = 1; i < exclude.length; i += 2){
+            excludedV.add(exclude[i - 1]);
+        }
 
-        int[] nodes = {   // |dist|   dist
-                1, 8,           //   0
-                6, 6,           //   7
-                3, 1,           //   9
-        };                      //
-        int[] dist = distanceArray(nodes);      // sort nodes[] by distance from source
+
+//        int[] dist = distanceArray(nodes);      // nodes[] by distance from source
+
 
         // Sort the input array by its distance from the first entry
         // TODO to find the start node 'p', find the 2 closest elements in the input array
-        IndexMinPQ<Integer> minDistance = new IndexMinPQ<>(dist.length);
-        for (int i = 0; i < dist.length; i++) {
-            minDistance.insert(i, dist[i]);
-        }
+//        IndexMinPQ<Integer> minDistance = new IndexMinPQ<>(dist.length);
+//        for (int i = 0; i < dist.length; i++) {
+//            minDistance.insert(i, dist[i]);
+//        }
 
         Draw pane = new Draw();
         Display.init(pane);
@@ -175,6 +152,22 @@ public class SingleSourceMultiNet {
     }
 
 
+    static int[] distanceArray(int[] source, int[] coords){
+        assert(coords.length %2 == 0);
+        int[] distances = new int[(coords.length)/2];
+        for(int i = 0; i < coords.length; i += 2 ){
+            distances[i/2] = distance(source[0], source[1], coords[i], coords[i + 1] );
+        }
+        return distances;
+    }
+    // returns an array of the distance from the first node (coords[0],coords[1]) to the other pairs
+    static int[] distanceArray(int[] coords){
+        return distanceArray(new int[]{coords[0], coords[1]}, coords);
+    }
+
+    static int distance(int x1, int y1, int x2, int y2){
+        return abs(x2 - x1) + abs(y2 - y1);
+    }
         //static Comparator<Point> byX = (q, p) -> { return q.x() - p.x();};
 //        Comparator<Point> byX = ( p,  q) -> {return p.x() - p.y(); };
 //        static Point[] bounds(Point p, Point q){
