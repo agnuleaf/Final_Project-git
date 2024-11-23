@@ -2,9 +2,9 @@ package autoRouter;
 
 import edu.princeton.cs.algs4.*;
 
-import java.awt.Color;
-import java.util.Comparator;
+
 // TODO find interval bounding box of p, q0 , q1  // import edu.princeton.cs.algs4.Interval2D;
+import static autoRouter.Grid.*;
 import static java.lang.Math.abs;
 
 /// # Background
@@ -78,22 +78,39 @@ import static java.lang.Math.abs;
 /// - [Graph slides from University of Utah's CS 2420](https://github.com/tsung-wei-huang/cs2420)
 /// @author Wesley Miller
 public class SingleSourceMultiNet {
-    static private SET<Integer> excludedV = new SET<>();
-    static final int dim = 10;
 
     public static void main(String[] args) {
-        Graph grid = generateDenseGrid(); // dense dim x dim graph with unweighted edges connecting adjacent squares
+        int dim = 15;
+        Grid grid = new Grid(dim);
+        SET<Integer> excludedV = grid.getExcludedV();
+
         int[] nodes = {   // |dist|
                 1, 8,     //   0
                 6, 6,     //   7
                 3, 1,     //   9
         };                //
         int[] exclude = {
-                8,8
+                1,1,
+                2,2,
+                6,8,
+                12,12,
+                13,13,
+                14,14,
         };
+
         for(int i = 1; i < exclude.length; i += 2){
-            excludedV.add(exclude[i - 1]);
+            grid.addExcludedV(grid.indexOf(exclude[i - 1], exclude[i]));
         }
+        Graph gridGraph = grid.generateDenseGrid(dim); // dense dim x dim graph with unweighted edges connecting adjacent squares
+
+
+        int exx = exclude[0]; int exy = exclude[1];
+        System.out.printf("excluded (%d %d) adj: ",exx ,exy);
+        for(int v: grid.graph().adj(grid.indexOf(exx,exy))){
+            System.out.print("("+ grid.nodeAt(v)[0] + " " + grid.nodeAt(v)[1]+") ");
+        }
+        System.out.println();
+        printAdjacency(grid);
 
 
 //        int[] dist = distanceArray(nodes);      // nodes[] by distance from source
@@ -107,12 +124,12 @@ public class SingleSourceMultiNet {
 //        }
 
         Draw pane = new Draw();
-        Display.init(pane);
+        Display.init(dim,pane);
         Display.drawCircles(nodes, pane);
         pane.show();
         // need to add a node in between p and q to
         Bag<Integer> intermediateNodes = new Bag<>();
-
+        Point[] p = fromCoords(nodes);
 //        for (int i = 3; i < nodes.length; i += 2){
 
 //            System.out.print(minDistance.keyOf(i/2) + " d:");
@@ -127,7 +144,7 @@ public class SingleSourceMultiNet {
 
 
 //        for()
-        BreadthFirstPaths paths = new BreadthFirstPaths(grid, indexOf(nodes[0], nodes[1]));
+        BreadthFirstPaths paths = new BreadthFirstPaths(gridGraph, grid.indexOf(nodes[0], nodes[1]));
 //        if(paths.hasPathTo(q))
 
 //      BreadthFirstPaths paths = new BreadthFirstPaths(grid,indicesOf(nodes));
@@ -136,13 +153,13 @@ public class SingleSourceMultiNet {
 
         pane.setPenColor();
         for (int i = 0; i < nodes.length; i +=  2) {
-            int gridIndex = indexOf(nodes[i], nodes[i+1]); // processes input array as is
+            int gridIndex = grid.indexOf(nodes[i], nodes[i+1]); // processes input array as is
 //            System.out.print("path to:("+nodes[i]+" "+ nodes[i+1] + ")\n");
             if (paths.hasPathTo(gridIndex)) {
                 for(int step : paths.pathTo(gridIndex)){
 
-                    Display.drawPoint(nodeAt(step)[0],nodeAt(step)[1], pane);
-//                    System.out.print("("+nodeAt(step)[0]+ " " + nodeAt(step)[1]+")");
+                    Display.drawPoint(grid.nodeAt(step)[0],grid.nodeAt(step)[1], pane);
+//                    System.out.print("("+grid.nodeAt(step)[0]+ " " + grid.nodeAt(step)[1]+")");
                     pane.pause(200);
                     pane.show();
                 }
@@ -151,6 +168,24 @@ public class SingleSourceMultiNet {
         }
     }
 
+    private static void printAdjacency(Grid grid) {
+        for(int v = 0; v < grid.graph().V() ; v++){
+            System.out.print(grid.nodeAt(v)[0] + " "+grid.nodeAt(v)[1] + " adj: ");
+            for(int adj : grid.graph().adj(v)){
+                System.out.print( "("+grid.nodeAt(adj)[0] + " " + grid.nodeAt(adj)[1] + ") ");
+            }
+            System.out.println();
+        }
+    }
+
+
+    private static Point[] fromCoords(int[] coords){    //
+        Point[] points = new Point[coords.length/2];
+        for (int i = 1; i < coords.length / 2; i++){
+            points[i - 1] = new Point(coords[i -1], coords[i]);
+        }
+        return points;
+    }
 
     static int[] distanceArray(int[] source, int[] coords){
         assert(coords.length %2 == 0);
@@ -175,106 +210,5 @@ public class SingleSourceMultiNet {
 //
 //            }
 
-    // TODO: Decouple the following grid methods into its own 'final' library class of static methods.
-    // Future docComment:
-    // Provides methods to create an operate on a grid graph based up`algs4.Graph`. A dense graph is formed by
-    // `generateDenseGrid`, where every edge is explicitly generated resulting in O(n*n) space complexity
-    // returns the graphindices of all the coordinate pairs in nodes
-    static Iterable<Integer> indicesOf(int[] nodes) {
-        Bag<Integer> indices = new Bag<>();
-        for(int i = 1 ; i < nodes.length ; i+=2) {
-            indices.add(indexOf(nodes[i-1], nodes[i]));
-        }
-        return indices;
-    }
 
-
-    /// Converts a 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
-    static int indexOf(int row, int col){
-        if(row == 0 || col == 0) return -1; // TODO: Remove and add bounds check elsewhere like file input conversion
-        return (row - 1) * dim + (col - 1);
-    }
-    /// Converts a 0-based indexed vertex in `Graph` to 1-based (x, y) coordinates of node.
-    static int[] nodeAt(int index){
-        return new int[]{
-                (index ) / dim  + 1,
-                (index) % dim  + 1
-        };
-    }
-
-    /// Converts nodes to graph vertices representing a recently formed net, that becomes an obstacle to all future
-    /// operations.
-    /// @param nodes - array of the all the nodes in the most recent spanning tree
-    void addWall(int[] nodes){
-        for(int i = 2; i < nodes.length; i += 2){
-            excludedV.add(indexOf(nodes[i], nodes[i-1]));
-        }
-    }
-//    private void debugPrint() {
-//        for (int j = grid.V() - dim; j >= 0; j -= dim) {
-//            for (int i = j; i < j + dim; i++) {
-//                System.out.print(nodeAt(i)[0] + " " + nodeAt(i)[1] + "|" + grid.degree(i) + "  ");
-//            }
-//            System.out.println();
-//        }
-//    }
-    /// Assigns edges to adjacent nodes in a `dim` x `dim` grid, nodes in the grid are only connected horizontally and
-    /// vertically to other adjacent nodes. Diagonal connections are NOT created.
-    /// Skips attaching edges to excluded vertices.
-    /// Nodes at grid-corners have 2 edges, nodes along grid-borders have 3, and internal nodes have 4.
-    /// The `Graph` vertices are indexed in the range = [0, (dim*dim -1 )]
-    public static Graph generateDenseGrid() {
-//        for(int v = 0; v < dim * dim; v++){     // dim*dim - dim (skip top row, already attached)
-//            if(v < dim*dim - (dim)) grid.addEdge(v, v + dim);            // edge to above except on top row
-//            if((v + 1) % dim != 0)                  // edge to right except at rightmost spot
-//                grid.addEdge(v, (v+1));
-//        }
-//        return grid;
-//    }
-        Graph grid = new Graph(dim*dim);
-        for(int v = 0; v < dim*dim; v++){
-            if(!excludedV.contains(v)){
-                if(v < dim*dim - (dim)  && !excludedV.contains(v+dim)) // skip attaching beyond top bordder and excluded
-                    grid.addEdge(v, v + dim);
-                if((v + 1) % dim != 0   && !excludedV.contains(v+1)) // skip attaching beyond right border and excluded
-                    grid.addEdge(v, (v+1));
-            }
-        }
-        return grid;
-    }
-    /// Creates a subgraph of a grid graph using inclusive bounds defined by node (x,y) vertices ll(lower left)
-    /// and ur(upper right).
-    public static Graph subGraph(int[] ll, int[] ur, Graph graph){
-        if( ur[0] > ll[0] && ur[1] > ll[1])  throw new IllegalArgumentException("invalid bounds provided for subgraph");
-        Graph subGraph = new Graph((ur[0] - ll[0]) * (ur[1] - ll[1]));
-        for(int v = 0; v < dim * dim; v++){
-            int vx = nodeAt(v)[0];  int vy = nodeAt(v)[1];
-            if(( vx >= ll[0] && vx < ur[0]) && ( vy >= ll[1] && vy < ur[1] )) {
-                // attach vertex upward of v unless adding to top or exclude list
-                if (v < dim * dim - (dim)  && !excludedV.contains(v+dim))
-                    subGraph.addEdge(v, v + dim);
-                // attach vertex rightward of v edge to right except at rightmost spot
-                if ((v + 1) % dim != 0  && !excludedV.contains(v+1))
-                    subGraph.addEdge(v, (v + 1));
-            }
-        }
-        return subGraph;
-    }
-
-    private static boolean contained(int v, int[] ll, int[] ur){
-        int vx = nodeAt(v)[0];  int vy = nodeAt(v)[1];
-        if(( vx > ll[0] && vx < ur[0]) && ( vy > ll[1] && vy < ur[1] ))
-            return true;
-        return false;
-    }
-    static void printPairs(int[] array){
-        for(int i = 1; i < array.length; i++){
-            System.out.print(i - 1 + " " + i);
-        }
-    }
-    static void println(int[] array){
-        for(int i : array){
-            System.out.print(i + " ");
-        }
-    }
 }

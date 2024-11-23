@@ -1,6 +1,5 @@
 package autoRouter;
 
-import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.Draw;
 
 import java.awt.*;
@@ -16,11 +15,11 @@ public class Display {
 
     /// Displays information provided by the Plane object (node positions as circles, edges as lines)
 
-    static final int width = 300;
-    static final int height = 300;
-    static final double gridCount = 10/*SquareGrid.squares*/;
-    static final double unit = 1 / gridCount;   // dimensions of unit square , gives a 20 x 20 grid
-    static double pointDiameter = 0.5;          // point size
+    static int width = 300;
+    static int height = 300;
+    static double gridCount = 10/*SquareGrid.squares*/;
+    static double unit = 1 / gridCount;   // dimensions of unit square , gives a 20 x 20 grid
+    static double pointScalar = 0.5;          // point size
 
     public static void grid(Draw pane) {
         grid(width, height, unit, pane);
@@ -48,7 +47,7 @@ public class Display {
         pane.circle(
                 x * unit,
                 y * unit,
-                pointDiameter * unit * 0.5);
+                pointScalar * unit * 0.5);
         pane.setPenRadius();
     }
 
@@ -58,7 +57,7 @@ public class Display {
         pane.circle(
                 x * unit,
                 y * unit,
-                pointDiameter * unit * 0.5);
+                pointScalar * unit * 0.5);
         pane.setPenRadius();
     }
 
@@ -92,6 +91,13 @@ public class Display {
         pane.setCanvasSize(width, height);
         pane.clear(Draw.GRAY);        // set background
         grid(pane);
+    }
+    public static void init(int axisSize, Draw pane){
+        unit = 1.0 / axisSize;
+        pane.enableDoubleBuffering();        // defer rendering until show() is called
+        pane.setCanvasSize(width, height);
+        pane.clear(Draw.GRAY);        // set background
+        grid(axisSize , axisSize, unit,pane);
     }
 }
 

@@ -6,7 +6,7 @@ import java.util.Comparator;
 
 import static java.lang.Math.abs;
 
-public record Point(int x, int y) {
+public record Point(int x, int y) implements Comparable<Point>{
 
     static final Point UP       = new Point( 0, 1);
     static final Point DOWN     = new Point( 0,-1);
@@ -16,10 +16,14 @@ public record Point(int x, int y) {
     Point minus(Point q) { return new Point(x - q.x(), y - q.y()); }
     Point plus (Point q) { return new Point(x + q.x(), y + q.y()); }
 
-    int magnitude(Point p){ return abs(p.x + p.y); }
-    static Comparator<Point> compareX = Comparator.comparingInt(Point::x);
-    static Comparator<Point> compareY = Comparator.comparingInt(Point::y);
+    int magRect(Point p){ return abs(p.x + p.y); }
+    public static Comparator<Point> compareX = Comparator.comparingInt(Point::x);
+    public static Comparator<Point> compareY = Comparator.comparingInt(Point::y);
 
+    /// Distance squared between two points in Cartesian plane.
+    public static double distSqEuclid(Point p, Point q){
+        return (q.x - p.x)*(q.x - p.x) - (q.y - p.y)*(q.y - p.y);
+    }
     /// Returns the bounding box of two `Point`s as an array { lowerLeft, upperRight }
     public static Point[] bounds(Point p , Point q){
         if(q.x - p.x >=0 && q.y - p.y >= 0 ){   // p is already lower left and q is upper right
@@ -40,7 +44,6 @@ public record Point(int x, int y) {
         }
     }
 
-
     public static void main(String[] args) {
         Draw pane = new Draw();
         Display.init(pane);
@@ -57,5 +60,12 @@ public record Point(int x, int y) {
         draw(llur, pane); pane.pause(200); pane.show();
         draw(ullr, pane); pane.pause(200); pane.show();
 
+    }
+
+    /// For comparing two points' distances from origin
+    @Override
+    public int compareTo(Point q) {
+
+        return (this.x - q.x) + (this.y - q.y);
     }
 }
