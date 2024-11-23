@@ -4,15 +4,13 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import edu.princeton.cs.algs4.StdDraw;
-
+import edu.princeton.cs.algs4.Queue;
 import java.awt.BorderLayout;
 
 public class AutoDisplay extends JFrame {
 
 	private static final long serialVersionUID = 1L;
-	static final int width = 670; static final int height = 1000;
-	static final double unit = 30.0;
+	static int width = 20; static int height = 20; static int scale = 40;
 
 	/**
 	 * Launch the application.
@@ -35,34 +33,24 @@ public class AutoDisplay extends JFrame {
 	 */
 	public AutoDisplay() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, width, height);
+		setResizable(false);
 		JPanel panel = new JPanel();
 		getContentPane().add(panel, BorderLayout.SOUTH);
-		
-		GridPanel panel_1 = new GridPanel(width,height,unit);
+		GridPanel panel_1 = new GridPanel(width, height, scale);
 		getContentPane().add(panel_1, BorderLayout.CENTER);
+		pack(); // sets the size dynamically based on how big the graph is
+		//everything past here is just testing feel free to remove everything past here
+		Int2D point = new Int2D(2, 1);
+		Int2D point2 = new Int2D(3, 1);
+		Int2D point3 = new Int2D(10, 3);
+		Queue<Int2D> q = new Queue<>(); // can use anything Iterable here
+		q.enqueue(point);
+		q.enqueue(point2); 
+		q.enqueue(point3);
+		panel_1.addCircle(q); // this also works with Int2D point
+		
+		
 		
 	}
 	
-	public void grid(){
-        grid(width, height, unit);
-    }
-    /// Draw a grid, 20x20
-	private static void grid(int width, int height, double unit){
-		StdDraw.setPenColor(StdDraw.LIGHT_GRAY);
-	       for (int x = 0; x < width; x ++){
-	    	   StdDraw.setPenRadius((x % 5 == 0) ? 0.002 : 0.0005);
-	           double xTick = x * unit;
-	           StdDraw.line(xTick, 0.0,xTick,1.0);
-	       }
-	       for (int y = 0; y < height; y ++){
-	    	   StdDraw.setPenRadius((y % 5 == 0) ? 0.002 : 0.0005);
-	           double yTick = y * unit;
-	           StdDraw.line(0.0, yTick,1.0,yTick);
-	       }
-	       StdDraw.setPenColor(StdDraw.BLACK);
-	   }
-	
-
-
 }
