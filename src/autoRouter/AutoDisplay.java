@@ -34,11 +34,13 @@ public class AutoDisplay extends JFrame {
 	public AutoDisplay() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
-		JPanel panel = new JPanel();
-		getContentPane().add(panel, BorderLayout.SOUTH);
-		GridPanel panel_1 = new GridPanel(width, height, scale);
-		getContentPane().add(panel_1, BorderLayout.CENTER);
+		JPanel Interactable = new JPanel(); // for the user to interact
+		getContentPane().add(Interactable, BorderLayout.SOUTH);
+		
+		GridPanel Display = new GridPanel(width, height, scale); // displays the graph, points, and paths
+		getContentPane().add(Display, BorderLayout.CENTER);
 		pack(); // sets the size dynamically based on how big the graph is
+		
 		//everything past here is just testing feel free to remove everything past here
 		Int2D point = new Int2D(2, 1);
 		Int2D point2 = new Int2D(3, 1);
@@ -47,7 +49,10 @@ public class AutoDisplay extends JFrame {
 		q.enqueue(point);
 		q.enqueue(point2); 
 		q.enqueue(point3);
-		panel_1.addCircle(q); // this also works with Int2D point
+		Display.addCircle(q); // this also works with Int2D point
+		
+		//TODO Add Interactable functionality
+		//TODO Add class to calculate the best path
 		
 		
 		
