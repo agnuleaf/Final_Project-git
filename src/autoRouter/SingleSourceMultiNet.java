@@ -2,34 +2,20 @@ package autoRouter;
 
 import edu.princeton.cs.algs4.*;
 
-
-// TODO find interval bounding box of p, q0 , q1  // import edu.princeton.cs.algs4.Interval2D;
-import static autoRouter.Grid.*;
 import static java.lang.Math.abs;
-
 /// # Background
-/// A square grid graph contains equally distanced nodes, connected only to vertically or horizontally adjacent nodes.
-/// This is unlike the familiar 2D Cartesian plane, where we define the distance between two points as the length of
-/// the hypotenuse of a triangle (or line if collinear) containing those points as corners.
-/// This square grid disallows diagonal movement, so the distance between any two points is now the sum of the sides of
-/// that same triangle. Additionally, all other patterns maintaining course towards the target are equivalent. This
-/// length is termed [Manhattan distance.](https://en.wikipedia.org/wiki/Taxicab_geometry)
+/// A rectilinear grid graph contains equally distanced nodes, with only vertical and horizontal edges to adjacent nodes.
+/// In a square grid, by disallowing diagonal movement the distance between p and q becomes :
+/// <p>  dM = |q.x - p.x| + |q.y - p.y| , called Manhattan distance. </p>
+/// Unlike the Euclidean distance, this gives many possible paths from p to q with the equivalent minimum distance.
+/// For more, see:
+///
+/// [Manhattan distance](https://en.wikipedia.org/wiki/Taxicab_geometry)
 /// # Implementation
-/// <p>`SingleSourceMultiNet` aims to connect all the given nodes, while minimizing the number of intermediate nodes
-/// used to connect them.</p>
-/// <p>TODO ideally we find the MST of the cheapest total cost of connecting nodes. But node weights are determined by
-/// node count where many distinct possibilities exist for every node to node connection.</p>
-/// - The input node array is of the form:
-///
-/// ```
-/// p.x   p.y
-/// q0.x  q0.y
-/// ...
-/// qi.x  qi.y
-/// ```
-///
+/// for find a shortest path to the nearest neighbor, which in the case shown gives a sub optimal path to the next
+/// nearest neighbor.
 /// <p>For source 'p' and multiple targest 'q',
-///     - sort q by their distance from p
+///     - sort 'q' by their distance from 'p'
 /// * find 1 or 2 shortest paths to q0, p and q are axis aligned there is only one, else consider the two with minimal turns.
 /// * ? backtrack the path scanning for the shortest path to next nearest q
 ///
@@ -78,9 +64,10 @@ import static java.lang.Math.abs;
 /// - [Graph slides from University of Utah's CS 2420](https://github.com/tsung-wei-huang/cs2420)
 /// @author Wesley Miller
 public class SingleSourceMultiNet {
+    private static int dim = 10;        // VISUAL: TEST dimensions
 
+    /// View the algorithm on a test set using internal `algs4.Draw`
     public static void main(String[] args) {
-        int dim = 15;
         Grid grid = new Grid(dim);
         SET<Integer> excludedV = grid.getExcludedV();
 
@@ -98,23 +85,20 @@ public class SingleSourceMultiNet {
                 14,14,
         };
 
-        for(int i = 1; i < exclude.length; i += 2){
+        for(int i = 1; i < exclude.length; i += 2){ // skip connecting edges to excluded vertices
             grid.addExcludedV(grid.indexOf(exclude[i - 1], exclude[i]));
         }
         Graph gridGraph = grid.generateDenseGrid(dim); // dense dim x dim graph with unweighted edges connecting adjacent squares
 
-
-        int exx = exclude[0]; int exy = exclude[1];
-        System.out.printf("excluded (%d %d) adj: ",exx ,exy);
-        for(int v: grid.graph().adj(grid.indexOf(exx,exy))){
-            System.out.print("("+ grid.nodeAt(v)[0] + " " + grid.nodeAt(v)[1]+") ");
-        }
-        System.out.println();
-        printAdjacency(grid);
-
+//        int exx = exclude[0]; int exy = exclude[1];
+//        System.out.printf("excluded (%d %d) adj: ",exx ,exy);
+//        for(int v: grid.graph().adj(grid.indexOf(exx,exy))){
+//            System.out.print("("+ grid.nodeAt(v)[0] + " " + grid.nodeAt(v)[1]+") ");
+//        }
+//        System.out.println();
+//        printAdjacency(grid);
 
 //        int[] dist = distanceArray(nodes);      // nodes[] by distance from source
-
 
         // Sort the input array by its distance from the first entry
         // TODO to find the start node 'p', find the 2 closest elements in the input array
@@ -122,9 +106,7 @@ public class SingleSourceMultiNet {
 //        for (int i = 0; i < dist.length; i++) {
 //            minDistance.insert(i, dist[i]);
 //        }
-
-        Draw pane = new Draw();
-        Display.init(dim,pane);
+        Draw pane = Display.init(dim);
         Display.drawCircles(nodes, pane);
         pane.show();
         // need to add a node in between p and q to
@@ -156,8 +138,9 @@ public class SingleSourceMultiNet {
             int gridIndex = grid.indexOf(nodes[i], nodes[i+1]); // processes input array as is
 //            System.out.print("path to:("+nodes[i]+" "+ nodes[i+1] + ")\n");
             if (paths.hasPathTo(gridIndex)) {
+                System.out.print(i + ": path to (" + nodes[i] +" "+ nodes[i+1]+"):");
                 for(int step : paths.pathTo(gridIndex)){
-
+                    System.out.println(grid.nodeAt(step)[0] + " " + grid.nodeAt(step)[1]);
                     Display.drawPoint(grid.nodeAt(step)[0],grid.nodeAt(step)[1], pane);
 //                    System.out.print("("+grid.nodeAt(step)[0]+ " " + grid.nodeAt(step)[1]+")");
                     pane.pause(200);
@@ -186,7 +169,6 @@ public class SingleSourceMultiNet {
         }
         return points;
     }
-
     static int[] distanceArray(int[] source, int[] coords){
         assert(coords.length %2 == 0);
         int[] distances = new int[(coords.length)/2];
