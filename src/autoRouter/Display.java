@@ -1,32 +1,30 @@
 package autoRouter;
 
-import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.Draw;
 
 import java.awt.*;
 
+// TODO add listeners for mouse events, Get position of mouse on gridmap during click -> add location to node list.
+// TODO drop-down menu for some predefined examples
+// TODO button to generate random nodes
+// TODO Associate circles with nametags.  Either write a nametag placement method or uniquely color circle with a legend
 /// Wraps `algs4.Draw` shape painting methods, to simplify painting data defined from `SquareGrid`.
-/// TODO add listeners for mouse events, Get position of mouse on gridmap during click -> add location to node list.
-/// TODO drop-down menu for some predefined examples
-/// TODO button to generate random nodes
-/// TODO Associate circles with nametags.  Either write a nametag placement method or uniquely color circle with a legend
 public class Display {
 
     Draw pane;
 
     /// Displays information provided by the Plane object (node positions as circles, edges as lines)
 
-    static final int width = 300;
-    static final int height = 300;
-    static final double gridCount = 10/*SquareGrid.squares*/;
-    static final double unit = 1 / gridCount;   // dimensions of unit square , gives a 20 x 20 grid
-    static double pointDiameter = 0.5;          // point size
+    static int width = 300;
+    static int height = 300;
+    static double gridCount;/*SquareGrid.squares*/;
+    static double unit = 1 / gridCount;   // dimensions of unit square , gives a 20 x 20 grid
+    static double pointScalar = 0.5;          // point size
 
     public static void grid(Draw pane) {
         grid(width, height, unit, pane);
     }
 
-    /// Draw a grid, 20x20
     private static void grid(int width, int height, double unit, Draw pane) {
         pane.setPenColor(Draw.LIGHT_GRAY);
         for (int x = 0; x < width; x++) {
@@ -42,13 +40,14 @@ public class Display {
         pane.setPenColor(Draw.BLACK);
     }
 
+    /// Draw a grid, 20x20
     public static void drawCircle(int x, int y, Color color, Draw pane) {
         pane.setPenColor(color);
         pane.setPenRadius(0.01);
         pane.circle(
                 x * unit,
                 y * unit,
-                pointDiameter * unit * 0.5);
+                pointScalar * unit * 0.5);
         pane.setPenRadius();
     }
 
@@ -58,7 +57,7 @@ public class Display {
         pane.circle(
                 x * unit,
                 y * unit,
-                pointDiameter * unit * 0.5);
+                pointScalar * unit * 0.5);
         pane.setPenRadius();
     }
 
@@ -86,13 +85,31 @@ public class Display {
         }
         pane.setPenColor();
     }
-
-    public static void init(Draw pane) {
+    /// static builder for a draw pane with default gridcount = 10
+    public static Draw init() {
+        Draw pane = new Draw();
+        gridCount = 10;
+        unit = 1 / gridCount;
         pane.enableDoubleBuffering();        // defer rendering until show() is called
         pane.setCanvasSize(width, height);
         pane.clear(Draw.GRAY);        // set background
         grid(pane);
+        return pane;
     }
+
+    /// static builder for draw pane with gridcount input
+    public static Draw init(int axisSize){
+
+        gridCount = axisSize;
+        unit = 1 / gridCount;
+        Draw pane = new Draw();
+        pane.enableDoubleBuffering();        // defer rendering until show() is called
+        pane.setCanvasSize(width, height);
+        pane.clear(Draw.GRAY);        // set background
+        grid(axisSize , axisSize, unit,pane);
+        return pane;
+    }
+
 }
 
 

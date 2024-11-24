@@ -1,11 +1,6 @@
 @startuml
 'https://plantuml.com/class-diagram
-package algs4 {
-     class PrimMST {
-     }
-    class EdgeWeightedGraph {
-    }
-}
+
 class Display {
     + {static}StdDraw(points, lines)
     + {static}readRouteFile(file:  calculatedRoute.txt)
