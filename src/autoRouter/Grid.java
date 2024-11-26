@@ -1,30 +1,70 @@
 package autoRouter;
 
 import edu.princeton.cs.algs4.*;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import static java.lang.Math.abs;
+import static java.util.Arrays.binarySearch;
+
 /// Operations for a elements in a rectilinear grid and its dense graph representation.
 /// Provides methods to create an operate on a grid graph based up`algs4.Graph`.
 /// @author Wesley Miller
 public class Grid {
-    private SET<Integer> excludedV = new SET<>();
-    private final int dim = 10;
+    private SET<Integer> excludedV = new SET<>();           // TODO no need for set, sorted array is sufficient
+    private final int dim;
     private final Graph grid;
 
-    Grid(int dimension){
-        this.grid = generateDenseGrid(dimension);
+    public int getDimension(){
+        return dim;
     }
-    Grid(){
-        this.grid = generateDenseGrid();
+    public Grid(int dimension){
+        dim = dimension;
+        this.grid = generateDenseGrid(dim);
     }
-
-    Graph graph(){
+//    public Grid(){
+//        dim = 10;
+//        this.grid = generateDenseGrid();
+//    }
+    /// Returns the `Graph` instance.
+    public Graph graph(){
         return grid;
     }
 
+    @Deprecated
     Iterable<Integer> indicesOf(int[] nodes) {
         Bag<Integer> indices = new Bag<>();
         for(int i = 1 ; i < nodes.length ; i+=2) {
             indices.add(indexOf(nodes[i-1], nodes[i]));
+        }
+        return indices;
+    }
+
+    /// Converts and array of nodes in (x,y) grid coordinates to an array of graph vertices
+    public int[] indexArrayOf(Point[] nodes){
+        int[] indexArray = new int[nodes.length];
+        for(int i = 0 ; i < nodes.length ; i++) {
+            indexArray[i] = indexOf(nodes[i]);
+        }
+        return indexArray;
+    }
+
+    ///  Converts an array of nodes as (x,y) grid coordinates to graph vertices
+    public Iterable<Integer> indicesOf(Point[] nodes) {
+        Bag<Integer> indices = new Bag<>();
+        for(int i = 1 ; i < nodes.length ; i+=2) {
+            indices.add(indexOf(nodes[i]));
+        }
+        return indices;
+    }
+
+    ///  Converts nodes as (x,y) grid coordinates to graph vertices
+    public Iterable<Integer> indicesOf(Iterable<Point> nodes) {
+        Bag<Integer> indices = new Bag<>();
+        for(Point p : nodes) {
+            indices.add(indexOf(p));
         }
         return indices;
     }
@@ -57,33 +97,17 @@ public class Grid {
     /// Converts a 0-based indexed vertex in `Graph` to a Point with 1-based (x, y) coordinates.
     public Point pointAt(int index){
         return new Point(
-                (index) / dim + 1,
-                (index) % dim + 1
-                );
+            (index) / dim + 1,
+            (index) % dim + 1);
     }
 
-//    private void debugPrint() {
-//        for (int j = grid.V() - dim; j >= 0; j -= dim) {
-//            for (int i = j; i < j + dim; i++) {
-//                System.out.print(nodeAt(i)[0] + " " + nodeAt(i)[1] + "|" + grid.degree(i) + "  ");
-//            }
-//            System.out.println();
-//        }
-//    }
     /// Assigns edges to adjacent nodes in a `dim` x `dim` grid, nodes in the grid are only connected horizontally and
     /// vertically to other adjacent nodes. Diagonal connections are NOT created.
     /// Skips attaching edges to excluded vertices.
     /// Nodes at grid-corners have 2 edges, nodes along grid-borders have 3, and internal nodes have 4.
-    /// The `Graph` vertices are indexed in the range = [0, (dim*dim -1 )] A dense graph is formed by
+    /// The `Graph` vertices are indexed in the range = \[0, (dim*dim -1 )\] A dense graph is formed by
     /// TODO Sparse version to reduce the space cost .
     public Graph generateDenseGrid(int dim) {
-//        for(int v = 0; v < dim * dim; v++){     // dim*dim - dim (skip top row, already attached)
-//            if(v < dim*dim - (dim)) grid.addEdge(v, v + dim);            // edge to above except on top row
-//            if((v + 1) % dim != 0)                  // edge to right except at rightmost spot
-//                grid.addEdge(v, (v+1));
-//        }
-//        return grid;
-//    }
         Graph grid = new Graph(dim*dim);
         for(int v = 0; v < dim*dim; v++){
             if(!excludedV.contains(v)){
@@ -98,7 +122,31 @@ public class Grid {
     public Graph generateDenseGrid() {
         return generateDenseGrid(dim);
     }
-
+    
+    /// Generates random nodes in the grid
+    public Iterable<Point> generateNodes(int nodeCount){
+        SET<Point> uniqueNodes = new SET<>();
+        for(int i = 0 ; i < nodeCount; i++) {
+            Point n;
+            do{
+                n = new Point(StdRandom.uniformInt(1, dim), StdRandom.uniformInt(1, dim));
+            }while(uniqueNodes.contains(n));
+            uniqueNodes.add(n);
+        }
+        return uniqueNodes;
+    }
+    /// Generates random nodes in the grid
+    public Point[] generateNodeArray(int nodeCount){
+        Set<Point> uniqueNodes = new HashSet<>();
+        for(int i = 0 ; i < nodeCount; i++) {
+            Point n;
+            do{
+                n = new Point(StdRandom.uniformInt(1, dim), StdRandom.uniformInt(1, dim));
+            }while(uniqueNodes.contains(n));
+            uniqueNodes.add(n);
+        }
+        return uniqueNodes.toArray(new Point[0]);
+    }
     // Returns shortest component of vector pq. From p this points to the closest line through q
     public static Point toIntersection(Point p, Point q){
         int magPQx = abs(q.x() - p.x()) ; int magPQy = abs(q.y() - p.y());
@@ -169,14 +217,7 @@ public class Grid {
             System.out.print(i + " ");
         }
     }
-//    /// Converts nodes to graph vertices representing a recently formed net, that becomes an obstacle to all future
-//    /// operations.
-//    /// @param nodes - array of the all the nodes in the most recent spanning tree
-//    void addWall(int[] nodes){
-//        for(int i = 2; i < nodes.length; i += 2){
-//            excludedV.add(indexOf(nodes[i], nodes[i-1]));
-//        }
-//    }
+
     public static void main(String[] args) {
         Grid grid = new Grid(10);
         Draw pane = Display.init(10);
@@ -195,4 +236,37 @@ public class Grid {
             pane.show();
         }
     }
+
+    //    /// Converts nodes to graph vertices representing a recently formed net, that becomes an obstacle to all future
+//    /// operations.
+//    /// @param nodes - array of the all the nodes in the most recent spanning tree
+//    void addWall(int[] nodes){
+//        for(int i = 2; i < nodes.length; i += 2){
+//            excludedV.add(indexOf(nodes[i], nodes[i-1]));
+//        }
+//    }
+
+    //    static int[] distanceArray(int[] source, int[] coords){
+//        assert(coords.length %2 == 0);
+//        int[] distances = new int[(coords.length)/2];
+//        for(int i = 0; i < coords.length; i += 2 ){
+//            distances[i/2] = distance(source[0], source[1], coords[i], coords[i + 1] );
+//        }
+//        return distances;
+//    }
+//
+//    // returns an array of the distance from the first node (coords[0],coords[1]) to the other pairs
+//    static int[] distanceArray(int[] coords){
+//        return distanceArray(new int[]{coords[0], coords[1]}, coords);
+//    }
+
+    //    static int distance(int x1, int y1, int x2, int y2){
+//        return abs(x2 - x1) + abs(y2 - y1);
+//    }
+    //static Comparator<Point> byX = (q, p) -> { return q.x() - p.x();};
+//        Comparator<Point> byX = ( p,  q) -> {return p.x() - p.y(); };
+//        static Point[] bounds(Point p, Point q){
+//            if(q.minus(p)  0){
+//
+//            }
 }

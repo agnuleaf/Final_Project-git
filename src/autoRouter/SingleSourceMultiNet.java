@@ -2,6 +2,10 @@ package autoRouter;
 
 import edu.princeton.cs.algs4.*;
 
+import java.awt.*;
+import java.util.Arrays;
+
+import static autoRouter.Point.ZERO;
 import static java.lang.Math.abs;
 /// # Background
 /// A rectilinear grid graph contains equally distanced nodes, with only vertical and horizontal edges to adjacent nodes.
@@ -34,6 +38,7 @@ import static java.lang.Math.abs;
 ///  -  -  -  -  -  -  -  -      -  -  -  -  -  -  -  -      -  -  -  -  -  -  -  -
 ///  -  -  -  q1 -  -  -  -      -  -  -  q1 -  -  -  -      -  -  -  q1 -  -  -  -
 ///  -  -  -  -  -  -  -  -      -  -  -  -  -  -  -  -      -  -  -  -  -  -  -  -
+///
 ///```
 ///  * Need to figure out how can MST select the best option for a route to cover every q.
 ///    + if we separate options a and b into separate graphs MST can be peformed on each graph.
@@ -70,26 +75,39 @@ public class SingleSourceMultiNet {
     public static void main(String[] args) {
         Grid grid = new Grid(dim);
         SET<Integer> excludedV = grid.getExcludedV();
+//
+//        Point[] nodes = {
+//                new Point( 1, 8 ) ,
+//                new Point( 6, 6 ) ,
+//                new Point( 3, 1 ) ,
+//                new Point( 5, 8 )
+//        };
 
-        int[] nodes = {   // |dist|
-                1, 8,     //   0
-                6, 6,     //   7
-                3, 1,     //   9
-        };                //
+        int nodeCount = 8;
+        Point[] nodes = new Point[nodeCount];
+         nodes = grid.generateNodeArray(nodeCount);
+
+        Point[] nodesNearestOrigin = Arrays.copyOf(nodes, nodes.length);
+        MergeX.sort(nodesNearestOrigin);
+
+    // IndexMinPQ<Point>pqPoints = new IndexMinPQ<Point>(nodes.length);
+//        for(int i = 0; i < nodes.length; i++) {
+//            pqPoints.insert(i, nodes[i]);
+
         int[] exclude = {
-                1,1,
-                2,2,
-                6,8,
-                12,12,
-                13,13,
-                14,14,
+                1,  1,
+                2,  2,
+                6,  8,
+                12, 12,
+                13, 13,
+                14, 14,
         };
 
         for(int i = 1; i < exclude.length; i += 2){ // skip connecting edges to excluded vertices
             grid.addExcludedV(grid.indexOf(exclude[i - 1], exclude[i]));
         }
-        Graph gridGraph = grid.generateDenseGrid(dim); // dense dim x dim graph with unweighted edges connecting adjacent squares
 
+        Graph gridGraph = grid.generateDenseGrid(dim); // dense dim x dim graph with unweighted edges connecting adjacent squares
 //        int exx = exclude[0]; int exy = exclude[1];
 //        System.out.printf("excluded (%d %d) adj: ",exx ,exy);
 //        for(int v: grid.graph().adj(grid.indexOf(exx,exy))){
@@ -110,8 +128,6 @@ public class SingleSourceMultiNet {
         Display.drawCircles(nodes, pane);
         pane.show();
         // need to add a node in between p and q to
-        Bag<Integer> intermediateNodes = new Bag<>();
-        Point[] p = fromCoords(nodes);
 //        for (int i = 3; i < nodes.length; i += 2){
 
 //            System.out.print(minDistance.keyOf(i/2) + " d:");
@@ -122,33 +138,93 @@ public class SingleSourceMultiNet {
 //            Display.drawCircle(nodes[i - 3], nodes[0], Color.YELLOW,pane);
 
 //            pane.show();
-            //System.out.println(minDistance.delMin());
+            //System.out.println(minDistance.delMin());\
 
-
-//        for()
-        BreadthFirstPaths paths = new BreadthFirstPaths(gridGraph, grid.indexOf(nodes[0], nodes[1]));
 //        if(paths.hasPathTo(q))
 
 //      BreadthFirstPaths paths = new BreadthFirstPaths(grid,indicesOf(nodes));
 //        while(!minDistance.isEmpty()) {
 //            int min = minDistance.delMin();
+//        Iterable<BreadthFirstPaths> route =  walk(grid, nodesNearestOrigin);
+        for(int i = 0; i < nodesNearestOrigin.length - 1; i++) {
+            Point p = nodesNearestOrigin[i]; Point q = nodesNearestOrigin[i + 1];
+            Bag<Integer> pq = new Bag<>();
+            pq.add(grid.indexOf(p));         pq.add(grid.indexOf(q));
+            BreadthFirstPaths pToq = new BreadthFirstPaths(gridGraph, pq);
+            Point mp = Point.midPoint(p, q);
+            if (pToq.hasPathTo(grid.indexOf(mp))){
 
-        pane.setPenColor();
-        for (int i = 0; i < nodes.length; i +=  2) {
-            int gridIndex = grid.indexOf(nodes[i], nodes[i+1]); // processes input array as is
-//            System.out.print("path to:("+nodes[i]+" "+ nodes[i+1] + ")\n");
-            if (paths.hasPathTo(gridIndex)) {
-                System.out.print(i + ": path to (" + nodes[i] +" "+ nodes[i+1]+"):");
-                for(int step : paths.pathTo(gridIndex)){
-                    System.out.println(grid.nodeAt(step)[0] + " " + grid.nodeAt(step)[1]);
-                    Display.drawPoint(grid.nodeAt(step)[0],grid.nodeAt(step)[1], pane);
-//                    System.out.print("("+grid.nodeAt(step)[0]+ " " + grid.nodeAt(step)[1]+")");
-                    pane.pause(200);
-                    pane.show();
-                }
-                System.out.println();
             }
         }
+
+        // incorrect behavior: produces loops
+        for(int i = 0; i < nodesNearestOrigin.length-2; i+=2) {
+            BreadthFirstPaths start = new BreadthFirstPaths(gridGraph,
+                    grid.indexOf(nodesNearestOrigin[i])); // start at origin
+            BreadthFirstPaths next  = new BreadthFirstPaths(gridGraph,
+                    grid.indexOf(nodesNearestOrigin[i + 2]));  // skip a node and look back
+            Point centroid = Point.centroid(nodesNearestOrigin[i],
+                    nodesNearestOrigin[i + 1], nodesNearestOrigin[i+2]);
+            Display.drawSteinerPoint(centroid, pane);
+
+            printBFSPath(grid.indexOf(centroid) , start , grid , Color.BLUE  , pane);
+            printBFSPath(grid.indexOf(centroid) , next  , grid , Color.GREEN , pane);
+        }
+
+        pane.setPenColor();
+
+//            System.out.print("path to:("+nodes[i]+" "+ nodes[i+1] + ")\n");
+//            if (bfp.hasPathTo(nodesNearestOrigin)) {
+//                System.out.print(i + ": path to (" + nodes[i] +" "+ nodes[i+1]+"):");
+//                for(int step : paths.pathTo(gridIndex)){
+//                    System.out.println(grid.nodeAt(step)[0] + " " + grid.nodeAt(step)[1]);
+//                    Display.drawPoint(grid.nodeAt(step)[0],grid.nodeAt(step)[1], pane);
+// //                    System.out.print("("+grid.nodeAt(step)[0]+ " " + grid.nodeAt(step)[1]+")");
+//                    pane.pause(200);
+//                    pane.show();
+//                }
+//                System.out.println();
+//            }
+        }
+
+    // TODO modify a graph search from `algs4` to use 2 stacks containing neighbors of previously visited nodes to jump
+    // to when search fails.
+    // nodes
+    //  move to grid class as instance method
+//    private static Point pointNear(Point p, BreadthFirstPaths bfp , Grid grid ){
+//       if( bfp.hasPathTo(grid.indexOf(p)) ){
+//            return p;
+//        }
+//       else{
+//           p.inWindow()
+//       }
+//    }
+    private static void printBFSPath(int graphIndex, BreadthFirstPaths bfp, Grid grid, Color color, Draw pane){
+        if( bfp.hasPathTo(graphIndex) ){
+            for(int step : bfp.pathTo(graphIndex)) {
+                System.out.println(grid.nodeAt(step)[0] + " " + grid.nodeAt(step)[1]);
+                Display.drawPoint(grid.nodeAt(step)[0], grid.nodeAt(step)[1],color, pane);
+//                    System.out.print("("+grid.nodeAt(step)[0]+ " " + grid.nodeAt(step)[1]+")");
+                pane.pause(200 );
+                pane.show();
+            }
+        }
+    }
+    private static <T>Iterable <T> asIterable(T[] array){
+        Bag<T> bag = new Bag<>();
+        for (T t : array) {
+            bag.add(t);
+        }
+        return bag;
+    }
+
+    private static Iterable<BreadthFirstPaths> walk(Grid grid, Point[] points){         // polynomial
+        Bag<BreadthFirstPaths> paths = new Bag<>();
+        int[] graphIndices = grid.indexArrayOf(points);
+        for(int i = 1 ; i < points.length; i++){                                          // ~V
+            paths.add( new BreadthFirstPaths(grid.graph(), grid.indexOf(points[i])));     // O(V + E) ~
+        }
+        return paths;
     }
 
     private static void printAdjacency(Grid grid) {
@@ -161,36 +237,18 @@ public class SingleSourceMultiNet {
         }
     }
 
-
-    private static Point[] fromCoords(int[] coords){    //
-        Point[] points = new Point[coords.length/2];
-        for (int i = 1; i < coords.length / 2; i++){
-            points[i - 1] = new Point(coords[i -1], coords[i]);
+    private static Point[] fromCoords(int[] coordinates){    //
+        Point[] points = new Point[coordinates.length/2];
+        for (int i = 1; i < coordinates.length / 2; i++){
+            points[i - 1] = new Point(coordinates[i -1], coordinates[i]);
         }
         return points;
     }
-    static int[] distanceArray(int[] source, int[] coords){
-        assert(coords.length %2 == 0);
-        int[] distances = new int[(coords.length)/2];
-        for(int i = 0; i < coords.length; i += 2 ){
-            distances[i/2] = distance(source[0], source[1], coords[i], coords[i + 1] );
-        }
-        return distances;
-    }
-    // returns an array of the distance from the first node (coords[0],coords[1]) to the other pairs
-    static int[] distanceArray(int[] coords){
-        return distanceArray(new int[]{coords[0], coords[1]}, coords);
-    }
 
-    static int distance(int x1, int y1, int x2, int y2){
-        return abs(x2 - x1) + abs(y2 - y1);
-    }
-        //static Comparator<Point> byX = (q, p) -> { return q.x() - p.x();};
-//        Comparator<Point> byX = ( p,  q) -> {return p.x() - p.y(); };
-//        static Point[] bounds(Point p, Point q){
-//            if(q.minus(p)  0){
-//
-//            }
+    /// TODO determine midpoint between two points, `p` and `q`.
+    /// If midpoint does not exist, search for nearest point connecting both `p` and `q`,
+    /// with preference of quadrants containing `p` or `q`
+    void placeholder(){}
 
 
 }

@@ -1,5 +1,4 @@
 package autoRouter;
-
 import edu.princeton.cs.algs4.Draw;
 
 import java.awt.*;
@@ -17,11 +16,12 @@ public class Display {
 
     static int width = 300;
     static int height = 300;
-    static double gridCount;/*SquareGrid.squares*/;
+    static double gridCount = 10;
     static double unit = 1 / gridCount;   // dimensions of unit square , gives a 20 x 20 grid
     static double pointScalar = 0.5;          // point size
 
     public static void grid(Draw pane) {
+
         grid(width, height, unit, pane);
     }
 
@@ -60,6 +60,32 @@ public class Display {
                 pointScalar * unit * 0.5);
         pane.setPenRadius();
     }
+        public static void drawCircle(Point p, Draw pane) {
+            drawCircle(p.x(),p.y(),pane);
+        }
+
+
+    public static void drawPath(Point p, double offset, Color color, Draw pane) {
+
+        pane.setPenColor(color);
+        pane.setPenRadius(0.01);
+        pane.circle(
+                p.x() * unit + offset,
+                p.y() * unit + offset,
+                pointScalar * unit * 0.5);
+        pane.setPenRadius();
+        pane.setPenColor();
+    }
+    public static void drawSteinerPoint(Point p, Draw pane) {
+        pane.setPenColor(Draw.CYAN);
+        pane.setPenRadius(0.005);
+        pane.circle(
+                p.x() * unit,
+                p.y() * unit,
+                pointScalar * unit * 0.3);
+        pane.setPenRadius();
+        pane.setPenColor();
+    }
 
     public static void drawPoint(int x, int y, Draw pane) {
         double diameter = 0.1;
@@ -68,7 +94,37 @@ public class Display {
                 y * unit,
                 diameter * unit);
     }
+    public static void drawPoint(Point p, Color color, Draw pane) {
+        double diameter = 0.1;
+        pane.setPenColor(color);
+        pane.filledCircle(
+                p.x() * unit,
+                p.y() * unit,
+                diameter * unit);
+        pane.setPenColor();
+    }
+    public static void drawPoint(int x, int y, Color color, Draw pane) {
+        double diameter = 0.1;
+        pane.setPenColor(color);
+        pane.filledCircle(
+                x * unit,
+                y * unit,
+                diameter * unit);
+        pane.setPenColor();
+    }
+    public static void drawSquare(Point p, int halfWidth, Color color, Draw pane){
+        pane.setPenColor(color);
+        pane.square(
+                p.x() * unit,
+                p.y() * unit,
+                halfWidth * unit
+        );
+        pane.setPenColor();
+    }
+    /// TODO explored regions and search square display. Must be in the background : translucent or painted before all other animations somehow.
+    public static void drawCoverage(Point p, int halfWidth, Color color, Draw pane){
 
+    }
     ///  draws points from int[] assumed to be in the form x0, y0 ,x1, y1, ...xi ,yi
     public static void drawPoints(int[] points, Draw pane) {
         pane.setPenColor(Draw.MAGENTA);
@@ -85,6 +141,13 @@ public class Display {
         }
         pane.setPenColor();
     }
+    public static void drawCircles(Point[] circles, Draw pane) {
+        pane.setPenColor(pane.getPenColor().darker());
+        for (Point p : circles){
+            drawCircle(p, pane);
+        }
+        pane.setPenColor();
+    }
     /// static builder for a draw pane with default gridcount = 10
     public static Draw init() {
         Draw pane = new Draw();
@@ -94,6 +157,8 @@ public class Display {
         pane.setCanvasSize(width, height);
         pane.clear(Draw.GRAY);        // set background
         grid(pane);
+        pane.pause(20);
+        pane.show();
         return pane;
     }
 
@@ -106,7 +171,7 @@ public class Display {
         pane.enableDoubleBuffering();        // defer rendering until show() is called
         pane.setCanvasSize(width, height);
         pane.clear(Draw.GRAY);        // set background
-        grid(axisSize , axisSize, unit,pane);
+        grid(axisSize , axisSize, unit, pane);
         return pane;
     }
 
