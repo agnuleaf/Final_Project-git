@@ -1,11 +1,13 @@
-package autoRouter;
+package mst;
 
+import autoRouter.Display;
+import autoRouter.Grid;
+import autoRouter.Point;
 import edu.princeton.cs.algs4.*;
 
 import java.awt.*;
 import java.util.Arrays;
 
-import static autoRouter.Point.ZERO;
 import static java.lang.Math.abs;
 /// # Background
 /// A rectilinear grid graph contains equally distanced nodes, with only vertical and horizontal edges to adjacent nodes.
@@ -84,10 +86,10 @@ public class SingleSourceMultiNet {
 //        };
 
         int nodeCount = 8;
-        Point[] nodes = new Point[nodeCount];
+        autoRouter.Point[] nodes = new autoRouter.Point[nodeCount];
          nodes = grid.generateNodeArray(nodeCount);
 
-        Point[] nodesNearestOrigin = Arrays.copyOf(nodes, nodes.length);
+        autoRouter.Point[] nodesNearestOrigin = Arrays.copyOf(nodes, nodes.length);
         MergeX.sort(nodesNearestOrigin);
 
     // IndexMinPQ<Point>pqPoints = new IndexMinPQ<Point>(nodes.length);
@@ -147,11 +149,11 @@ public class SingleSourceMultiNet {
 //            int min = minDistance.delMin();
 //        Iterable<BreadthFirstPaths> route =  walk(grid, nodesNearestOrigin);
         for(int i = 0; i < nodesNearestOrigin.length - 1; i++) {
-            Point p = nodesNearestOrigin[i]; Point q = nodesNearestOrigin[i + 1];
+            autoRouter.Point p = nodesNearestOrigin[i]; autoRouter.Point q = nodesNearestOrigin[i + 1];
             Bag<Integer> pq = new Bag<>();
             pq.add(grid.indexOf(p));         pq.add(grid.indexOf(q));
             BreadthFirstPaths pToq = new BreadthFirstPaths(gridGraph, pq);
-            Point mp = Point.midPoint(p, q);
+            autoRouter.Point mp = autoRouter.Point.midPoint(p, q);
             if (pToq.hasPathTo(grid.indexOf(mp))){
 
             }
@@ -163,7 +165,7 @@ public class SingleSourceMultiNet {
                     grid.indexOf(nodesNearestOrigin[i])); // start at origin
             BreadthFirstPaths next  = new BreadthFirstPaths(gridGraph,
                     grid.indexOf(nodesNearestOrigin[i + 2]));  // skip a node and look back
-            Point centroid = Point.centroid(nodesNearestOrigin[i],
+            autoRouter.Point centroid = autoRouter.Point.centroid(nodesNearestOrigin[i],
                     nodesNearestOrigin[i + 1], nodesNearestOrigin[i+2]);
             Display.drawSteinerPoint(centroid, pane);
 
@@ -218,7 +220,7 @@ public class SingleSourceMultiNet {
         return bag;
     }
 
-    private static Iterable<BreadthFirstPaths> walk(Grid grid, Point[] points){         // polynomial
+    private static Iterable<BreadthFirstPaths> walk(Grid grid, autoRouter.Point[] points){         // polynomial
         Bag<BreadthFirstPaths> paths = new Bag<>();
         int[] graphIndices = grid.indexArrayOf(points);
         for(int i = 1 ; i < points.length; i++){                                          // ~V
@@ -237,8 +239,8 @@ public class SingleSourceMultiNet {
         }
     }
 
-    private static Point[] fromCoords(int[] coordinates){    //
-        Point[] points = new Point[coordinates.length/2];
+    private static autoRouter.Point[] fromCoords(int[] coordinates){    //
+        autoRouter.Point[] points = new autoRouter.Point[coordinates.length/2];
         for (int i = 1; i < coordinates.length / 2; i++){
             points[i - 1] = new Point(coordinates[i -1], coordinates[i]);
         }

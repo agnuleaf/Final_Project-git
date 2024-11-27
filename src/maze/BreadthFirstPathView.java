@@ -36,9 +36,10 @@ public class BreadthFirstPathView implements Runnable {
 
         @Override
     public void run() {
-        t = new Thread(this, "BFS Path Taken View" );
-        t.start();
-        BreadthFirstPaths bfp = new BreadthFirstPaths(grid.graph(), grid.indexOf(p));
+//        t = new Thread(this, "BFS Path Taken View" );
+//        t.start();
+            System.out.println(Thread.currentThread().getThreadGroup());
+            BreadthFirstPaths bfp = new BreadthFirstPaths(grid.graph(), grid.indexOf(p));
         if(bfp.hasPathTo(grid.indexOf(q))){
             for(int step: bfp.pathTo(grid.indexOf(q))){
                 Display.drawPoint(grid.pointAt(step), Draw.GREEN, pane);

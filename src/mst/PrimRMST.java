@@ -1,10 +1,11 @@
-package autoRouter;
+package mst;
 
+import autoRouter.Grid;
+import autoRouter.Point;
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.MergeX;
 import edu.princeton.cs.algs4.IndexMinPQ;
 
-import edu.princeton.cs.algs4.PrimMST;
 import edu.princeton.cs.algs4.EdgeWeightedGraph;
 import edu.princeton.cs.algs4.Edge;
 
@@ -14,7 +15,7 @@ import java.util.Arrays;
 /// Input:     Rectilinear Dense Grid Graph, selection of nodes to include
 /// Output:    TODO standard MST or ideally Rectilinear MST with some Steiner points
 /// First determines the MST for nodes given their cartesian coordinates,
-/// 1. Sort all nodes by distance from origin , or a per-axis basis
+/// 1. perform a scan for nearest neighbors, start with a window halfwidth of 1, and length of the axis
 /// 2. Find nearest neighbors, 1 per quadrant for each node in ascending order
 /// assigning weights to edges equal to their Euclidean distance .
 /// 3. Perform Minimum Spanning Tree on this newly formed `EdgeWeightedGraph`

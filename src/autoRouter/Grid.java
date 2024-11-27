@@ -15,7 +15,7 @@ import static java.util.Arrays.binarySearch;
 public class Grid {
     private SET<Integer> excludedV = new SET<>();           // TODO no need for set, sorted array is sufficient
     private final int dim;
-    private final Graph grid;
+    private Graph grid;
 
     public int getDimension(){
         return dim;
@@ -32,7 +32,9 @@ public class Grid {
     public Graph graph(){
         return grid;
     }
-
+    public void replaceGraph(Graph graph){
+        this.grid = graph;
+    }
     @Deprecated
     Iterable<Integer> indicesOf(int[] nodes) {
         Bag<Integer> indices = new Bag<>();
@@ -75,6 +77,15 @@ public class Grid {
     /// Add an excluded graph vertex
     public void addExcludedV(int v){
         excludedV.add(v);
+    }
+    public void addExcludedV(int ... excluded){
+        for(int v : excluded){
+            addExcludedV(v);
+        }
+    }
+    /// Add a 'wall' to the grid
+    public void addExcludedV(Point ... p){
+        addExcludedV(indexArrayOf(p));
     }
     /// Converts individual 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
     public int indexOf(int x, int y){

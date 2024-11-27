@@ -49,9 +49,10 @@ public class BreadthFirstSearchView implements Runnable{
 
     @Override
     public void run() {
-        t = new Thread(this, "BFS Wavefront");
-        t.start();
+//        t = new Thread(this, "BFS Wavefront");
+//        t.start();
         int s = grid.indexOf(p);
+        System.out.println(Thread.currentThread().getThreadGroup());
         bfs(grid, s, pane);
         //        assert check(grid.graph(), s);
     }
@@ -75,13 +76,14 @@ public class BreadthFirstSearchView implements Runnable{
                         q.enqueue(w);
                         Display.drawPoint(grid.pointAt(w), Draw.PINK, pane);
                         pane.disableDoubleBuffering();
+                        pane.pause(50);
 //                        pane.show();
 
-                        try{
-                            Thread.sleep(100); // instead of pane.pause()
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
+//                        try{
+//                            Thread.sleep(100); // instead of pane.pause()
+//                        } catch (InterruptedException e) {
+//                            throw new RuntimeException(e);
+//                        }
                     }
                 }
             }

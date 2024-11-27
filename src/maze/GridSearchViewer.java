@@ -36,8 +36,8 @@ public class GridSearchViewer {
         // Start threads for the wavefront of `BreadthFirstSearchView` and the path taken
         BreadthFirstPathView pathView = new BreadthFirstPathView(p, q, grid, pane);
         pathView.run();
-        var gst = new GridSearchTargeted(grid, pane);
-        gst.search(p, q);
+//        var gst = new GridSearchTargeted(grid, pane); // TODO dumb algorithm doesn't even save the shortest path
+//        gst.searchWithBacktrack(p, q);
     }
 }
 
