@@ -2,7 +2,7 @@ package maze;
 
 import autoRouter.Display;
 import autoRouter.Grid;
-import autoRouter.Point;
+import autoRouter.GridPoint;
 import edu.princeton.cs.algs4.*;
 
 
@@ -31,11 +31,11 @@ public class BreadthFirstSearchView implements Runnable{
         private int[] edgeTo;      // edgeTo[v] = previous edge on shortest s-v path
         private int[] distTo;      // distTo[v] = number of edges shortest s-v path
         final private Grid grid;
-        final private Point p;
+        final private GridPoint p;
         final private Draw pane;
         Thread t;
 
-    public BreadthFirstSearchView(Point p, Grid grid, Draw pane) {
+    public BreadthFirstSearchView(GridPoint p, Grid grid, Draw pane) {
         this.p = p ;
         this.grid = grid;
         this.pane = pane;

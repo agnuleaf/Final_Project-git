@@ -18,7 +18,7 @@ public class GridPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private int width, height;
     private int scale;
-    private Set<Point> points = new HashSet<>(); // to insure that it doesn't add any points that are already on there
+    private Set<GridPoint> gridPoints = new HashSet<>(); // to insure that it doesn't add any points that are already on there
     
     /**
      * Initializes the object
@@ -41,9 +41,9 @@ public class GridPanel extends JPanel {
         
         g2d.setColor(Color.ORANGE);
         // Iterates through the list and updates the display Dynamically
-        for (Point point : points) {
-            int x = point.x() * scale;
-            int y = point.y() * scale;
+        for (GridPoint gridPoint : gridPoints) {
+            int x = gridPoint.x() * scale;
+            int y = gridPoint.y() * scale;
             g2d.fillOval(x-scale/4, y-scale/4, scale/2, scale/2); 
         }
         g2d.setColor(Color.BLACK); // resets color to black for future use
@@ -75,19 +75,19 @@ public class GridPanel extends JPanel {
     }
     /**
      * Method to add a new circle point
-     * @param point to add
+     * @param gridPoint to add
      */
-    public void addCircle(Point point) {
-        points.add(point); // Note this wont do anything if it becomes out of bounds of the graph
+    public void addCircle(GridPoint gridPoint) {
+        gridPoints.add(gridPoint); // Note this wont do anything if it becomes out of bounds of the graph
         repaint(); // Trigger a repaint to reflect the added circle
     }
 
     /**
      * Method to remove circle point
-     * @param point to remove
+     * @param gridPoint to remove
      */
-    public void removeCircle(Point point) {
-        points.remove(point);
+    public void removeCircle(GridPoint gridPoint) {
+        gridPoints.remove(gridPoint);
         repaint(); // Trigger a repaint to reflect the removed circle
     }
 
@@ -95,7 +95,7 @@ public class GridPanel extends JPanel {
      * Method to remove all points
      */
     public void clearCircles() {
-        points.clear();
+        gridPoints.clear();
         repaint(); // Trigger a repaint to clear circles
     }
     
@@ -103,7 +103,7 @@ public class GridPanel extends JPanel {
      * Method to add multiple circles
      * @param points to add
      */
-    public void addCircle(Iterable<Point> points) {
+    public void addCircle(Iterable<GridPoint> points) {
     	points.forEach(point -> addCircle(point));
     }
     
@@ -111,7 +111,7 @@ public class GridPanel extends JPanel {
      * Method to remove multiple circles
      * @param points to remove
      */
-    public void removeCircle(Iterable<Point> points) {
+    public void removeCircle(Iterable<GridPoint> points) {
     	points.forEach(point -> removeCircle(point));
     }
     

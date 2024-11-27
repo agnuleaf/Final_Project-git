@@ -3,7 +3,7 @@ package maze;
 
 import autoRouter.Display;
 import autoRouter.Grid;
-import autoRouter.Point;
+import autoRouter.GridPoint;
 import edu.princeton.cs.algs4.Draw;
 import edu.princeton.cs.algs4.SET;
 
@@ -23,9 +23,9 @@ public class GridSearchViewer {
 //        pane.show(50);
 
         // From UI we receive Node[] endPoints, MinPQ<Node> walls.
-        var p = new Point(1, 1);
-        var q = new Point(7, 5);
-        Point[] endpoints = new Point[]{
+        var p = new GridPoint(1, 1);
+        var q = new GridPoint(7, 5);
+        GridPoint[] endpoints = new GridPoint[]{
                 p,          // start
                 q           // finish
         };

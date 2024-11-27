@@ -7,43 +7,43 @@ import static java.lang.Math.abs;
 /// arithmetic and comparison methods. Two `Point`s are `Comparable` by their distance from origin.
 /// Per axis `Comparator`s are given as well.
 /// @author Wesley Miller
-public record Point(int x, int y) implements Comparable<Point>{
+public record GridPoint(int x, int y) implements Comparable<GridPoint>{
 
-    Point minus(Point q) { return new Point(x - q.x(), y - q.y()); }
-    Point plus (Point q) { return new Point(x + q.x(), y + q.y()); }
+    GridPoint minus(GridPoint q) { return new GridPoint(x - q.x(), y - q.y()); }
+    GridPoint plus (GridPoint q) { return new GridPoint(x + q.x(), y + q.y()); }
 
     int magRect(){ return abs(x) + abs(y); }
 
     /// Compares by relative distance from origin, negative means closer.
     @Override
-    public int compareTo(Point q) {
+    public int compareTo(GridPoint q) {
         return magRect() - q.magRect();
     }
 
     public String toString(){ return "(" + x + ", " + y + ") "; }
     /// Checks if point w is within the window
-    public boolean inWindow(Point w, int halfWidth){
+    public boolean inWindow(GridPoint w, int halfWidth){
         return (nearX(w, halfWidth) && nearY(w, halfWidth));
     }
     /// Checks if point w is within the window of this points axis
-    public boolean nearX(Point w, int halfWidth){
+    public boolean nearX(GridPoint w, int halfWidth){
         return (    w.x > x - halfWidth
                  && w.x < x + halfWidth);
     }
-    public boolean nearY(Point w, int halfWidth){
+    public boolean nearY(GridPoint w, int halfWidth){
         return (   w.y > y - halfWidth
                 && w.y < y + halfWidth);
     }
 
     /// Check if this vertex is farther from q than v.
-    public boolean isFarther(Point v, Point q){
+    public boolean isFarther(GridPoint v, GridPoint q){
         return (distRectilinear(v, q) < distRectilinear(this, q));
     }
     /// Determines the relative diagonal quadrant a given point resides.
     /// For a point `p` the two diagonal lines, with slope = 1, intersecting at p are:
     /// <p> Lpos(x) = x + (p.y - p.x)  and Lneg(x) = -x + p.y + p.x </p>
     /// @return - `q`s diagonal quadrant relative to `this`
-    public Point vectorTo(Point q){
+    public GridPoint vectorTo(GridPoint q){
         if( q.y > q.x + (y - x) && q.y < -q.x + y +  x ){
             return LEFT;
         }
@@ -64,30 +64,30 @@ public record Point(int x, int y) implements Comparable<Point>{
             throw new UnsupportedOperationException("Point: directionOf");
         }
     }
-    public static Comparator<Point> compareX = Comparator.comparingInt(Point::x);
-    public static Comparator<Point> compareY = Comparator.comparingInt(Point::y);
+    public static Comparator<GridPoint> compareX = Comparator.comparingInt(GridPoint::x);
+    public static Comparator<GridPoint> compareY = Comparator.comparingInt(GridPoint::y);
 
 
 
     /// Distance squared between two points in Cartesian plane.
-    public static double distSqEuclid(Point p, Point q){
+    public static double distSqEuclid(GridPoint p, GridPoint q){
         return (q.x - p.x)*(q.x - p.x) - (q.y - p.y)*(q.y - p.y);
     }
 
     /// Rectilinear Distance between two points.
-    public static double distRectilinear(Point p, Point q){
+    public static double distRectilinear(GridPoint p, GridPoint q){
         return abs(q.x - p.x) + abs(q.y - p.y);
     }
 
     /// Returns the bounding box of two `Point`s as an array { lowerLeft, upperRight }
-    public static Point[] bounds(Point p , Point q){
+    public static GridPoint[] bounds(GridPoint p , GridPoint q){
         if(q.x - p.x >=0 && q.y - p.y >= 0 ){   // p is already lower left and q is upper right
-            return new Point[]{ p, q }; // dont swap
+            return new GridPoint[]{ p, q }; // dont swap
         }
         if(q.x <= p.x || q.y <= p.y) {
-            return new Point[] { new Point(p.x, q.y), new Point(q.x, p.y) }; // swap elements
+            return new GridPoint[] { new GridPoint(p.x, q.y), new GridPoint(q.x, p.y) }; // swap elements
         }
-        else return new Point[] { q, p }; // swap points
+        else return new GridPoint[] { q, p }; // swap points
     }
 
     public static void main(String[] args) {
@@ -101,13 +101,13 @@ public record Point(int x, int y) implements Comparable<Point>{
 //        Point[] ullr = bounds(ul, lr);
 //        Point q1 = new Point(2,1);
 //        System.out.println(ll.compareTo(q1));
-        Point[] quadtest = new Point[] {
-                new Point(3, 4), // left
-                new Point(2, 1), // down
-                new Point(6, 8), // up
-                new Point(7, 6),  // right
+        GridPoint[] quadtest = new GridPoint[] {
+                new GridPoint(3, 4), // left
+                new GridPoint(2, 1), // down
+                new GridPoint(6, 8), // up
+                new GridPoint(7, 6),  // right
         };
-        Point p = new Point(5,5);
+        GridPoint p = new GridPoint(5,5);
         assert(p.vectorTo(quadtest[0]) == LEFT);
         assert(p.vectorTo(quadtest[1]) == DOWN );
         assert(p.vectorTo(quadtest[2]) == UP );
@@ -123,35 +123,35 @@ public record Point(int x, int y) implements Comparable<Point>{
 
     }
     // Position vectors
-    static final Point UP       = new Point( 0, 1);
-    static final Point DOWN     = new Point( 0,-1);
-    static final Point LEFT     = new Point(-1, 0);
-    static final Point RIGHT    = new Point( 1, 0);
-    public static final Point ZERO     = new Point( 0, 0);
+    static final GridPoint UP       = new GridPoint( 0, 1);
+    static final GridPoint DOWN     = new GridPoint( 0,-1);
+    static final GridPoint LEFT     = new GridPoint(-1, 0);
+    static final GridPoint RIGHT    = new GridPoint( 1, 0);
+    public static final GridPoint ZERO     = new GridPoint( 0, 0);
 
     /// Finds the midpoint of two points, rounding down to nearest integers.
-    public static Point midPoint(Point p, Point q){
-        return new Point(( p.x + q.x ) / 2 , ( p.y + q.y ) / 2);
+    public static GridPoint midPoint(GridPoint p, GridPoint q){
+        return new GridPoint(( p.x + q.x ) / 2 , ( p.y + q.y ) / 2);
     }
     /// Finds the centroid of at triangle , rounding down to nearest integers.
-    public static Point centroid(Point p, Point q, Point r){
-        return new Point(( p.x + q.x + r.x ) / 3 , ( p.y + q.y + r.y ) / 3);
+    public static GridPoint centroid(GridPoint p, GridPoint q, GridPoint r){
+        return new GridPoint(( p.x + q.x + r.x ) / 3 , ( p.y + q.y + r.y ) / 3);
     }
     /// Finds the centroid of a polygon, rounding down to nearest integers.
-    public static Point centroid( Point ... points){
+    public static GridPoint centroid(GridPoint... gridPoints){
         int x = 0; int y = 0;
-        for(Point p : points){
+        for(GridPoint p : gridPoints){
             x += p.x ; y += p.y;
         }
-        return new Point(x / points.length, y / points.length);
+        return new GridPoint(x / gridPoints.length, y / gridPoints.length);
     }
 
-    private static void draw(Point p, Draw pane){
+    private static void draw(GridPoint p, Draw pane){
         Display.drawCircle(p.x, p.y, pane);
     }
-    private static void draw(Point[] points, Draw pane){
-        for(Point p :points){
-            Point.draw(p, pane);
+    private static void draw(GridPoint[] gridPoints, Draw pane){
+        for(GridPoint p : gridPoints){
+            GridPoint.draw(p, pane);
         }
     }
 }

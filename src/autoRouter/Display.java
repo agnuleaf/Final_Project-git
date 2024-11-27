@@ -60,12 +60,12 @@ public class Display {
                 pointScalar * unit * 0.5);
         pane.setPenRadius();
     }
-        public static void drawCircle(Point p, Draw pane) {
+        public static void drawCircle(GridPoint p, Draw pane) {
             drawCircle(p.x(),p.y(),pane);
         }
 
 
-    public static void drawPath(Point p, double offset, Color color, Draw pane) {
+    public static void drawPath(GridPoint p, double offset, Color color, Draw pane) {
 
         pane.setPenColor(color);
         pane.setPenRadius(0.01);
@@ -76,7 +76,7 @@ public class Display {
         pane.setPenRadius();
         pane.setPenColor();
     }
-    public static void drawSteinerPoint(Point p, Draw pane) {
+    public static void drawSteinerPoint(GridPoint p, Draw pane) {
         pane.setPenColor(Draw.CYAN);
         pane.setPenRadius(0.005);
         pane.circle(
@@ -94,7 +94,7 @@ public class Display {
                 y * unit,
                 diameter * unit);
     }
-    public static void drawPoint(Point p, Color color, Draw pane) {
+    public static void drawPoint(GridPoint p, Color color, Draw pane) {
         double diameter = 0.1;
         pane.setPenColor(color);
         pane.filledCircle(
@@ -112,7 +112,7 @@ public class Display {
                 diameter * unit);
         pane.setPenColor();
     }
-    public static void drawSquare(Point p, int halfWidth, Color color, Draw pane){
+    public static void drawSquare(GridPoint p, int halfWidth, Color color, Draw pane){
         pane.setPenColor(color);
         pane.square(
                 p.x() * unit,
@@ -122,7 +122,7 @@ public class Display {
         pane.setPenColor();
     }
     /// TODO explored regions and search square display. Must be in the background : translucent or painted before all other animations somehow.
-    public static void drawCoverage(Point p, int halfWidth, Color color, Draw pane){
+    public static void drawCoverage(GridPoint p, int halfWidth, Color color, Draw pane){
 
     }
     ///  draws points from int[] assumed to be in the form x0, y0 ,x1, y1, ...xi ,yi
@@ -141,9 +141,9 @@ public class Display {
         }
         pane.setPenColor();
     }
-    public static void drawCircles(Point[] circles, Draw pane) {
+    public static void drawCircles(GridPoint[] circles, Draw pane) {
         pane.setPenColor(pane.getPenColor().darker());
-        for (Point p : circles){
+        for (GridPoint p : circles){
             drawCircle(p, pane);
         }
         pane.setPenColor();

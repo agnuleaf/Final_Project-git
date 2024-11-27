@@ -1,7 +1,7 @@
 package mst;
 
 import autoRouter.Grid;
-import autoRouter.Point;
+import autoRouter.GridPoint;
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.MergeX;
 import edu.princeton.cs.algs4.IndexMinPQ;
@@ -9,7 +9,7 @@ import edu.princeton.cs.algs4.IndexMinPQ;
 import edu.princeton.cs.algs4.EdgeWeightedGraph;
 import edu.princeton.cs.algs4.Edge;
 
-import static  autoRouter.Point.distSqEuclid;
+import static  autoRouter.GridPoint.distSqEuclid;
 import java.util.Arrays;
 /// Goal: Generate a spanning tree over a selection of points in a rectilinear graph.
 /// Input:     Rectilinear Dense Grid Graph, selection of nodes to include
@@ -23,12 +23,12 @@ import java.util.Arrays;
 /// @author Wesley Miller
 public class PrimRMST {
 
-    private Point[] pins;
+    private GridPoint[] pins;
     private Graph rectilinearGraph;             // integer coordinates, no diagonal edges
     private EdgeWeightedGraph cartesianGraph;   // edges between nodes are their real valued Euclidean distance
 
     /// Constructor holds reference to the underlying dense rectilinear graph
-    PrimRMST(Graph graph, Point[] pins){
+    PrimRMST(Graph graph, GridPoint[] pins){
         this.pins = pins;
         this.rectilinearGraph = graph;
     }
@@ -58,20 +58,20 @@ public class PrimRMST {
     // TODO f: MST -> RMST
     public static void main(String[] args) {
         Grid grid = new Grid(10);
-        Point[] pinsTest = {
-                new Point(2, 3),
-                new Point(3, 1),
-                new Point(1, 2),
-                new Point(2, 1),
-                new Point( 1,1),
+        GridPoint[] pinsTest = {
+                new GridPoint(2, 3),
+                new GridPoint(3, 1),
+                new GridPoint(1, 2),
+                new GridPoint(2, 1),
+                new GridPoint( 1,1),
 //                new Point(3, 5),
 //                new Point(1,2),
 //                new Point(7,8),
 //                new Point(4,4)
         };
-        Point[] pinsByX = Arrays.copyOf(pinsTest, pinsTest.length);
-        Point[] pinsByY = Arrays.copyOf(pinsTest, pinsTest.length);
-        MergeX.sort(pinsByX, Point.compareX);  MergeX.sort(pinsByY, Point.compareY);
+        GridPoint[] pinsByX = Arrays.copyOf(pinsTest, pinsTest.length);
+        GridPoint[] pinsByY = Arrays.copyOf(pinsTest, pinsTest.length);
+        MergeX.sort(pinsByX, GridPoint.compareX);  MergeX.sort(pinsByY, GridPoint.compareY);
 
         // TODO associate pinsByX and pinsByY to the same index in pinsTest
         // TODO quadrant check for neighborsbv
@@ -88,7 +88,7 @@ public class PrimRMST {
 //        }
         PrimRMST rmst = new PrimRMST(grid.graph(), pinsTest);
 
-        IndexMinPQ<Point> pinsSorted = new IndexMinPQ<>(pinsTest.length);
+        IndexMinPQ<GridPoint> pinsSorted = new IndexMinPQ<>(pinsTest.length);
         for(int i = 0 ; i < pinsTest.length - 1; i++){
             pinsSorted.insert(i, pinsTest[i] );
         }

@@ -2,7 +2,6 @@ package autoRouter;
 
 import edu.princeton.cs.algs4.*;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -45,7 +44,7 @@ public class Grid {
     }
 
     /// Converts and array of nodes in (x,y) grid coordinates to an array of graph vertices
-    public int[] indexArrayOf(Point[] nodes){
+    public int[] indexArrayOf(GridPoint[] nodes){
         int[] indexArray = new int[nodes.length];
         for(int i = 0 ; i < nodes.length ; i++) {
             indexArray[i] = indexOf(nodes[i]);
@@ -54,7 +53,7 @@ public class Grid {
     }
 
     ///  Converts an array of nodes as (x,y) grid coordinates to graph vertices
-    public Iterable<Integer> indicesOf(Point[] nodes) {
+    public Iterable<Integer> indicesOf(GridPoint[] nodes) {
         Bag<Integer> indices = new Bag<>();
         for(int i = 1 ; i < nodes.length ; i+=2) {
             indices.add(indexOf(nodes[i]));
@@ -63,9 +62,9 @@ public class Grid {
     }
 
     ///  Converts nodes as (x,y) grid coordinates to graph vertices
-    public Iterable<Integer> indicesOf(Iterable<Point> nodes) {
+    public Iterable<Integer> indicesOf(Iterable<GridPoint> nodes) {
         Bag<Integer> indices = new Bag<>();
-        for(Point p : nodes) {
+        for(GridPoint p : nodes) {
             indices.add(indexOf(p));
         }
         return indices;
@@ -84,7 +83,7 @@ public class Grid {
         }
     }
     /// Add a 'wall' to the grid
-    public void addExcludedV(Point ... p){
+    public void addExcludedV(GridPoint... p){
         addExcludedV(indexArrayOf(p));
     }
     /// Converts individual 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
@@ -93,7 +92,7 @@ public class Grid {
         return (x - 1) * dim + (y - 1);
     }
     /// Converts a `Point` as 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
-    public int indexOf(Point p){
+    public int indexOf(GridPoint p){
         if(p.x() == 0 || p.y() == 0)
             return -1; // TODO: Remove and add bounds check elsewhere like file input conversion
         return ((p.x() - 1) * dim + (p.y() - 1));
@@ -106,8 +105,8 @@ public class Grid {
         };
     }
     /// Converts a 0-based indexed vertex in `Graph` to a Point with 1-based (x, y) coordinates.
-    public Point pointAt(int index){
-        return new Point(
+    public GridPoint pointAt(int index){
+        return new GridPoint(
             (index) / dim + 1,
             (index) % dim + 1);
     }
@@ -135,39 +134,39 @@ public class Grid {
     }
     
     /// Generates random nodes in the grid
-    public Iterable<Point> generateNodes(int nodeCount){
-        SET<Point> uniqueNodes = new SET<>();
+    public Iterable<GridPoint> generateNodes(int nodeCount){
+        SET<GridPoint> uniqueNodes = new SET<>();
         for(int i = 0 ; i < nodeCount; i++) {
-            Point n;
+            GridPoint n;
             do{
-                n = new Point(StdRandom.uniformInt(1, dim), StdRandom.uniformInt(1, dim));
+                n = new GridPoint(StdRandom.uniformInt(1, dim), StdRandom.uniformInt(1, dim));
             }while(uniqueNodes.contains(n));
             uniqueNodes.add(n);
         }
         return uniqueNodes;
     }
     /// Generates random nodes in the grid
-    public Point[] generateNodeArray(int nodeCount){
-        Set<Point> uniqueNodes = new HashSet<>();
+    public GridPoint[] generateNodeArray(int nodeCount){
+        Set<GridPoint> uniqueNodes = new HashSet<>();
         for(int i = 0 ; i < nodeCount; i++) {
-            Point n;
+            GridPoint n;
             do{
-                n = new Point(StdRandom.uniformInt(1, dim), StdRandom.uniformInt(1, dim));
+                n = new GridPoint(StdRandom.uniformInt(1, dim), StdRandom.uniformInt(1, dim));
             }while(uniqueNodes.contains(n));
             uniqueNodes.add(n);
         }
-        return uniqueNodes.toArray(new Point[0]);
+        return uniqueNodes.toArray(new GridPoint[0]);
     }
     // Returns shortest component of vector pq. From p this points to the closest line through q
-    public static Point toIntersection(Point p, Point q){
+    public static GridPoint toIntersection(GridPoint p, GridPoint q){
         int magPQx = abs(q.x() - p.x()) ; int magPQy = abs(q.y() - p.y());
         // select line through q closest to p
         if(magPQx > magPQy) {
-            return new Point( 0 , q.y() - p.y() );
+            return new GridPoint( 0 , q.y() - p.y() );
         }
         else if( magPQy > magPQx){
-            return new Point(q.x() - p.x(), 0);
-        } else return new Point(0, 0);
+            return new GridPoint(q.x() - p.x(), 0);
+        } else return new GridPoint(0, 0);
     }
     /// Creates a subgraph, or window, of a grid graph using inclusive bounds defined by node (x,y)
     /// vertices ll(lower left) and ur(upper right).
@@ -189,7 +188,7 @@ public class Grid {
         return subGraph;
     }
     /// Uses class `Point`  instead of `int[]` pairs to form a subgraph, or window.
-     public Graph subGraph(Point ll, Point ur, Graph graph){
+     public Graph subGraph(GridPoint ll, GridPoint ur, Graph graph){
         if( ur.x() < ll.x() && ur.y() < ll.y())  throw new IllegalArgumentException("invalid bounds provided for subgraph");
         Graph subGraph = new Graph((ur.x() - ll.x()) * (ur.y() - ll.y()));
 
@@ -212,7 +211,7 @@ public class Grid {
             return true;
         return false;
     }
-    private boolean contained(int v, Point ll, Point ur){
+    private boolean contained(int v, GridPoint ll, GridPoint ur){
         int vx = nodeAt(v)[0];  int vy = nodeAt(v)[1];
         if(( vx > ll.x() && vx < ur.x()) && ( vy > ll.y() && vy < ur.y() ))
             return true;

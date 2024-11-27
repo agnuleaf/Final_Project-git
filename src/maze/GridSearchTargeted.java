@@ -1,7 +1,7 @@
 package maze;
 
 import autoRouter.Display;
-import autoRouter.Point;
+import autoRouter.GridPoint;
 import autoRouter.Grid;
 import edu.princeton.cs.algs4.*;
 
@@ -51,22 +51,22 @@ public class GridSearchTargeted implements Runnable {
     /// Less expansive search than BFS
     /// @param p the source node in the grid
     /// @param q the target node in the grid
-    public /*Iterable<Point>*/ void searchWithBacktrack(Point p, Point q) {
+    public /*Iterable<Point>*/ void searchWithBacktrack(GridPoint p, GridPoint q) {
         gU = grid.indexOf(p);
         gT = grid.indexOf(q);
         Stack<Integer> pStack = new Stack<>();          // neighbors closer to target
         Stack<Integer> nStack = new Stack<>();          // neighbors away from target
-        Stack<Point> pathStack = new Stack<>();
+        Stack<GridPoint> pathStack = new Stack<>();
         Graph graph = grid.graph();
         marked[gU] = true;
         pathStack.push(grid.pointAt(gU));
 
         while (gU != gT) {
-            Point u = grid.pointAt(gU); // currently visited node
+            GridPoint u = grid.pointAt(gU); // currently visited node
             Bag<Integer> closer =  new Bag<>(); // closer neighbors
             for (int gV : graph.adj(gU)) {  // evaluate each neighbor of u
                 if (!marked[gV]) {
-                    Point v = grid.pointAt(gV); // the neighbor
+                    GridPoint v = grid.pointAt(gV); // the neighbor
                     if (v.isFarther(u, q)) {
                         nStack.push(gV);
                     }else if(!v.isFarther(u, q)){
@@ -110,14 +110,14 @@ public class GridSearchTargeted implements Runnable {
 
         Draw pane = Display.init(10);
         Grid grid = new Grid(dim);
-        grid.addExcludedV(new Point[]{
-                new Point(3, 2),
-                new Point(2, 2),
-                new Point(4,1)
+        grid.addExcludedV(new GridPoint[]{
+                new GridPoint(3, 2),
+                new GridPoint(2, 2),
+                new GridPoint(4,1)
         });
-        Point[] nodes = new Point[]{
-                new Point(1, 1),
-                new Point(3, 5)
+        GridPoint[] nodes = new GridPoint[]{
+                new GridPoint(1, 1),
+                new GridPoint(3, 5)
         };
         grid.replaceGraph(grid.generateDenseGrid());
         pane = Display.init(dim);

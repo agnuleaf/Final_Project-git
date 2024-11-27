@@ -2,7 +2,7 @@ package maze;
 
 import autoRouter.Display;
 import autoRouter.Grid;
-import autoRouter.Point;
+import autoRouter.GridPoint;
 import edu.princeton.cs.algs4.*;
 
 import edu.princeton.cs.algs4.BreadthFirstPaths;
@@ -29,8 +29,8 @@ import static java.lang.Math.abs;
 /// @author Wesley Miller
 public class BreadthFirstPathView implements Runnable {
     private Grid grid;
-    private Point p;
-    private Point q;
+    private GridPoint p;
+    private GridPoint q;
     Draw pane;
     Thread t; // Run Path view after wavefront thread to demonstrate true operation
 
@@ -54,7 +54,7 @@ public class BreadthFirstPathView implements Runnable {
         }
     }
 
-    public BreadthFirstPathView(Point p, Point q, Grid grid, Draw pane){
+    public BreadthFirstPathView(GridPoint p, GridPoint q, Grid grid, Draw pane){
         this.p = p; this.q = q; this.grid = grid; this.pane = pane;
     }
     /// View the algorithm on a test set using internal `algs4.Draw`
@@ -95,12 +95,12 @@ public class BreadthFirstPathView implements Runnable {
         return bag;
     }
 
-    private static Iterable<BreadthFirstPaths> walk(Grid grid, autoRouter.Point[] points){         // polynomial
+    private static Iterable<BreadthFirstPaths> walk(Grid grid, GridPoint[] gridPoints){         // polynomial
         Bag<BreadthFirstPaths> paths = new Bag<>();
-        int[] graphIndices = grid.indexArrayOf(points);
+        int[] graphIndices = grid.indexArrayOf(gridPoints);
 
-        for(int i = 1 ; i < points.length; i++){                                          // ~V
-            paths.add( new BreadthFirstPaths(grid.graph(), grid.indexOf(points[i])));     // O(V + E) ~
+        for(int i = 1; i < gridPoints.length; i++){                                          // ~V
+            paths.add( new BreadthFirstPaths(grid.graph(), grid.indexOf(gridPoints[i])));     // O(V + E) ~
         }
         return paths;
     }
@@ -115,12 +115,12 @@ public class BreadthFirstPathView implements Runnable {
         }
     }
 
-    private static autoRouter.Point[] fromCoords(int[] coordinates){    //
-        autoRouter.Point[] points = new autoRouter.Point[coordinates.length/2];
+    private static GridPoint[] fromCoords(int[] coordinates){    //
+        GridPoint[] gridPoints = new GridPoint[coordinates.length/2];
         for (int i = 1; i < coordinates.length / 2; i++){
-            points[i - 1] = new Point(coordinates[i -1], coordinates[i]);
+            gridPoints[i - 1] = new GridPoint(coordinates[i -1], coordinates[i]);
         }
-        return points;
+        return gridPoints;
     }
 
 }

@@ -42,13 +42,13 @@ public class AutoDisplay extends JFrame {
 		pack(); // sets the size dynamically based on how big the graph is
 		
 		//everything past here is just testing feel free to remove everything past here
-		Point point =  new Point(2, 1);
-		Point point2 = new Point(3, 1);
-		Point point3 = new Point(10, 3);
-		Queue<Point> q = new Queue<>(); // can use anything Iterable here
-		q.enqueue(point);
-		q.enqueue(point2); 
-		q.enqueue(point3);
+		GridPoint gridPoint =  new GridPoint(2, 1);
+		GridPoint gridPoint2 = new GridPoint(3, 1);
+		GridPoint gridPoint3 = new GridPoint(10, 3);
+		Queue<GridPoint> q = new Queue<>(); // can use anything Iterable here
+		q.enqueue(gridPoint);
+		q.enqueue(gridPoint2);
+		q.enqueue(gridPoint3);
 		Display.addCircle(q); // this also works with Int2D point
 		
 		//TODO Add Interactable functionality
