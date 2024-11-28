@@ -7,13 +7,16 @@ import grid.GridPoint;
 import edu.princeton.cs.algs4.Draw;
 import edu.princeton.cs.algs4.DrawListener;
 
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
 
 // TODO draw bfs wavefront, then the found path, then draw the other targeted search
 //  what are strengths and weaknesses of each approach?
 //      (When is it better to NOT create a path 'library' like all the algs4 algorithms
 //      but instead exlporing along one single path with very basic 'guidance'
 /// dummy main app. TODO can multiple threads allow simultaneously drawing of pathfinding algorithms??
-public class MazeApp implements DrawListener {
+public class MazeApp implements DrawListener{
 
 	public static final double shiftGrid = -0.5;
 	private int dim = 10;
@@ -34,7 +37,7 @@ public class MazeApp implements DrawListener {
 		pane = display.getPane();
 		display.grid();
 		pane.addListener(this);
-
+		pane.addListener(this);
 		appState = AppState.USER_INPUT;
 	}
 
@@ -149,10 +152,13 @@ public class MazeApp implements DrawListener {
 			}
 		}
 	}
+
 	/**
-	 *  Changes state
+	 *
 	 */
+	@Override
 	public void keyTyped(char c) {
+		DrawListener.super.keyTyped(c);
 		if(appState == AppState.USER_INPUT){
 			if(c == ' ') {
 				if (!(uiState == UIState.PLACE_START
@@ -175,5 +181,15 @@ public class MazeApp implements DrawListener {
 				appState.next();
 			}
 		}
+	}
+
+	@Override
+	public void keyPressed(int keycode) {
+		DrawListener.super.keyPressed(keycode);
+	}
+
+	@Override
+	public void keyReleased(int keycode) {
+		DrawListener.super.keyReleased(keycode);
 	}
 }
