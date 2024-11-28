@@ -108,8 +108,10 @@ public class GridSearchTargeted implements Runnable {
     public static void main(String[] args) {
         int dim = 10;
 
-        Draw pane = Display.init(10);
-        Grid grid = new Grid(dim);
+        Display display = new Display(dim ,1);
+        Draw pane = display.getPane();
+        display.grid();
+                Grid grid = new Grid(dim);
         grid.addWall(new GridPoint[]{
                 new GridPoint(3, 2),
                 new GridPoint(2, 2),
@@ -120,7 +122,6 @@ public class GridSearchTargeted implements Runnable {
                 new GridPoint(3, 5)
         };
         grid.buildGraph();
-        pane = Display.init(dim);
         Display.drawCircles(nodes, pane);
         pane.pause(100);
         pane.show();

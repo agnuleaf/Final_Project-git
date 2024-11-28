@@ -7,6 +7,8 @@ import grid.GridPoint;
 import edu.princeton.cs.algs4.Draw;
 import edu.princeton.cs.algs4.DrawListener;
 
+import java.awt.*;
+
 // TODO draw bfs wavefront, then the found path, then draw the other targeted search
 //  what are strengths and weaknesses of each approach?
 //      (When is it better to NOT create a path 'library' like all the algs4 algorithms
@@ -21,9 +23,8 @@ public class MazeApp implements DrawListener {
 	private boolean function = false;  // false is creating nodes, true is creating blockers
 	private static GridPoint gridMouseClick;
 
-	private static State state = State.INIT;
-	private static int mouseClickX;
-	private static int mouseClickY;
+	private static AppState state = AppState.INIT;
+	private static UIState uistate = UIState.START;
 
 	/**
 	 * Main App
@@ -31,7 +32,9 @@ public class MazeApp implements DrawListener {
 	public MazeApp() {
 		// Initialize `dim` x `dim` grid.
 		Grid grid = new Grid(dim);        // generate grid in State.SIMULATE
-		pane = Display.init(dim);
+		Display display = new Display(dim ,1);
+		Draw pane = display.getPane();
+		display.grid();
 		pane.addListener(this);
 //		testSP(grid);
 	}
@@ -59,32 +62,34 @@ public class MazeApp implements DrawListener {
 		new MazeApp();
 
 	}
+	enum UIState {
+		START,
+		FINISH,
+		WALL,
+	}
 
-
-	enum State {
+	enum AppState {
 		INIT,
 		USER_INPUT,
 		SIMULATE,
 		RESTART;
 
-		State next() {
-			State next;
+		AppState next() {
+			AppState next;
 			switch (state) {
-
-				case INIT -> next = USER_INPUT;
+				case INIT 		-> next = USER_INPUT;
 				case USER_INPUT -> next = SIMULATE;
-				case SIMULATE -> next = RESTART;
-				case RESTART -> next = INIT;
-				default -> throw new IllegalStateException("Unexpected value: " + state);
+				case SIMULATE 	-> next = RESTART;
+				case RESTART 	-> next = INIT;
+				default 		-> throw new IllegalStateException("Unexpected value: " + state);
 			}
-			;
 			return next;
 		}
 	}
 
 	// if setup by user
 	private static void gridPopulate(Draw pane) {
-		if(state == State.USER_INPUT) {
+		if(state == AppState.USER_INPUT) {
 			if (pane.isMousePressed()) {
 				// Debugging: Print grid coordinates to ensure the mapping works
 				// place node or wall;
@@ -92,29 +97,32 @@ public class MazeApp implements DrawListener {
 		}
 	}
 
-	/**
-	 * Sets mouse x y
-	 *
-	 * @param x the x-coordinate of the mouse
-	 * @param y the y-coordinate of the mouse
-	 */
-	public void mousePressed(double x, double y) {
-		mouseClickX = (int) (Math.round(x * dim));
-		mouseClickY = (int) (Math.round(y * dim));
-		System.out.printf("(%3.2f %3.2f ) --> (%3d %3d)\tMouse Mapping", x, y, mouseClickX, mouseClickY);
-	}
 
+
+	public void mousePressed(double x, double y) {
+
+		if(state == AppState.USER_INPUT){
+			GridPoint p = new GridPoint(
+					(int)(Math.floor(x)	+ 0.5),
+					(int)(Math.floor(y) + 0.5));
+			switch(uistate){
+				case START 	-> display.endPoint(p,	true);
+				case FINISH -> display.endPoint(p,	false);
+				case WALL	-> display.wall(p);
+			}
+		}
+	}
 	/**
 	 *  Changes state
 	 */
 	public void keyTyped(char c) {
 
-		if(state == State.USER_INPUT){
+		if(state == AppState.USER_INPUT){
 			if(c == ' '){
 				state = state.next();
 			}
 		}
-		else if(state == State.RESTART){
+		else if(state == AppState.RESTART){
 			display.showMessage("Press SPC to clear and restart");
 			if(c == ' '){
 				// TODO draw new empty grid

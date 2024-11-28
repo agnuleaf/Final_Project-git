@@ -226,8 +226,11 @@ public class Grid {
     }
 
     public static void main(String[] args) {
-        Grid grid = new Grid(10);
-        Draw pane = Display.init(10);
+        int dim = 10;
+        Grid grid = new Grid(dim);
+        Display display = new Display(dim, 1);
+        Draw pane = display.getPane();
+        display.grid();
         GridPoint[] points = new GridPoint[]{
                 new GridPoint( 1, 8 ),
                 new GridPoint( 6, 6 ),
