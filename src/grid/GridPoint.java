@@ -1,4 +1,4 @@
-package autoRouter;
+package grid;
 
 import edu.princeton.cs.algs4.Draw;
 import java.util.Comparator;

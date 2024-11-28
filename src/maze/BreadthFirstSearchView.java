@@ -1,8 +1,8 @@
 package maze;
 
-import autoRouter.Display;
-import autoRouter.Grid;
-import autoRouter.GridPoint;
+import grid.Display;
+import grid.Grid;
+import grid.GridPoint;
 import edu.princeton.cs.algs4.*;
 
 

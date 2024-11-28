@@ -1,8 +1,8 @@
 package maze;
 
-import autoRouter.Display;
-import autoRouter.GridPoint;
-import autoRouter.Grid;
+import grid.Display;
+import grid.GridPoint;
+import grid.Grid;
 import edu.princeton.cs.algs4.*;
 
 /// TODO DOES NOT REMEMBER THE SHORTEST PATH.
@@ -110,7 +110,7 @@ public class GridSearchTargeted implements Runnable {
 
         Draw pane = Display.init(10);
         Grid grid = new Grid(dim);
-        grid.addExcludedV(new GridPoint[]{
+        grid.addWall(new GridPoint[]{
                 new GridPoint(3, 2),
                 new GridPoint(2, 2),
                 new GridPoint(4,1)
@@ -119,7 +119,7 @@ public class GridSearchTargeted implements Runnable {
                 new GridPoint(1, 1),
                 new GridPoint(3, 5)
         };
-        grid.replaceGraph(grid.generateDenseGrid());
+        grid.buildGraph();
         pane = Display.init(dim);
         Display.drawCircles(nodes, pane);
         pane.pause(100);

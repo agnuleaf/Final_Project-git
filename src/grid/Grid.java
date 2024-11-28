@@ -1,4 +1,4 @@
-package autoRouter;
+package grid;
 
 import edu.princeton.cs.algs4.*;
 
@@ -8,39 +8,44 @@ import java.util.Set;
 import static java.lang.Math.abs;
 import static java.util.Arrays.binarySearch;
 
-/// Operations for a elements in a rectilinear grid and its dense graph representation.
-/// Provides methods to create an operate on a grid graph based up`algs4.Graph`.
+/// Provides a dense graph representation of a 2D grid using [Graph] api, and conversions from its 0-based vertex array
+/// to 1-based coordinates of the positive XY plane presented as an immutable [GridPoint].
+/// ### Overview
+///
+/// A 2D rectilinear grid graph contains equally distanced nodes, with only vertical and horizontal edges to adjacent nodes.
+/// In a square grid, by disallowing diagonal movement the minimum distance between p and q becomes :
+/// <p>  dM = |q.x - p.x| + |q.y - p.y| , called Manhattan or taxicab distance. </p>
+/// Unlike the more familiar Euclidean distance on a Cartesian plane or the Chebyshev distance for a king on a chessboard,
+/// there can be many routes with equal Manhattan distance exist can take possible shortest paths from p to q.
+///
+/// [Manhattan distance](https://en.wikipedia.org/wiki/Taxicab_geometry)
+/// [Lattice graph](https://en.wikipedia.org/wiki/Lattice_graph)
+/// [Lattice path](https://en.wikipedia.org/wiki/Lattice_path)
+/// [Hanan Grid](https://en.wikipedia.org/wiki/Hanan_grid)
 /// @author Wesley Miller
 public class Grid {
-    private SET<Integer> excludedV = new SET<>();           // TODO no need for set, sorted array is sufficient
+    private SET<Integer> excludedV;           // TODO no need for set, sorted array is sufficient
     private final int dim;
-    private Graph grid;
+    private Graph graph;
 
     public int getDimension(){
         return dim;
     }
     public Grid(int dimension){
         dim = dimension;
-        this.grid = generateDenseGrid(dim);
+        SET<Integer> excludedV = new SET<>();
     }
+
 //    public Grid(){
 //        dim = 10;
 //        this.grid = generateDenseGrid();
 //    }
     /// Returns the `Graph` instance.
     public Graph graph(){
-        return grid;
+        return graph;
     }
     public void replaceGraph(Graph graph){
-        this.grid = graph;
-    }
-    @Deprecated
-    Iterable<Integer> indicesOf(int[] nodes) {
-        Bag<Integer> indices = new Bag<>();
-        for(int i = 1 ; i < nodes.length ; i+=2) {
-            indices.add(indexOf(nodes[i-1], nodes[i]));
-        }
-        return indices;
+        this.graph = graph;
     }
 
     /// Converts and array of nodes in (x,y) grid coordinates to an array of graph vertices
@@ -70,40 +75,38 @@ public class Grid {
         return indices;
     }
 
-    public SET<Integer> getExcludedV(){
+    public Iterable<Integer> getWall(){
         return excludedV;
     }
-    /// Add an excluded graph vertex
-    public void addExcludedV(int v){
-        excludedV.add(v);
-    }
-    public void addExcludedV(int ... excluded){
-        for(int v : excluded){
-            addExcludedV(v);
+
+    /// Add a 'wall' to the grid
+    public void addWall(GridPoint... points){
+        for(GridPoint p : points){
+            excludedV.add(indexOf(p));
         }
     }
-    /// Add a 'wall' to the grid
-    public void addExcludedV(GridPoint... p){
-        addExcludedV(indexArrayOf(p));
-    }
-    /// Converts individual 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
-    public int indexOf(int x, int y){
+
+    // Converts individual 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
+    private int indexOf(int x, int y){
         if(x == 0 || y == 0) return -1; // TODO: Remove and add bounds check elsewhere like file input conversion
         return (x - 1) * dim + (y - 1);
     }
+
     /// Converts a `Point` as 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
     public int indexOf(GridPoint p){
         if(p.x() == 0 || p.y() == 0)
             return -1; // TODO: Remove and add bounds check elsewhere like file input conversion
         return ((p.x() - 1) * dim + (p.y() - 1));
     }
-    /// Converts a 0-based indexed vertex in `Graph` to 1-based (x, y) coordinates of node.
-    public int[] nodeAt(int index){
+
+    // Converts a 0-based indexed vertex in `Graph` to 1-based (x, y) coordinates of node.
+    private int[] coordsAt(int index){
         return new int[]{
                 (index) / dim + 1,
                 (index) % dim + 1
         };
     }
+
     /// Converts a 0-based indexed vertex in `Graph` to a Point with 1-based (x, y) coordinates.
     public GridPoint pointAt(int index){
         return new GridPoint(
@@ -111,13 +114,7 @@ public class Grid {
             (index) % dim + 1);
     }
 
-    /// Assigns edges to adjacent nodes in a `dim` x `dim` grid, nodes in the grid are only connected horizontally and
-    /// vertically to other adjacent nodes. Diagonal connections are NOT created.
-    /// Skips attaching edges to excluded vertices.
-    /// Nodes at grid-corners have 2 edges, nodes along grid-borders have 3, and internal nodes have 4.
-    /// The `Graph` vertices are indexed in the range = \[0, (dim*dim -1 )\] A dense graph is formed by
-    /// TODO Sparse version to reduce the space cost .
-    public Graph generateDenseGrid(int dim) {
+    private Graph buildGraph(int dim) {
         Graph grid = new Graph(dim*dim);
         for(int v = 0; v < dim*dim; v++){
             if(!excludedV.contains(v)){
@@ -129,11 +126,18 @@ public class Grid {
         }
         return grid;
     }
-    public Graph generateDenseGrid() {
-        return generateDenseGrid(dim);
+
+    /// Assigns edges to adjacent nodes in a `dim` x `dim` grid, nodes in the grid are only connected horizontally and
+    /// vertically to other adjacent nodes. Diagonal connections are NOT created.
+    /// Skips attaching edges to excluded vertices.
+    /// Nodes at grid-corners have 2 edges, nodes along grid-borders have 3, and internal nodes have 4.
+    /// The `Graph` vertices are indexed in the range = \[0, (dim*dim -1 )\] A dense graph is formed by
+    public void buildGraph() {
+        this.graph = buildGraph(dim);
     }
     
     /// Generates random nodes in the grid
+    /// @return - nodes as an `Iterable<GridPoint>`
     public Iterable<GridPoint> generateNodes(int nodeCount){
         SET<GridPoint> uniqueNodes = new SET<>();
         for(int i = 0 ; i < nodeCount; i++) {
@@ -145,19 +149,23 @@ public class Grid {
         }
         return uniqueNodes;
     }
+
     /// Generates random nodes in the grid
+    /// @return - nodes as an `GridPoint[]`
     public GridPoint[] generateNodeArray(int nodeCount){
         Set<GridPoint> uniqueNodes = new HashSet<>();
         for(int i = 0 ; i < nodeCount; i++) {
             GridPoint n;
-            do{
+            do {
                 n = new GridPoint(StdRandom.uniformInt(1, dim), StdRandom.uniformInt(1, dim));
-            }while(uniqueNodes.contains(n));
+            } while (uniqueNodes.contains(n));
             uniqueNodes.add(n);
         }
         return uniqueNodes.toArray(new GridPoint[0]);
     }
-    // Returns shortest component of vector pq. From p this points to the closest line through q
+
+    // TODO test
+    ///  Finds shortest component of vector 'pq'. From 'p' this points to the closest line through 'q'
     public static GridPoint toIntersection(GridPoint p, GridPoint q){
         int magPQx = abs(q.x() - p.x()) ; int magPQy = abs(q.y() - p.y());
         // select line through q closest to p
@@ -168,14 +176,13 @@ public class Grid {
             return new GridPoint(q.x() - p.x(), 0);
         } else return new GridPoint(0, 0);
     }
-    /// Creates a subgraph, or window, of a grid graph using inclusive bounds defined by node (x,y)
-    /// vertices ll(lower left) and ur(upper right).
-    public Graph subGraph(int[] ll, int[] ur, Graph graph){
+
+    private Graph subGraph(int[] ll, int[] ur, Graph graph){
         if( ur[0] < ll[0] && ur[1] < ll[1])  throw new IllegalArgumentException("invalid bounds provided for subgraph");
         Graph subGraph = new Graph((ur[0] - ll[0]) * (ur[1] - ll[1]));
 
         for(int v = 0; v < dim * dim; v++){
-            int vx = nodeAt(v)[0];  int vy = nodeAt(v)[1];
+            int vx = coordsAt(v)[0];  int vy = coordsAt(v)[1];
             if(( vx >= ll[0] && vx < ur[0]) && ( vy >= ll[1] && vy < ur[1] )) {
                 // attach vertex upward of v unless adding to top or exclude list
                 if (v < dim * dim - (dim)  && !excludedV.contains(v + dim))
@@ -187,13 +194,17 @@ public class Grid {
         }
         return subGraph;
     }
-    /// Uses class `Point`  instead of `int[]` pairs to form a subgraph, or window.
-     public Graph subGraph(GridPoint ll, GridPoint ur, Graph graph){
+
+    /// Creates a subgraph, or window, of a grid graph using inclusive bounds defined by two [GridPoint]s
+    /// 'll' (lower left) and 'ur'(upper right).
+    /// @return the subGraph
+    /// @throws IllegalArgumentException if `ll` and 'ur' are invalid coordinates relative to one another
+    public Graph subGraph(GridPoint ll, GridPoint ur, Graph graph){
         if( ur.x() < ll.x() && ur.y() < ll.y())  throw new IllegalArgumentException("invalid bounds provided for subgraph");
         Graph subGraph = new Graph((ur.x() - ll.x()) * (ur.y() - ll.y()));
 
         for(int v = 0; v < dim * dim; v++){
-            int vx = nodeAt(v)[0];  int vy = nodeAt(v)[1];
+            int vx = coordsAt(v)[0];  int vy = coordsAt(v)[1];
             if(( vx >= ll.x() && vx < ur.x()) && ( vy >= ll.y() && vy < ur.y() )) {
                 // attach vertex upward of v unless adding to top or exclude list
                 if (v < dim * dim - (dim)  && !excludedV.contains(v + dim))
@@ -205,78 +216,31 @@ public class Grid {
         }
         return subGraph;
     }
-    private boolean contained(int v, int[] ll, int[] ur){
-        int vx = nodeAt(v)[0];  int vy = nodeAt(v)[1];
-        if(( vx > ll[0] && vx < ur[0]) && ( vy > ll[1] && vy < ur[1] ))
-            return true;
-        return false;
-    }
+
+    // is the graph vertex 'v' within the 'll'-'ur' window?
     private boolean contained(int v, GridPoint ll, GridPoint ur){
-        int vx = nodeAt(v)[0];  int vy = nodeAt(v)[1];
+        int vx = coordsAt(v)[0];  int vy = coordsAt(v)[1];
         if(( vx > ll.x() && vx < ur.x()) && ( vy > ll.y() && vy < ur.y() ))
             return true;
         return false;
-    }
-    static void printPairs(int[] array){
-        for(int i = 1; i < array.length; i++){
-            System.out.print(i - 1 + " " + i);
-        }
-    }
-    static void println(int[] array){
-        for(int i : array){
-            System.out.print(i + " ");
-        }
     }
 
     public static void main(String[] args) {
         Grid grid = new Grid(10);
         Draw pane = Display.init(10);
-        int[] nodes = {   // |dist|
-                1, 8,     //   0
-                6, 6,     //   7
-                3, 1,     //   9
+        GridPoint[] points = new GridPoint[]{
+                new GridPoint( 1, 8 ),
+                new GridPoint( 6, 6 ),
+                new GridPoint( 3, 1 ),
         };
-        Display.drawCircles(nodes, pane);
+        Display.drawCircles(points, pane);
         pane.show();
         pane.pause(100);
-        BreadthFirstPaths bfp = new BreadthFirstPaths(grid.graph(), grid.indexOf(nodes[0], nodes[1]));
+        BreadthFirstPaths bfp = new BreadthFirstPaths(grid.graph(), grid.indicesOf(points));
         for(int v : bfp.pathTo(grid.indexOf(6,6))){
-            Display.drawPoint(grid.nodeAt(v)[0], grid.nodeAt(v)[1], pane);
+            Display.drawPoint(grid.pointAt(v), pane);
             pane.pause(100);
             pane.show();
         }
     }
-
-    //    /// Converts nodes to graph vertices representing a recently formed net, that becomes an obstacle to all future
-//    /// operations.
-//    /// @param nodes - array of the all the nodes in the most recent spanning tree
-//    void addWall(int[] nodes){
-//        for(int i = 2; i < nodes.length; i += 2){
-//            excludedV.add(indexOf(nodes[i], nodes[i-1]));
-//        }
-//    }
-
-    //    static int[] distanceArray(int[] source, int[] coords){
-//        assert(coords.length %2 == 0);
-//        int[] distances = new int[(coords.length)/2];
-//        for(int i = 0; i < coords.length; i += 2 ){
-//            distances[i/2] = distance(source[0], source[1], coords[i], coords[i + 1] );
-//        }
-//        return distances;
-//    }
-//
-//    // returns an array of the distance from the first node (coords[0],coords[1]) to the other pairs
-//    static int[] distanceArray(int[] coords){
-//        return distanceArray(new int[]{coords[0], coords[1]}, coords);
-//    }
-
-    //    static int distance(int x1, int y1, int x2, int y2){
-//        return abs(x2 - x1) + abs(y2 - y1);
-//    }
-    //static Comparator<Point> byX = (q, p) -> { return q.x() - p.x();};
-//        Comparator<Point> byX = ( p,  q) -> {return p.x() - p.y(); };
-//        static Point[] bounds(Point p, Point q){
-//            if(q.minus(p)  0){
-//
-//            }
 }

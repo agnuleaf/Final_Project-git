@@ -1,12 +1,11 @@
 package mst;
 
-import autoRouter.Display;
-import autoRouter.Grid;
-import autoRouter.GridPoint;
+import grid.Display;
+import grid.Grid;
+import grid.GridPoint;
 import edu.princeton.cs.algs4.*;
 
 import java.awt.*;
-import java.util.Arrays;
 
 import static java.lang.Math.abs;
 /// # Background
@@ -76,40 +75,38 @@ public class SingleSourceMultiNet {
     /// View the algorithm on a test set using internal `algs4.Draw`
     public static void main(String[] args) {
         Grid grid = new Grid(dim);
-        SET<Integer> excludedV = grid.getExcludedV();
 //
-//        Point[] nodes = {
-//                new Point( 1, 8 ) ,
-//                new Point( 6, 6 ) ,
-//                new Point( 3, 1 ) ,
-//                new Point( 5, 8 )
+//        GridPoint[] nodes = new GridPoint[]{
+//                new GridPoint( 1, 8 ) ,
+//                new GridPoint( 6, 6 ) ,
+//                new GridPoint( 3, 1 ) ,
+//                new GridPoint( 5, 8 )
 //        };
 
         int nodeCount = 8;
-        GridPoint[] nodes = new GridPoint[nodeCount];
-         nodes = grid.generateNodeArray(nodeCount);
+        GridPoint[] nodes = grid.generateNodeArray(nodeCount);
 
-        GridPoint[] nodesNearestOrigin = Arrays.copyOf(nodes, nodes.length);
-        MergeX.sort(nodesNearestOrigin);
+//        GridPoint[] nodesNearestOrigin = Arrays.copyOf(nodes, nodes.length);
+//        MergeX.sort(nodesNearestOrigin);
 
     // IndexMinPQ<Point>pqPoints = new IndexMinPQ<Point>(nodes.length);
 //        for(int i = 0; i < nodes.length; i++) {
 //            pqPoints.insert(i, nodes[i]);
 
-        int[] exclude = {
-                1,  1,
-                2,  2,
-                6,  8,
-                12, 12,
-                13, 13,
-                14, 14,
+        GridPoint[] exclude =  new GridPoint[]{
+               new GridPoint(1,  1 ),
+               new GridPoint(2,  2 ),
+               new GridPoint(6,  8 ),
+               new GridPoint(12, 12),
+               new GridPoint(13, 13),
+               new GridPoint(14, 14)
         };
 
         for(int i = 1; i < exclude.length; i += 2){ // skip connecting edges to excluded vertices
-            grid.addExcludedV(grid.indexOf(exclude[i - 1], exclude[i]));
+            grid.addWall(exclude[i]);
         }
-
-        Graph gridGraph = grid.generateDenseGrid(dim); // dense dim x dim graph with unweighted edges connecting adjacent squares
+        grid.buildGraph(); // dense dim x dim graph with unweighted edges connecting adjacent squares
+        Graph gridGraph = grid.graph();
 //        int exx = exclude[0]; int exy = exclude[1];
 //        System.out.printf("excluded (%d %d) adj: ",exx ,exy);
 //        for(int v: grid.graph().adj(grid.indexOf(exx,exy))){
@@ -148,8 +145,8 @@ public class SingleSourceMultiNet {
 //        while(!minDistance.isEmpty()) {
 //            int min = minDistance.delMin();
 //        Iterable<BreadthFirstPaths> route =  walk(grid, nodesNearestOrigin);
-        for(int i = 0; i < nodesNearestOrigin.length - 1; i++) {
-            GridPoint p = nodesNearestOrigin[i]; GridPoint q = nodesNearestOrigin[i + 1];
+        for(int i = 0; i < nodes.length - 1; i++) {
+            GridPoint p = nodes[i]; GridPoint q = nodes[i + 1];
             Bag<Integer> pq = new Bag<>();
             pq.add(grid.indexOf(p));         pq.add(grid.indexOf(q));
             BreadthFirstPaths pToq = new BreadthFirstPaths(gridGraph, pq);
@@ -160,13 +157,13 @@ public class SingleSourceMultiNet {
         }
 
         // incorrect behavior: produces loops
-        for(int i = 0; i < nodesNearestOrigin.length-2; i+=2) {
+        for(int i = 0; i < nodes.length-2; i+=2) {
             BreadthFirstPaths start = new BreadthFirstPaths(gridGraph,
-                    grid.indexOf(nodesNearestOrigin[i])); // start at origin
+                    grid.indexOf(nodes[i])); // start at origin
             BreadthFirstPaths next  = new BreadthFirstPaths(gridGraph,
-                    grid.indexOf(nodesNearestOrigin[i + 2]));  // skip a node and look back
-            GridPoint centroid = GridPoint.centroid(nodesNearestOrigin[i],
-                    nodesNearestOrigin[i + 1], nodesNearestOrigin[i+2]);
+                    grid.indexOf(nodes[i + 2]));  // skip a node and look back
+            GridPoint centroid = GridPoint.centroid(nodes[i],
+                    nodes[i + 1], nodes[i+2]);
             Display.drawSteinerPoint(centroid, pane);
 
             printBFSPath(grid.indexOf(centroid) , start , grid , Color.BLUE  , pane);
@@ -204,9 +201,9 @@ public class SingleSourceMultiNet {
     private static void printBFSPath(int graphIndex, BreadthFirstPaths bfp, Grid grid, Color color, Draw pane){
         if( bfp.hasPathTo(graphIndex) ){
             for(int step : bfp.pathTo(graphIndex)) {
-                System.out.println(grid.nodeAt(step)[0] + " " + grid.nodeAt(step)[1]);
-                Display.drawPoint(grid.nodeAt(step)[0], grid.nodeAt(step)[1],color, pane);
-//                    System.out.print("("+grid.nodeAt(step)[0]+ " " + grid.nodeAt(step)[1]+")");
+                System.out.println(grid.pointAt(step));
+                Display.drawPoint(grid.pointAt(step),color, pane);
+//                    System.out.print(grid.nodeAt(step));
                 pane.pause(200 );
                 pane.show();
             }
@@ -231,9 +228,9 @@ public class SingleSourceMultiNet {
 
     private static void printAdjacency(Grid grid) {
         for(int v = 0; v < grid.graph().V() ; v++){
-            System.out.print(grid.nodeAt(v)[0] + " "+grid.nodeAt(v)[1] + " adj: ");
+            System.out.print(grid.pointAt(v)+" adj: ");
             for(int adj : grid.graph().adj(v)){
-                System.out.print( "("+grid.nodeAt(adj)[0] + " " + grid.nodeAt(adj)[1] + ") ");
+                System.out.print( grid.pointAt(v));
             }
             System.out.println();
         }

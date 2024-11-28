@@ -1,7 +1,7 @@
 package mst;
 
-import autoRouter.Grid;
-import autoRouter.GridPoint;
+import grid.Grid;
+import grid.GridPoint;
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.MergeX;
 import edu.princeton.cs.algs4.IndexMinPQ;
@@ -9,7 +9,7 @@ import edu.princeton.cs.algs4.IndexMinPQ;
 import edu.princeton.cs.algs4.EdgeWeightedGraph;
 import edu.princeton.cs.algs4.Edge;
 
-import static  autoRouter.GridPoint.distSqEuclid;
+import static  grid.GridPoint.distSqEuclid;
 import java.util.Arrays;
 /// Goal: Generate a spanning tree over a selection of points in a rectilinear graph.
 /// Input:     Rectilinear Dense Grid Graph, selection of nodes to include

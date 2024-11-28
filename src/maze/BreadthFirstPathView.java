@@ -1,8 +1,8 @@
 package maze;
 
-import autoRouter.Display;
-import autoRouter.Grid;
-import autoRouter.GridPoint;
+import grid.Display;
+import grid.Grid;
+import grid.GridPoint;
 import edu.princeton.cs.algs4.*;
 
 import edu.princeton.cs.algs4.BreadthFirstPaths;
@@ -15,17 +15,6 @@ import static java.lang.Math.abs;
 ///
 /// Uses [BreadthFirstPaths] to find the shortest path from a given source to a target in an //TODO weighted
 /// grid graph. Animating the expanding wavefront until the target is found.
-///
-/// ## Background
-///
-/// A rectilinear grid graph contains equally distanced nodes, with only vertical and horizontal edges to adjacent nodes.
-/// In a square grid, by disallowing diagonal movement the distance between p and q becomes :
-/// <p>  dM = |q.x - p.x| + |q.y - p.y| , called Manhattan distance. </p>
-/// Unlike the Euclidean distance, this gives many possible paths from p to q with the equivalent minimum distance.
-///
-/// ## Reference
-///
-/// [Manhattan distance](https://en.wikipedia.org/wiki/Taxicab_geometry)
 /// @author Wesley Miller
 public class BreadthFirstPathView implements Runnable {
     private Grid grid;
@@ -78,21 +67,12 @@ public class BreadthFirstPathView implements Runnable {
     private static void printBFSPath(int graphIndex, BreadthFirstPaths bfp, Grid grid, Color color, Draw pane){
         if( bfp.hasPathTo(graphIndex) ){
             for(int step : bfp.pathTo(graphIndex)) {
-                System.out.println(grid.nodeAt(step)[0] + " " + grid.nodeAt(step)[1]);
-                Display.drawPoint(grid.nodeAt(step)[0], grid.nodeAt(step)[1],color, pane);
+                Display.drawPoint(grid.pointAt(step),color, pane);
 //                    System.out.print("("+grid.nodeAt(step)[0]+ " " + grid.nodeAt(step)[1]+")");
                 pane.pause(200 );
                 pane.show();
             }
         }
-    }
-
-    private static <T>Iterable <T> asIterable(T[] array){
-        Bag<T> bag = new Bag<>();
-        for (T t : array) {
-            bag.add(t);
-        }
-        return bag;
     }
 
     private static Iterable<BreadthFirstPaths> walk(Grid grid, GridPoint[] gridPoints){         // polynomial
@@ -107,9 +87,9 @@ public class BreadthFirstPathView implements Runnable {
 
     private static void printAdjacency(Grid grid) {
         for(int v = 0; v < grid.graph().V() ; v++){
-            System.out.print(grid.nodeAt(v)[0] + " "+grid.nodeAt(v)[1] + " adj: ");
+            System.out.print(grid.pointAt(v) + " adj: ");
             for(int adj : grid.graph().adj(v)){
-                System.out.print( "("+grid.nodeAt(adj)[0] + " " + grid.nodeAt(adj)[1] + ") ");
+                System.out.print( grid.pointAt(adj));
             }
             System.out.println();
         }
