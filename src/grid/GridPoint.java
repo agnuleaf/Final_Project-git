@@ -145,13 +145,4 @@ public record GridPoint(int x, int y) implements Comparable<GridPoint>{
         }
         return new GridPoint(x / gridPoints.length, y / gridPoints.length);
     }
-
-    private static void draw(GridPoint p, Draw pane){
-        Display.drawCircle(p.x, p.y, pane);
-    }
-    private static void draw(GridPoint[] gridPoints, Draw pane){
-        for(GridPoint p : gridPoints){
-            GridPoint.draw(p, pane);
-        }
-    }
 }

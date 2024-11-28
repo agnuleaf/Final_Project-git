@@ -21,30 +21,34 @@ public class BreadthFirstPathView implements Runnable {
     private GridPoint p;
     private GridPoint q;
     Draw pane;
+    Display display;
     Thread t; // Run Path view after wavefront thread to demonstrate true operation
 
         @Override
     public void run() {
 //        t = new Thread(this, "BFS Path Taken View" );
 //        t.start();
-            System.out.println(Thread.currentThread().getThreadGroup());
+//            System.out.println(Thread.currentThread().getThreadGroup());
             BreadthFirstPaths bfp = new BreadthFirstPaths(grid.graph(), grid.indexOf(p));
         if(bfp.hasPathTo(grid.indexOf(q))){
-            for(int step: bfp.pathTo(grid.indexOf(q))){
-                Display.drawPoint(grid.pointAt(step), Draw.GREEN, pane);
+            GridPoint prev = p;
+            for(var step  : bfp.pathTo(grid.indexOf(q))){
+                display.path(prev, grid.pointAt(step), Color.PINK);
+                prev = grid.pointAt(step);
                 pane.disableDoubleBuffering();
+                pane.pause(50);
 //                pane.show();
-                try{
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+//                try{
+//                    Thread.sleep(100);
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
             }
         }
     }
 
-    public BreadthFirstPathView(GridPoint p, GridPoint q, Grid grid, Draw pane){
-        this.p = p; this.q = q; this.grid = grid; this.pane = pane;
+    public BreadthFirstPathView(GridPoint p, GridPoint q, Grid grid, Display display){
+        this.p = p; this.q = q; this.grid = grid; this.display = display; this.pane = display.getPane();
     }
     /// View the algorithm on a test set using internal `algs4.Draw`
     public static void main(String[] args) {
@@ -64,10 +68,10 @@ public class BreadthFirstPathView implements Runnable {
 //       }
 //    }
 
-    private static void printBFSPath(int graphIndex, BreadthFirstPaths bfp, Grid grid, Color color, Draw pane){
+    private void printBFSPath(int graphIndex, BreadthFirstPaths bfp, Grid grid, Color color){
         if( bfp.hasPathTo(graphIndex) ){
             for(int step : bfp.pathTo(graphIndex)) {
-                Display.drawPoint(grid.pointAt(step),color, pane);
+                display.drawPoint(grid.pointAt(step),color);
 //                    System.out.print("("+grid.nodeAt(step)[0]+ " " + grid.nodeAt(step)[1]+")");
                 pane.pause(200 );
                 pane.show();

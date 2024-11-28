@@ -33,12 +33,14 @@ public class BreadthFirstSearchView implements Runnable{
         final private Grid grid;
         final private GridPoint p;
         final private Draw pane;
+        final private Display display;
         Thread t;
 
-    public BreadthFirstSearchView(GridPoint p, Grid grid, Draw pane) {
+    public BreadthFirstSearchView(GridPoint p, Grid grid, Display display) {
         this.p = p ;
         this.grid = grid;
-        this.pane = pane;
+        this.display = display;
+        this.pane = display.getPane();
         Graph graph = grid.graph();
         marked = new boolean[graph.V()];
         distTo = new int[graph.V()];
@@ -53,11 +55,12 @@ public class BreadthFirstSearchView implements Runnable{
 //        t.start();
         int s = grid.indexOf(p);
         System.out.println(Thread.currentThread().getThreadGroup());
-        bfs(grid, s, pane);
+        bfs(grid, s, display);
         //        assert check(grid.graph(), s);
     }
         // breadth-first search from a single source
-        private void bfs(Grid grid, int s, Draw pane) {
+        private void bfs(Grid grid, int s, Display display) {
+
             Graph graph = grid.graph();
             Queue<Integer> q = new Queue<>();
             for (int v = 0; v < graph.V(); v++)
@@ -74,7 +77,7 @@ public class BreadthFirstSearchView implements Runnable{
                         distTo[w] = distTo[v] + 1;
                         marked[w] = true;
                         q.enqueue(w);
-                        Display.drawPoint(grid.pointAt(w), Draw.PINK, pane);
+                        display.discovered(grid.pointAt(w));
                         pane.disableDoubleBuffering();
                         pane.pause(50);
 //                        pane.show();

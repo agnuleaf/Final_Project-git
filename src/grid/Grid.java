@@ -33,7 +33,7 @@ public class Grid {
     }
     public Grid(int dimension){
         dim = dimension;
-        SET<Integer> excludedV = new SET<>();
+        excludedV = new SET<>();
     }
 
 //    public Grid(){
@@ -48,6 +48,9 @@ public class Grid {
         this.graph = graph;
     }
 
+    public boolean isExcluded(GridPoint p){
+        return excludedV.contains(indexOf(p));
+    }
     /// Converts and array of nodes in (x,y) grid coordinates to an array of graph vertices
     public int[] indexArrayOf(GridPoint[] nodes){
         int[] indexArray = new int[nodes.length];
@@ -113,6 +116,7 @@ public class Grid {
             (index) / dim + 1,
             (index) % dim + 1);
     }
+
 
     private Graph buildGraph(int dim) {
         Graph grid = new Graph(dim*dim);
@@ -228,7 +232,7 @@ public class Grid {
     public static void main(String[] args) {
         int dim = 10;
         Grid grid = new Grid(dim);
-        Display display = new Display(dim, 1);
+        Display display = new Display(dim);
         Draw pane = display.getPane();
         display.grid();
         GridPoint[] points = new GridPoint[]{
@@ -236,12 +240,12 @@ public class Grid {
                 new GridPoint( 6, 6 ),
                 new GridPoint( 3, 1 ),
         };
-        Display.drawCircles(points, pane);
+        display.drawCircles(points);
         pane.show();
         pane.pause(100);
         BreadthFirstPaths bfp = new BreadthFirstPaths(grid.graph(), grid.indicesOf(points));
         for(int v : bfp.pathTo(grid.indexOf(6,6))){
-            Display.drawPoint(grid.pointAt(v), pane);
+            display.drawPoint(grid.pointAt(v));
             pane.pause(100);
             pane.show();
         }

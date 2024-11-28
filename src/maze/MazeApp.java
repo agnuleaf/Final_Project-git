@@ -7,7 +7,6 @@ import grid.GridPoint;
 import edu.princeton.cs.algs4.Draw;
 import edu.princeton.cs.algs4.DrawListener;
 
-import java.awt.*;
 
 // TODO draw bfs wavefront, then the found path, then draw the other targeted search
 //  what are strengths and weaknesses of each approach?
@@ -15,57 +14,85 @@ import java.awt.*;
 //      but instead exlporing along one single path with very basic 'guidance'
 /// dummy main app. TODO can multiple threads allow simultaneously drawing of pathfinding algorithms??
 public class MazeApp implements DrawListener {
+
+	public static final double shiftGrid = -0.5;
 	private int dim = 10;
 	static Draw pane;		// algs4.Draw JFrame Object
 	static Display display;	//  grid display with simple algs4.Draw methods
+	static Grid grid;
 
-	private boolean mode = false;      // false is creating, true is destroying
-	private boolean function = false;  // false is creating nodes, true is creating blockers
 	private static GridPoint gridMouseClick;
-
-	private static AppState state = AppState.INIT;
-	private static UIState uistate = UIState.START;
+	private static AppState appState = AppState.INIT;
+	private static UIState uiState = UIState.PLACE_START;
 
 	/**
 	 * Main App
 	 */
 	public MazeApp() {
 		// Initialize `dim` x `dim` grid.
-		Grid grid = new Grid(dim);        // generate grid in State.SIMULATE
-		Display display = new Display(dim ,1);
-		Draw pane = display.getPane();
+		grid = new Grid(dim);        // generate grid in State.SIMULATE
+		display = new Display(dim);
+		pane = display.getPane();
 		display.grid();
 		pane.addListener(this);
-//		testSP(grid);
+
+		appState = AppState.USER_INPUT;
 	}
 
-	private void testSP(Grid grid) {
+	/// Load walls from user input to the graph
+	public void updateGraphFromDisplay(Display display, Grid grid){
+		for(GridPoint w : display.getWalls()){
+			if(!grid.isExcluded(w)){
+				grid.addWall(w);
+			}
+		}
+	}
+	private static void testSP(Grid grid, Display display) {
+		grid.addWall(
+				new GridPoint(3,3),
+				new GridPoint(3,4),
+				new GridPoint(3,2),
+				new GridPoint(3,1)
+
+		);
+		grid.buildGraph();
 		//From UI we receive Node[] endPoints, MinPQ<Node> walls.
 		var p = new GridPoint(1, 1);
 		var q = new GridPoint(7, 5);
-		GridPoint[] endpoints = new GridPoint[]{
-				p,          // start
-				q           // finish
-		};
-		Display.drawCircles(endpoints, pane);
+
+		display.placeEndpoint(p, true);
+		display.placeEndpoint(q, false);
+
 		// Grid Init complete ---
-		BreadthFirstSearchView wavefront = new BreadthFirstSearchView(p, grid, pane);
+		BreadthFirstSearchView wavefront = new BreadthFirstSearchView(p, grid, display);
 		wavefront.run();
 		// Start threads for the wavefront of `BreadthFirstSearchView` and the path taken
-		BreadthFirstPathView pathView = new BreadthFirstPathView(p, q, grid, pane);
+		BreadthFirstPathView pathView = new BreadthFirstPathView(p, q, grid, display);
 		pathView.run();
-		var gst = new GridSearchTargeted(grid, pane); // TODO dumb algorithm doesn't even save the shortest path
+		var gst = new GridSearchTargeted(grid, display); // TODO dumb algorithm doesn't even save the shortest path
 		gst.searchWithBacktrack(p, q);
 	}
 
 	public static void main(String[] args) {
 		new MazeApp();
+		testSP(grid, display);
 
 	}
+
+	// TODO diagram state machines
 	enum UIState {
-		START,
-		FINISH,
-		WALL,
+
+		PLACE_START,
+		PLACE_FINISH,
+		PLACE_WALLS;
+
+		void nextState(){
+			switch(uiState){
+				case PLACE_START  -> uiState = PLACE_FINISH;
+				case PLACE_FINISH -> uiState = PLACE_WALLS;
+				default 		  -> uiState = uiState;
+			}
+		}
 	}
 
 	enum AppState {
@@ -74,41 +101,52 @@ public class MazeApp implements DrawListener {
 		SIMULATE,
 		RESTART;
 
-		AppState next() {
+		static boolean reset;
+		void next() {
 			AppState next;
-			switch (state) {
+			switch (appState) {
 				case INIT 		-> next = USER_INPUT;
 				case USER_INPUT -> next = SIMULATE;
 				case SIMULATE 	-> next = RESTART;
-				case RESTART 	-> next = INIT;
-				default 		-> throw new IllegalStateException("Unexpected value: " + state);
+				case RESTART 	-> {
+					if(reset) {
+						next = INIT;
+						uiState = UIState.PLACE_START;
+						reset = false;
+					}
+					else {
+						next = USER_INPUT;
+						uiState = UIState.PLACE_START;
+					}
+				}
+				default 		-> throw new IllegalStateException("Unexpected value: " + appState);
 			}
-			return next;
+			appState = next;
+		}
+		void reset(){
+			reset = true;
 		}
 	}
-
-	// if setup by user
-	private static void gridPopulate(Draw pane) {
-		if(state == AppState.USER_INPUT) {
-			if (pane.isMousePressed()) {
-				// Debugging: Print grid coordinates to ensure the mapping works
-				// place node or wall;
-			}
-		}
-	}
-
-
 
 	public void mousePressed(double x, double y) {
 
-		if(state == AppState.USER_INPUT){
+		if(appState == AppState.USER_INPUT){
 			GridPoint p = new GridPoint(
-					(int)(Math.floor(x)	+ 0.5),
-					(int)(Math.floor(y) + 0.5));
-			switch(uistate){
-				case START 	-> display.endPoint(p,	true);
-				case FINISH -> display.endPoint(p,	false);
-				case WALL	-> display.wall(p);
+					(int)(Math.floor(x)	+1.0/*+ shiftGrid*/),
+					(int)(Math.floor(y) +1.0/*+ shiftGrid*/));
+			if(!display.isWall(p)) {
+				switch (uiState) {
+					case PLACE_START -> {
+						display.placeEndpoint(p, true);
+						uiState.nextState();
+					}
+					case PLACE_FINISH -> {
+						display.placeEndpoint(p, false);
+						uiState.nextState();
+					}
+					case PLACE_WALLS -> display.placeWall(p);
+
+				}
 			}
 		}
 	}
@@ -116,17 +154,26 @@ public class MazeApp implements DrawListener {
 	 *  Changes state
 	 */
 	public void keyTyped(char c) {
-
-		if(state == AppState.USER_INPUT){
-			if(c == ' '){
-				state = state.next();
+		if(appState == AppState.USER_INPUT){
+			if(c == ' ') {
+				if (!(uiState == UIState.PLACE_START
+						|| uiState == UIState.PLACE_FINISH)) {
+					appState.next();
+				}
+			}
+			else if(Character.toLowerCase(c) == 'r' ) {
+				display.undoWallPlacement();
+			}
+			else if(Character.toLowerCase(c) == 'e' ) {
+				display.undoEndpointPlacement();
 			}
 		}
-		else if(state == AppState.RESTART){
-			display.showMessage("Press SPC to clear and restart");
+		else if(appState == AppState.RESTART){
 			if(c == ' '){
 				// TODO draw new empty grid
-				state = state.next();
+				display.grid();
+				AppState.reset = true;
+				appState.next();
 			}
 		}
 	}

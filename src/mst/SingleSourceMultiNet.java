@@ -123,10 +123,9 @@ public class SingleSourceMultiNet {
 //        for (int i = 0; i < dist.length; i++) {
 //            minDistance.insert(i, dist[i]);
 //        }
-        Display display = new Display(dim,1);
+        Display display = new Display(dim);
         Draw pane = display.getPane();
-
-        Display.drawCircles(nodes, pane);
+        display.drawCircles(nodes);
         pane.show();
         // need to add a node in between p and q to
 //        for (int i = 3; i < nodes.length; i += 2){
@@ -166,10 +165,10 @@ public class SingleSourceMultiNet {
                     grid.indexOf(nodes[i + 2]));  // skip a node and look back
             GridPoint centroid = GridPoint.centroid(nodes[i],
                     nodes[i + 1], nodes[i+2]);
-            Display.drawSteinerPoint(centroid, pane);
+//            display.drawSteinerPoint(centroid);
 
-            printBFSPath(grid.indexOf(centroid) , start , grid , Color.BLUE  , pane);
-            printBFSPath(grid.indexOf(centroid) , next  , grid , Color.GREEN , pane);
+            printBFSPath(grid.indexOf(centroid) , start , grid , Color.BLUE , display);
+            printBFSPath(grid.indexOf(centroid) , next  , grid , Color.GREEN, display);
         }
 
         pane.setPenColor();
@@ -200,12 +199,13 @@ public class SingleSourceMultiNet {
 //           p.inWindow()
 //       }
 //    }
-    private static void printBFSPath(int graphIndex, BreadthFirstPaths bfp, Grid grid, Color color, Draw pane){
+    private static void printBFSPath(int graphIndex, BreadthFirstPaths bfp, Grid grid, Color color, Display display){
         if( bfp.hasPathTo(graphIndex) ){
             for(int step : bfp.pathTo(graphIndex)) {
                 System.out.println(grid.pointAt(step));
-                Display.drawPoint(grid.pointAt(step),color, pane);
+                display.drawPoint(grid.pointAt(step),color);
 //                    System.out.print(grid.nodeAt(step));
+                Draw pane = display.getPane();
                 pane.pause(200 );
                 pane.show();
             }

@@ -31,17 +31,18 @@ public class GridSearchTargeted implements Runnable {
     private boolean[] marked;                   // marked[v] = is there an s-v path?
     private int gU;
     private int gT;
-    final private Grid grid;
-    private Draw pane;       // VISUAL
+    private final Grid grid;
+    private final Display display;
+    private final Draw pane;       // VISUAL
 
 
     /// Computes a shortest path to `q` from `p` in ~sqrt(V) time for a square grid.
     /// @param grid the grid graph instance
     /// @throws IllegalArgumentException unless {@code 0 <= p,q < V}
-    public GridSearchTargeted(Grid grid, Draw pane) {
-
+    public GridSearchTargeted(Grid grid, Display display) {
+        this.display = display;
         this.grid = grid;
-        this.pane = pane;
+        this.pane = display.getPane();
         //  currently visited graph vertex in 'index-form'
         //  target graph vertex
         marked = new boolean[grid.graph().V()];
@@ -82,7 +83,7 @@ public class GridSearchTargeted implements Runnable {
                     marked[gU] = true;
 //                    pathStack.push(grid.pointAt(gU));
 
-                    Display.drawPoint(grid.pointAt(gU), Draw.BOOK_RED, pane);     // VISUAL
+                    display.circleOutline(grid.pointAt(gU), Draw.BOOK_RED);     // VISUAL
                     pane.pause(50);
                     pane.show();
 
@@ -108,7 +109,7 @@ public class GridSearchTargeted implements Runnable {
     public static void main(String[] args) {
         int dim = 10;
 
-        Display display = new Display(dim ,1);
+        Display display = new Display(dim);
         Draw pane = display.getPane();
         display.grid();
                 Grid grid = new Grid(dim);
@@ -122,10 +123,10 @@ public class GridSearchTargeted implements Runnable {
                 new GridPoint(3, 5)
         };
         grid.buildGraph();
-        Display.drawCircles(nodes, pane);
+        display.drawCircles(nodes);
         pane.pause(100);
         pane.show();
-        GridSearchTargeted gs = new GridSearchTargeted(grid, pane);
+        GridSearchTargeted gs = new GridSearchTargeted(grid, display);
         /*Iterable<Point> path = */gs.searchWithBacktrack( nodes[0], nodes[1]);
 //        int count = 0;
 //        for(Point p : path){
