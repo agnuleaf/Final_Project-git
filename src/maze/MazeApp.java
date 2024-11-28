@@ -21,7 +21,6 @@ public class MazeApp implements DrawListener {
 	static Display display;	//  grid display with simple algs4.Draw methods
 	static Grid grid;
 
-	private static GridPoint gridMouseClick;
 	private static AppState appState = AppState.INIT;
 	private static UIState uiState = UIState.PLACE_START;
 
