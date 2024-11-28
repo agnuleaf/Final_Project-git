@@ -68,8 +68,8 @@ public class MazeApp implements DrawListener {
 		// Start threads for the wavefront of `BreadthFirstSearchView` and the path taken
 		BreadthFirstPathView pathView = new BreadthFirstPathView(p, q, grid, display);
 		pathView.run();
-		var gst = new GridSearchTargeted(grid, display); // TODO dumb algorithm doesn't even save the shortest path
-		gst.searchWithBacktrack(p, q);
+//		var gst = new GridSearchTargeted(grid, display); // TODO dumb algorithm doesn't even save the shortest path
+//		gst.searchWithBacktrack(p, q);
 	}
 
 	public static void main(String[] args) {
