@@ -24,9 +24,11 @@ import static java.util.Arrays.binarySearch;
 /// [Hanan Grid](https://en.wikipedia.org/wiki/Hanan_grid)
 /// @author Wesley Miller
 public class Grid {
-    private SET<Integer> excludedV;           // TODO no need for set, sorted array is sufficient
+    private final SET<Integer> excludedV;
+    private Queue<GridPoint> endpoints;
     private final int dim;
     private Graph graph;
+
 
     public int getDimension(){
         return dim;
@@ -36,10 +38,13 @@ public class Grid {
         excludedV = new SET<>();
     }
 
-//    public Grid(){
-//        dim = 10;
-//        this.grid = generateDenseGrid();
-//    }
+    /// Receive endpoints
+    public void setEndpoints(Stack<GridPoint> points){
+        while(!points.isEmpty()) {
+            endpoints.enqueue(points.pop());
+        }
+    }
+
     /// Returns the `Graph` instance.
     public Graph graph(){
         return graph;
@@ -232,8 +237,8 @@ public class Grid {
     public static void main(String[] args) {
         int dim = 10;
         Grid grid = new Grid(dim);
-        Display display = new Display(dim);
-        Draw pane = display.getPane();
+        Display display = new Display(dim, new Draw());
+        Draw pane = display.getDraw();
         display.grid();
         GridPoint[] points = new GridPoint[]{
                 new GridPoint( 1, 8 ),

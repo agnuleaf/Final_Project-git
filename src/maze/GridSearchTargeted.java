@@ -42,7 +42,7 @@ public class GridSearchTargeted implements Runnable {
     public GridSearchTargeted(Grid grid, Display display) {
         this.display = display;
         this.grid = grid;
-        this.pane = display.getPane();
+        this.pane = display.getDraw();
         //  currently visited graph vertex in 'index-form'
         //  target graph vertex
         marked = new boolean[grid.graph().V()];
@@ -109,8 +109,8 @@ public class GridSearchTargeted implements Runnable {
     public static void main(String[] args) {
         int dim = 10;
 
-        Display display = new Display(dim);
-        Draw pane = display.getPane();
+        Display display = new Display(dim, new Draw());
+        Draw pane = display.getDraw();
         display.grid();
                 Grid grid = new Grid(dim);
         grid.addWall(new GridPoint[]{

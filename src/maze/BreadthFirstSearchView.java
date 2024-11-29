@@ -40,7 +40,7 @@ public class BreadthFirstSearchView implements Runnable{
         this.p = p ;
         this.grid = grid;
         this.display = display;
-        this.pane = display.getPane();
+        this.pane = display.getDraw();
         Graph graph = grid.graph();
         marked = new boolean[graph.V()];
         distTo = new int[graph.V()];

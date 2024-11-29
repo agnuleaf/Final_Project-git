@@ -123,8 +123,8 @@ public class SingleSourceMultiNet {
 //        for (int i = 0; i < dist.length; i++) {
 //            minDistance.insert(i, dist[i]);
 //        }
-        Display display = new Display(dim);
-        Draw pane = display.getPane();
+        Display display = new Display(dim, new Draw());
+        Draw pane = display.getDraw();
         display.drawCircles(nodes);
         pane.show();
         // need to add a node in between p and q to
@@ -205,7 +205,7 @@ public class SingleSourceMultiNet {
                 System.out.println(grid.pointAt(step));
                 display.drawPoint(grid.pointAt(step),color);
 //                    System.out.print(grid.nodeAt(step));
-                Draw pane = display.getPane();
+                Draw pane = display.getDraw();
                 pane.pause(200 );
                 pane.show();
             }

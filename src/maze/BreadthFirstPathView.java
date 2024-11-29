@@ -48,7 +48,7 @@ public class BreadthFirstPathView implements Runnable {
     }
 
     public BreadthFirstPathView(GridPoint p, GridPoint q, Grid grid, Display display){
-        this.p = p; this.q = q; this.grid = grid; this.display = display; this.pane = display.getPane();
+        this.p = p; this.q = q; this.grid = grid; this.display = display; this.pane = display.getDraw();
     }
     /// View the algorithm on a test set using internal `algs4.Draw`
     public static void main(String[] args) {

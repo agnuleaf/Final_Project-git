@@ -1,57 +1,51 @@
 package grid;
 import edu.princeton.cs.algs4.Draw;
+import edu.princeton.cs.algs4.DrawListener;
 import edu.princeton.cs.algs4.Stack;
 
 import java.awt.*;
 
-// TODO add listeners for mouse events, Get position of mouse on gridmap during click -> add location to node list.
-// TODO drop-down menu for some predefined examples
-// TODO button to generate random nodes
-// TODO Associate circles with nametags.  Either write a nametag placement method or uniquely color circle with a legend
 /// Wraps `algs4.Draw` shape painting methods for painting on a 2D grid.
 public class Display {
-    private static final double shift = maze.MazeApp.shiftGrid;  // shift placement of shapes
-    private final Draw pane = new Draw();
-    private Color backgroundColor = Color.DARK_GRAY;
-    private Color gridColor = Color.LIGHT_GRAY;
+    private static final double shift = -0.5;  // shift placement of shapes
+    private final Draw draw;
+    private final Color backgroundColor = Color.DARK_GRAY;
+    private final Color gridColor = Color.LIGHT_GRAY;
     private final double dropShadow = 0.01;
-    private Stack<GridPoint> wallsPlaced;    //  undo painting a shape
-    private Stack<GridPoint> endpoints;
+    private final Stack<GridPoint> wallsPlaced;    //  undo painting a shape
+    private final Stack<GridPoint> endpoints;
     /// Displays information provided by the Plane object (node positions as circles, edges as lines)
 
-    private int width = 300;
-    private int height = 300;
-    int squares;
-//    static int gridCount = 10;
-//    static double unit = 1.0 / gridCount;   // dimensions of unit square , gives a 20 x 20 grid
-//    static double pointScalar = 0.5;          // point size
+    private int squares;
 
-    public Display(int squares/*, int squareScale*/) {
+    public Display(int squares, Draw draw) {
         this.squares = squares;
-        int scale = 512; // todo height and width
-        width = scale;
-        height = scale;
-        pane.setCanvasSize(width, height);
-        pane.setXscale(0, squares);
-        pane.setYscale(0, squares);
+        this.draw = draw;
+        int scale = 512;
+        int width = scale;
+        int height = scale;
+        draw.setCanvasSize(width, height);
+        draw.setXscale(0, squares);
+        draw.setYscale(0, squares);
         wallsPlaced = new Stack<>();
         endpoints = new Stack<>();
 
-
-
     }
-
-    public Draw getPane() {
-        return pane;
+    public void setSquaresPerAxis(int squares){
+        this.squares = squares;
+    }
+    public Draw getDraw() {
+        return draw;
     }
     public Iterable<GridPoint> getWalls(){
         return wallsPlaced;
     }
+    public Iterable<GridPoint> getEndpoints(){ return endpoints; }
     //@formatter:off
     public static void main(String[] args) {
-        Display display = new Display(20);
+        Display display = new Display(20, new Draw());
         display.grid();
-        Draw pane = display.getPane();
+        Draw draw = display.draw;
         display.showMessage("Title Message");
 
         GridPoint[] wall = new GridPoint[]{
@@ -85,10 +79,10 @@ public class Display {
         for( GridPoint p : wall  ){   display.placeWall(p);        }
         display.placeEndpoint( new GridPoint (1,1), true);
         display.placeEndpoint( new GridPoint (9,9), false);
-        pane.pause(500);
+        draw.pause(500);
 
-        for(int i = 0; i < 5; i++){ display.undoWallPlacement(); pane.pause(300); }
-        for(int i = 0; i < 5; i++){ display.undoEndpointPlacement(); pane.pause(300); }
+        for(int i = 0; i < 5; i++){ display.undoWallPlacement(); draw.pause(300); }
+        for(int i = 0; i < 5; i++){ display.undoEndpointPlacement(); draw.pause(300); }
 
         display.placeEndpoint( new GridPoint (1,1), true);
         display.placeEndpoint( new GridPoint (9,9), false);
@@ -96,7 +90,7 @@ public class Display {
 //        display.placeText(new GridPoint(9,5), "Right");
 
 
-        pane.show();
+        draw.show();
     }
 
     /// Erases the most recent wall in the input history stack
@@ -115,21 +109,21 @@ public class Display {
     }
     /// Displays the nodes visited as light, translucent overlay.
     public void discovered(GridPoint p){
-        pane.setPenRadius();
-        pane.setPenColor(new Color(255,155,175,80));// Color.PINK.);
-        pane.setPenRadius();
-        pane.filledSquare(
+        draw.setPenRadius();
+        draw.setPenColor(new Color(255,155,175,80));// Color.PINK.);
+        draw.setPenRadius();
+        draw.filledSquare(
                 p.x() + shift,
                 p.y() + shift,
                 0.5);
-        pane.setPenRadius();
+        draw.setPenRadius();
     }
 
     /// Displays the path taken
     public void path(GridPoint p, GridPoint q, Color color){
-        pane.setPenColor(alphaColor(color.darker(),128));
-        pane.setPenRadius(0.03);
-        pane.line(p.x() + shift, p.y() + shift, q.x() + shift, q.y() + shift );
+        draw.setPenColor(alphaColor(color.darker(),128));
+        draw.setPenRadius(0.03);
+        draw.line(p.x() + shift, p.y() + shift, q.x() + shift, q.y() + shift );
 
     }
     // Adds translucency as the alpha value to a color. higher alpha = high opacity.
@@ -143,92 +137,92 @@ public class Display {
     }
     /// Draws a faint circle outline
     public void circleOutline( GridPoint p, Color color){
-        pane.setPenRadius();
-        pane.setPenColor(color);
-        pane.circle(
+        draw.setPenRadius();
+        draw.setPenColor(color);
+        draw.circle(
                 p.x() + shift,
                 p.y() + shift,
                 0.2);
-        pane.setPenRadius();
+        draw.setPenRadius();
     }
     /// Draws a black square for a wall
     public void placeWall(GridPoint p){
-        pane.setPenRadius();
-        pane.setPenColor();
-        pane.filledSquare(
+        draw.setPenRadius();
+        draw.setPenColor();
+        draw.filledSquare(
                 p.x() + shift,
                 p.y() + shift,
                 0.5);
-        pane.setPenRadius();
+        draw.setPenRadius();
         wallsPlaced.push(p);
     }
     /// Fills the square with the given color
     private void fillSquare(GridPoint p, Color color){
-        pane.setPenRadius();
-        pane.setPenColor(color);
-        pane.filledSquare(
+        draw.setPenRadius();
+        draw.setPenColor(color);
+        draw.filledSquare(
                 p.x() + shift,
                 p.y() + shift,
                 0.5);
-        pane.setPenRadius();
+        draw.setPenRadius();
     }
 
     // helper for undo last user input. Redraws a single grid square with outlines.
     private void eraseSquare( GridPoint p ){
         fillSquare(p,Color.LIGHT_GRAY.brighter());
-        pane.pause(100);
+        draw.pause(100);
         fillSquare(p, gridColor);
-        pane.pause(100);
+        draw.pause(100);
         fillSquare(p, backgroundColor);
 
         // redraw the grid with correct weights
-        pane.setPenColor(gridColor);
+        draw.setPenColor(gridColor);
         double gridlineX = ( p.x() % 5 == 0 ? 0.002 : 0.0005);
-        pane.setPenRadius(gridlineX);
-        pane.line(  p.x(),  p.y(),
+        draw.setPenRadius(gridlineX);
+        draw.line(  p.x(),  p.y(),
                     p.x() , p.y() + 1.0 );
 
         gridlineX = ( (p.x()+1.0) % 5 == 0 ? 0.002 : 0.0005);
-        pane.setPenRadius(gridlineX);
-        pane.line(  p.x() + 1.0,  p.y() ,
+        draw.setPenRadius(gridlineX);
+        draw.line(  p.x() + 1.0,  p.y() ,
                     p.x() + 1.0,  p.y() +1.0);
-        pane.setPenColor(gridColor);
+        draw.setPenColor(gridColor);
         double gridlineY = ( (p.y()) % 5 == 0 ? 0.002 : 0.0005);
-        pane.setPenRadius(gridlineY);
+        draw.setPenRadius(gridlineY);
 
-        pane.line(  p.x()       , p.y(),
+        draw.line(  p.x()       , p.y(),
                     p.x() + 1.0 , p.y());
         gridlineY = ( (p.y()+1.0) % 5 == 0 ? 0.002 : 0.0005);
-        pane.setPenRadius(gridlineY);
+        draw.setPenRadius(gridlineY);
 
-        pane.line(  p.x()       , p.y() + 1.0,
+        draw.line(  p.x()       , p.y() + 1.0,
                     p.x() + 1.0 , p.y() + 1.0);
-        pane.setPenRadius();
+        draw.setPenRadius();
     }
 
     /// Draws two distinct nodes as 'A' for Start and 'B' for Finish.
     public void placeEndpoint(GridPoint p, boolean isStart){
-        pane.setPenRadius(0.01);
+        draw.setPenRadius(0.01);
         Color color = (isStart? Draw.GREEN.darker() : Draw.RED.darker());
-        pane.setPenColor(color);
-        pane.filledCircle(
+        draw.setPenColor(color);
+        draw.filledCircle(
                 p.x() + shift,
                 p.y() + shift,
                  0.4);
-        pane.setPenRadius(0.005);
-        pane.setPenColor(color.darker());
-        pane.circle(
+        draw.setPenRadius(0.005);
+        draw.setPenColor(color.darker());
+        draw.circle(
                 p.x() + shift,
                 p.y() + shift,
                 0.4);
         if(isStart){
-            pane.setPenColor(Draw.RED.darker());
+            draw.setPenColor(Draw.RED.darker());
         }else{
-            pane.setPenColor(Draw.GREEN);
+            draw.setPenColor(Draw.GREEN);
         }
-        pane.text(p.x() + shift,p.y() + shift, (isStart? "A" : "B"));
-        pane.setPenColor();
-        pane.setPenRadius();
+        draw.text(p.x() + shift,p.y() + shift, (isStart? "A" : "B"));
+        draw.setPenColor();
+        draw.setPenRadius();
         endpoints.push(p);
     }
     /// Checks if the provide point is in the wall stack.
@@ -241,84 +235,84 @@ public class Display {
 
     private void placeText(GridPoint p, String msg){
         if(p.x() < squares / 2){ // left justify
-            pane.setPenColor(gridColor);
-            pane.filledRectangle(p.x() + 0.5,p.y(),0.8,0.4);
-            pane.setPenColor(backgroundColor.darker());
-            pane.rectangle(p.x(),p.y(), 0.8, 0.4);
-            pane.textLeft(p.x() + 0.2,p.y(),msg);
+            draw.setPenColor(gridColor);
+            draw.filledRectangle(p.x() + 0.5,p.y(),0.8,0.4);
+            draw.setPenColor(backgroundColor.darker());
+            draw.rectangle(p.x(),p.y(), 0.8, 0.4);
+            draw.textLeft(p.x() + 0.2,p.y(),msg);
         }else {
-            pane.setPenColor(gridColor);
-            pane.filledRectangle(p.x() - 0.5 ,p.y(),0.8,0.4);
-            pane.setPenColor(backgroundColor.darker());
-            pane.rectangle(p.x(),p.y(), 0.8, 0.4);
-            pane.textLeft(p.x() - 0.2,p.y(),msg);
+            draw.setPenColor(gridColor);
+            draw.filledRectangle(p.x() - 0.5 ,p.y(),0.8,0.4);
+            draw.setPenColor(backgroundColor.darker());
+            draw.rectangle(p.x(),p.y(), 0.8, 0.4);
+            draw.textLeft(p.x() - 0.2,p.y(),msg);
         }
 
     }
     /// Draws grid in 5-square blocks, dark-gray background
     public void grid(){
-        pane.clear(Color.DARK_GRAY);
-        pane.setPenColor(Color.LIGHT_GRAY);
+        draw.clear(Color.DARK_GRAY);
+        draw.setPenColor(Color.LIGHT_GRAY);
 
         for (int x = 0; x < squares; x++) {
-            pane.setPenRadius((x % 5 == 0) ? 0.002 : 0.0005);
-            pane.line(x, 0.0, x, squares);
+            draw.setPenRadius((x % 5 == 0) ? 0.002 : 0.0005);
+            draw.line(x, 0.0, x, squares);
         }
         for (int y = 0; y < squares; y++) {
-            pane.setPenRadius((y % 5 == 0) ? 0.002 : 0.0005);
-            pane.line(0.0, y, squares, y);
+            draw.setPenRadius((y % 5 == 0) ? 0.002 : 0.0005);
+            draw.line(0.0, y, squares, y);
         }
-        pane.setPenColor(Draw.BLACK);
+        draw.setPenColor(Draw.BLACK);
     }
     /// Draws grid in 5-square blocks, dark-gray background
     public void grid(GridPoint[] walls){
-        pane.clear(Color.DARK_GRAY);
-        pane.setPenColor(Color.LIGHT_GRAY);
+        draw.clear(Color.DARK_GRAY);
+        draw.setPenColor(Color.LIGHT_GRAY);
 
         for (int x = 0; x < squares; x++) {
-            pane.setPenRadius((x % 5 == 0) ? 0.002 : 0.0005);
-            pane.line(x, 0.0, x, squares);
+            draw.setPenRadius((x % 5 == 0) ? 0.002 : 0.0005);
+            draw.line(x, 0.0, x, squares);
         }
         for (int y = 0; y < squares; y++) {
-            pane.setPenRadius((y % 5 == 0) ? 0.002 : 0.0005);
-            pane.line(0.0, y, squares, y);
+            draw.setPenRadius((y % 5 == 0) ? 0.002 : 0.0005);
+            draw.line(0.0, y, squares, y);
         }
-        pane.setPenColor(Draw.BLACK);
+        draw.setPenColor(Draw.BLACK);
         for(GridPoint w : walls){ placeWall(w); }
     }
 
     /// Displays a title message in the top center of the grid
      public void showMessage(String msg){
-        pane.show();
-        pane.setPenColor(Color.BLACK);
-        pane.filledRectangle(squares / 2.0 , squares - 2 , 2, 1);
+        draw.show();
+        draw.setPenColor(Color.BLACK);
+        draw.filledRectangle(squares / 2.0 , squares - 2 , 2, 1);
 
-        pane.setPenColor(Color.LIGHT_GRAY);
-        pane.filledRectangle(squares / 2.0 , squares - 2 , 2, 1);
-        pane.setPenColor();
-        pane.text(squares / 2.0, squares -2 , msg);
+        draw.setPenColor(Color.LIGHT_GRAY);
+        draw.filledRectangle(squares / 2.0 , squares - 2 , 2, 1);
+        draw.setPenColor();
+        draw.text(squares / 2.0, squares -2 , msg);
     }
 
     public void drawCircle(GridPoint p) {
-        pane.setPenRadius(0.01);
-        pane.circle(
+        draw.setPenRadius(0.01);
+        draw.circle(
                 p.x(),
                 p.y(),
                 0.5);
-        pane.setPenRadius();
+        draw.setPenRadius();
     }
     public void drawCircles(GridPoint[] circles) {
-        pane.setPenColor(pane.getPenColor().darker());
+        draw.setPenColor(draw.getPenColor().darker());
         for (GridPoint p : circles){
             drawCircle(p);
         }
-        pane.setPenColor();
+        draw.setPenColor();
     }
     /// Draws small black circle
     public void drawPoint(GridPoint p) {
         double diameter = 0.1;
-        pane.setPenColor();
-        pane.filledCircle(
+        draw.setPenColor();
+        draw.filledCircle(
                 p.x(),
                 p.y(),
                 diameter);
@@ -326,36 +320,36 @@ public class Display {
 
     public void drawPoint(GridPoint p, Color color) {
         double diameter = 0.1;
-        pane.setPenColor(color);
-        pane.filledCircle(
+        draw.setPenColor(color);
+        draw.filledCircle(
                 p.x(),
                 p.y(),
                 diameter );
-        pane.setPenColor();
+        draw.setPenColor();
     }
 
-//    public static void drawPath(GridPoint p, double offset, Color color, Draw pane) {
+//    public static void drawPath(GridPoint p, double offset, Color color, Draw draw) {
 //
-//        pane.setPenColor(color);
-//        pane.setPenRadius(0.01);
-//        pane.circle(
+//        draw.setPenColor(color);
+//        draw.setPenRadius(0.01);
+//        draw.circle(
 //                p.x() * unit + offset,
 //                p.y() * unit + offset,
 //                pointScalar * unit * 0.5);
-//        pane.setPenRadius();
-//        pane.setPenColor();
+//        draw.setPenRadius();
+//        draw.setPenColor();
 //    }
 
 
-//    public static void drawSteinerPoint(GridPoint p, Draw pane) {
-//        pane.setPenColor(Draw.CYAN);
-//        pane.setPenRadius(0.005);
-//        pane.circle(
+//    public static void drawSteinerPoint(GridPoint p, Draw draw) {
+//        draw.setPenColor(Draw.CYAN);
+//        draw.setPenRadius(0.005);
+//        draw.circle(
 //                p.x() * unit,
 //                p.y() * unit,
 //                pointScalar * unit * 0.3);
-//        pane.setPenRadius();
-//        pane.setPenColor();
+//        draw.setPenRadius();
+//        draw.setPenColor();
 //    }
 //
 }
