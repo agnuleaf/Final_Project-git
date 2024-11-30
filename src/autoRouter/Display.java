@@ -175,6 +175,22 @@ public class Display {
         return pane;
     }
 
+    /**
+     * Custom function created by Ty Greenburg to remove points on the display
+     * @param gridX x cords
+     * @param gridY y cords
+     * @param pane pane you want altered
+     */
+	public static void removeCircle(int gridX, int gridY, Draw pane) {
+		Display.drawCircle(gridX, gridY,Color.GRAY ,pane);
+		pane.setPenColor(Draw.LIGHT_GRAY);
+		pane.setPenRadius((gridX % 5 == 0) ? 0.002 : 0.0005);
+		pane.line(gridX*unit, 0.0, gridX*unit, 1.0);
+		pane.setPenRadius((gridY % 5 == 0) ? 0.002 : 0.0005);
+		pane.line(0.0, gridY*unit, 1.0, gridY*unit);
+		pane.setPenColor();
+	}
+
 }
 
 
@@ -277,9 +293,3 @@ public class Display {
 //                    pointDiameter * unit * 0.5 );
 //            pane.setPenRadius();
 //        }
-
-
-
-
-
-
