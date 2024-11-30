@@ -127,7 +127,7 @@ public class SingleSourceMultiNet {
 //        for (int i = 0; i < dist.length; i++) {
 //            minDistance.insert(i, dist[i]);
 //        }
-        GridDraw gridDraw = new GridDraw(dim, new Draw());
+        GridDraw gridDraw = new GridDraw(dim);
         Draw pane = gridDraw.getDraw();
         gridDraw.drawCircles(nodes);
         pane.show();
