@@ -1,6 +1,8 @@
 package maze;
 
 
+import java.awt.Color;
+
 import autoRouter.Display;
 import autoRouter.Grid;
 import autoRouter.GridPoint;
@@ -17,7 +19,7 @@ public class GridSearchViewer implements DrawListener  {
 	private int dim = 10;
 	private Draw pane = Display.init(dim);
 	private boolean mode = false;      // false is creating, true is destroying
-	private boolean function = false;  // false is creating nodes, true is creating blockers
+	private boolean function = false;  // false is nodes, true is blockers
 	
     /**
 	 * 
@@ -63,22 +65,23 @@ public class GridSearchViewer implements DrawListener  {
         System.out.println("Mouse clicked at: (" + x + ", " + y + ")");
         System.out.println("Mapped to grid coordinates: (" + gridX + ", " + gridY + ")");
         
+        //TODO need to update values of the excludes and includes functions and create a way to rerun the path with updated parameters
         // destroying
         if(mode) {
         	// blockers
         	if(function) {
-        		
+        		Display.drawPoint(p, Color.pink, pane);
         	}
         	//nodes
         	else {
-        		
+        		Display.removeCircle(gridX, gridY, pane);
         	}
         }
         // creating
         else {
         	// blockers
         	if(function) {
-        		
+        		Display.drawPoint(p, Color.black, pane);
         	}
         	// nodes
         	else {
@@ -88,5 +91,26 @@ public class GridSearchViewer implements DrawListener  {
         
         pane.show();
     }
+    
+    public void keyPressed(int keycode) {
+        if(keycode == 82) { // 82 represents r which runs the program
+        	//TODO need to rerun the path with updated parameters
+        }
+        if(keycode == 70) { // 70 represents f which changes the function 
+        	System.out.println("Function Changed");
+        	if(function)
+        		function = false;
+        	else
+        		function = true;
+        }
+        if(keycode == 68) { // 68 represents d which changes the mode
+        	System.out.println("Mode Changed");
+        	if(mode)
+        		mode = false;
+        	else
+        		mode = true;
+        }
+    }
+    
 }
 
