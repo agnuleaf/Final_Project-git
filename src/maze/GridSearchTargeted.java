@@ -1,6 +1,6 @@
 package maze;
 
-import grid.Display;
+import grid.GridDraw;
 import grid.GridPoint;
 import grid.Grid;
 import edu.princeton.cs.algs4.*;
@@ -32,17 +32,17 @@ public class GridSearchTargeted implements Runnable {
     private int gU;
     private int gT;
     private final Grid grid;
-    private final Display display;
+    private final GridDraw gridDraw;
     private final Draw pane;       // VISUAL
 
 
     /// Computes a shortest path to `q` from `p` in ~sqrt(V) time for a square grid.
     /// @param grid the grid graph instance
     /// @throws IllegalArgumentException unless {@code 0 <= p,q < V}
-    public GridSearchTargeted(Grid grid, Display display) {
-        this.display = display;
+    public GridSearchTargeted(Grid grid, GridDraw gridDraw) {
+        this.gridDraw = gridDraw;
         this.grid = grid;
-        this.pane = display.getDraw();
+        this.pane = gridDraw.getDraw();
         //  currently visited graph vertex in 'index-form'
         //  target graph vertex
         marked = new boolean[grid.graph().V()];
@@ -83,7 +83,7 @@ public class GridSearchTargeted implements Runnable {
                     marked[gU] = true;
 //                    pathStack.push(grid.pointAt(gU));
 
-                    display.circleOutline(grid.pointAt(gU), Draw.BOOK_RED);     // VISUAL
+                    gridDraw.circleOutline(grid.pointAt(gU), Draw.BOOK_RED);     // VISUAL
                     pane.pause(50);
                     pane.show();
 
@@ -109,9 +109,9 @@ public class GridSearchTargeted implements Runnable {
     public static void main(String[] args) {
         int dim = 10;
 
-        Display display = new Display(dim, new Draw());
-        Draw pane = display.getDraw();
-        display.grid();
+        GridDraw gridDraw = new GridDraw(dim, new Draw());
+        Draw pane = gridDraw.getDraw();
+        gridDraw.grid();
                 Grid grid = new Grid(dim);
         grid.addWall(new GridPoint[]{
                 new GridPoint(3, 2),
@@ -123,10 +123,10 @@ public class GridSearchTargeted implements Runnable {
                 new GridPoint(3, 5)
         };
         grid.buildGraph();
-        display.drawCircles(nodes);
+        gridDraw.drawCircles(nodes);
         pane.pause(100);
         pane.show();
-        GridSearchTargeted gs = new GridSearchTargeted(grid, display);
+        GridSearchTargeted gs = new GridSearchTargeted(grid, gridDraw);
         /*Iterable<Point> path = */gs.searchWithBacktrack( nodes[0], nodes[1]);
 //        int count = 0;
 //        for(Point p : path){

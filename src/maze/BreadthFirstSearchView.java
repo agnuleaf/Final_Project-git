@@ -1,10 +1,11 @@
 package maze;
 
-import grid.Display;
+import grid.GridDraw;
 import grid.Grid;
 import grid.GridPoint;
 import edu.princeton.cs.algs4.*;
 
+import java.awt.*;
 
 /// The {@code BreadthFirstPaths} class represents a data type for finding
 /// shortest paths (number of edges) from a source vertex <em>s</em>
@@ -24,42 +25,59 @@ import edu.princeton.cs.algs4.*;
 ///
 /// @author Robert Sedgewick
 /// @author Kevin Wayne
-public class BreadthFirstSearchView implements Runnable{
+public class BreadthFirstSearchView {
 
         private static final int INFINITY = Integer.MAX_VALUE;
         private boolean[] marked;  // marked[v] = is there an s-v path
         private int[] edgeTo;      // edgeTo[v] = previous edge on shortest s-v path
         private int[] distTo;      // distTo[v] = number of edges shortest s-v path
-        final private Grid grid;
-        final private GridPoint p;
-        final private Draw pane;
-        final private Display display;
-        Thread t;
 
-    public BreadthFirstSearchView(GridPoint p, Grid grid, Display display) {
-        this.p = p ;
-        this.grid = grid;
-        this.display = display;
-        this.pane = display.getDraw();
-        Graph graph = grid.graph();
-        marked = new boolean[graph.V()];
-        distTo = new int[graph.V()];
-        edgeTo = new int[graph.V()];
-        int s = grid.indexOf(p);
-        validateVertex(s);
+        private Grid grid;
+        private GridPoint p;
+        private GridPoint q;
+
+        private Draw pane;
+        private GridDraw gridDraw;
+        private int tPause;
+
+        public BreadthFirstSearchView(GridPoint p, GridPoint q, Grid grid, GridDraw gridDraw) {
+            // For displaying the visited nodes
+            this.p = p ;
+            this.q = q ;
+            this.grid = grid;
+            this.gridDraw = gridDraw;
+            tPause = gridDraw.getPause();
+            this.pane = gridDraw.getDraw();
+
+            // Original Constructor below
+            Graph graph = grid.graph();
+            marked = new boolean[graph.V()];
+            distTo = new int[graph.V()];
+            edgeTo = new int[graph.V()];
+            int s = Grid.indexOf(p);
+            validateVertex(s);
     }
 
-    @Override
-    public void run() {
-//        t = new Thread(this, "BFS Wavefront");
-//        t.start();
-        int s = grid.indexOf(p);
+    /// Runs the constructor with a call to Draw at each visited vertex, (like a wavefront).
+    /// Then the shortest path to `q` is displayed from a call to `pathTo`.
+    public void view() {
+
         System.out.println(Thread.currentThread().getThreadGroup());
-        bfs(grid, s, display);
-        //        assert check(grid.graph(), s);
+
+        bfs(grid, Grid.indexOf(p), gridDraw);  // view the expanding search radius
+
+        // view the resulting shortest path from p to q
+        GridPoint prev = p;
+        for (var step : pathTo(Grid.indexOf(q))) {
+            gridDraw.path(prev, Grid.pointAt(step), Color.PINK);
+            prev = Grid.pointAt(step);
+            pane.disableDoubleBuffering();
+            pane.pause(gridDraw.getPause());
+
+        }
     }
         // breadth-first search from a single source
-        private void bfs(Grid grid, int s, Display display) {
+        private void bfs(Grid grid, int s, GridDraw gridDraw) {
 
             Graph graph = grid.graph();
             Queue<Integer> q = new Queue<>();
@@ -77,21 +95,14 @@ public class BreadthFirstSearchView implements Runnable{
                         distTo[w] = distTo[v] + 1;
                         marked[w] = true;
                         q.enqueue(w);
-                        display.discovered(grid.pointAt(w));
-                        pane.disableDoubleBuffering();
-                        pane.pause(50);
-//                        pane.show();
-
-//                        try{
-//                            Thread.sleep(100); // instead of pane.pause()
-//                        } catch (InterruptedException e) {
-//                            throw new RuntimeException(e);
-//                        }
+                        gridDraw.discovered(Grid.pointAt(w));
+//                        pane.disableDoubleBuffering();
+                        pane.pause(tPause);
+                        pane.show();
                     }
                 }
             }
         }
-
 
         /**
          * Is there a path between the source vertex {@code s} (or sources) and vertex {@code v}?

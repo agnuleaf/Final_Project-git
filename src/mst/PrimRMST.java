@@ -10,6 +10,8 @@ import edu.princeton.cs.algs4.EdgeWeightedGraph;
 import edu.princeton.cs.algs4.Edge;
 
 import static  grid.GridPoint.distSqEuclid;
+
+import java.awt.*;
 import java.util.Arrays;
 /// Goal: Generate a spanning tree over a selection of points in a rectilinear graph.
 /// Input:     Rectilinear Dense Grid Graph, selection of nodes to include
@@ -104,6 +106,26 @@ public class PrimRMST {
 
 //        for(int i = 0; i < pinsSorted.size(); i++){
 //            System.out.println(i + ": " + pinsSorted.keyOf(i));
+//        }
+
+//        private static void printAdjacency(Grid grid) {
+//            for(int v = 0; v < grid.graph().V() ; v++){
+//                System.out.print(grid.pointAt(v) + " adj: ");
+//                for(int adj : grid.graph().adj(v)){
+//                    System.out.print( grid.pointAt(adj));
+//                }
+//                System.out.println();
+//            }
+//        }
+//        private void printBFSPath(int graphIndex, BreadthFirstPaths bfp, Grid grid, Color color){
+//            if( bfp.hasPathTo(graphIndex) ){
+//                for(int step : bfp.pathTo(graphIndex)) {
+//                    display.drawPoint(grid.pointAt(step),color);
+////                    System.out.print("("+grid.nodeAt(step)[0]+ " " + grid.nodeAt(step)[1]+")");
+//                    pane.pause(200 );
+//                    pane.show();
+//                }
+//            }
 //        }
     }
 }

@@ -1,6 +1,6 @@
 package mst;
 
-import grid.Display;
+import grid.GridDraw;
 import grid.Grid;
 import grid.GridPoint;
 import edu.princeton.cs.algs4.*;
@@ -76,15 +76,19 @@ public class SingleSourceMultiNet {
     public static void main(String[] args) {
         Grid grid = new Grid(dim);
 //
-//        GridPoint[] nodes = new GridPoint[]{
-//                new GridPoint( 1, 8 ) ,
-//                new GridPoint( 6, 6 ) ,
-//                new GridPoint( 3, 1 ) ,
-//                new GridPoint( 5, 8 )
-//        };
+        GridPoint[] nodes = new GridPoint[]{
+                new GridPoint( 1, 8 ) ,
+                new GridPoint( 6, 6 ) ,
+                new GridPoint( 3, 1 ) ,
+                new GridPoint( 5, 8 ) ,
+                new GridPoint( 3, 8 ) ,
+                new GridPoint( 6, 7 ) ,
+                new GridPoint( 8, 9 ) ,
+                new GridPoint( 4, 8 ) ,
+        };
 
-        int nodeCount = 8;
-        GridPoint[] nodes = grid.generateNodeArray(nodeCount);
+//        int nodeCount = 8;
+//        GridPoint[] nodes = grid.generateNodeArray(nodeCount);
 
 //        GridPoint[] nodesNearestOrigin = Arrays.copyOf(nodes, nodes.length);
 //        MergeX.sort(nodesNearestOrigin);
@@ -123,9 +127,9 @@ public class SingleSourceMultiNet {
 //        for (int i = 0; i < dist.length; i++) {
 //            minDistance.insert(i, dist[i]);
 //        }
-        Display display = new Display(dim, new Draw());
-        Draw pane = display.getDraw();
-        display.drawCircles(nodes);
+        GridDraw gridDraw = new GridDraw(dim, new Draw());
+        Draw pane = gridDraw.getDraw();
+        gridDraw.drawCircles(nodes);
         pane.show();
         // need to add a node in between p and q to
 //        for (int i = 3; i < nodes.length; i += 2){
@@ -167,8 +171,8 @@ public class SingleSourceMultiNet {
                     nodes[i + 1], nodes[i+2]);
 //            display.drawSteinerPoint(centroid);
 
-            printBFSPath(grid.indexOf(centroid) , start , grid , Color.BLUE , display);
-            printBFSPath(grid.indexOf(centroid) , next  , grid , Color.GREEN, display);
+            printBFSPath(grid.indexOf(centroid) , start , grid , Color.BLUE , gridDraw);
+            printBFSPath(grid.indexOf(centroid) , next  , grid , Color.GREEN, gridDraw);
         }
 
         pane.setPenColor();
@@ -199,13 +203,13 @@ public class SingleSourceMultiNet {
 //           p.inWindow()
 //       }
 //    }
-    private static void printBFSPath(int graphIndex, BreadthFirstPaths bfp, Grid grid, Color color, Display display){
+    private static void printBFSPath(int graphIndex, BreadthFirstPaths bfp, Grid grid, Color color, GridDraw gridDraw){
         if( bfp.hasPathTo(graphIndex) ){
             for(int step : bfp.pathTo(graphIndex)) {
                 System.out.println(grid.pointAt(step));
-                display.drawPoint(grid.pointAt(step),color);
+                gridDraw.drawPoint(grid.pointAt(step),color);
 //                    System.out.print(grid.nodeAt(step));
-                Draw pane = display.getDraw();
+                Draw pane = gridDraw.getDraw();
                 pane.pause(200 );
                 pane.show();
             }
