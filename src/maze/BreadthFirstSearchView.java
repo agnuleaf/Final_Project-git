@@ -5,7 +5,10 @@ import grid.Grid;
 import grid.GridPoint;
 import edu.princeton.cs.algs4.*;
 
+import javax.swing.*;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /// The {@code BreadthFirstPaths} class represents a data type for finding
 /// shortest paths (number of edges) from a source vertex <em>s</em>
@@ -25,7 +28,7 @@ import java.awt.*;
 ///
 /// @author Robert Sedgewick
 /// @author Kevin Wayne
-public class BreadthFirstSearchView {
+public class BreadthFirstSearchView implements PropertyChangeListener {
 
         private static final int INFINITY = Integer.MAX_VALUE;
         private boolean[] marked;  // marked[v] = is there an s-v path
@@ -36,19 +39,19 @@ public class BreadthFirstSearchView {
         private GridPoint p;
         private GridPoint q;
 
-        private Draw pane;
+        private Draw draw;
         private GridDraw gridDraw;
-        private int tPause;
-
-        public BreadthFirstSearchView(GridPoint p, GridPoint q, Grid grid, GridDraw gridDraw) {
+        private int tPause = 50;
+        private JFrame frame;
+        public BreadthFirstSearchView(GridPoint p, GridPoint q, Grid grid, GridDraw gridDraw, JFrame frame) {
             // For displaying the visited nodes
             this.p = p ;
             this.q = q ;
             this.grid = grid;
             this.gridDraw = gridDraw;
             tPause = gridDraw.getPause();
-            this.pane = gridDraw.getDraw();
-
+            this.draw = gridDraw.getDraw();
+            this.frame = frame;
             // Original Constructor below
             Graph graph = grid.graph();
             marked = new boolean[graph.V()];
@@ -64,20 +67,21 @@ public class BreadthFirstSearchView {
 
         System.out.println(Thread.currentThread().getThreadGroup());
 
-        bfs(grid, Grid.indexOf(p), gridDraw);  // view the expanding search radius
+        bfs(Grid.indexOf(p), gridDraw, frame);  // view the expanding search radius
 
         // view the resulting shortest path from p to q
         GridPoint prev = p;
         for (var step : pathTo(Grid.indexOf(q))) {
-            gridDraw.path(prev, Grid.pointAt(step), Color.PINK);
+            gridDraw.path(prev, Grid.pointAt(step), Color.RED);
             prev = Grid.pointAt(step);
-            pane.disableDoubleBuffering();
-            pane.pause(gridDraw.getPause());
-
+            draw.pause(tPause);
+            draw.show();
+            frame.repaint();
         }
+
     }
         // breadth-first search from a single source
-        private void bfs(Grid grid, int s, GridDraw gridDraw) {
+        private void bfs( int s, GridDraw gridDraw, JFrame frame) {
 
             Graph graph = grid.graph();
             Queue<Integer> q = new Queue<>();
@@ -96,9 +100,10 @@ public class BreadthFirstSearchView {
                         marked[w] = true;
                         q.enqueue(w);
                         gridDraw.discovered(Grid.pointAt(w));
-//                        pane.disableDoubleBuffering();
-                        pane.pause(tPause);
-                        pane.show();
+                        draw.pause(tPause);
+                        frame.repaint();
+
+                        draw.show();
                     }
                 }
             }
@@ -218,6 +223,10 @@ public class BreadthFirstSearchView {
         }
 
 
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+
+    }
 }
 
 

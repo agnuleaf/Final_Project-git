@@ -108,8 +108,7 @@ public class GridSearchTargeted implements Runnable {
     //    private boolean isCloserTo
     public static void main(String[] args) {
         int dim = 10;
-
-        GridDraw gridDraw = new GridDraw(dim, new Draw());
+        GridDraw gridDraw = new GridDraw(dim);
         Draw pane = gridDraw.getDraw();
         gridDraw.grid();
                 Grid grid = new Grid(dim);

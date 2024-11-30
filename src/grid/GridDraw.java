@@ -1,95 +1,108 @@
 package grid;
 import edu.princeton.cs.algs4.*;
 
+import javax.swing.*;
 import java.awt.*;
 
 /// Wraps `algs4.Draw` shape painting methods for painting on a 2D grid.
 public class GridDraw {
-    private static final double shift = -0.5;  // shift placement of shapes
-    private final Draw draw;
+    private static final double shift =  -0.5;  // shift placement of shapes
+    private Draw draw;
     private final Color backgroundColor = Color.DARK_GRAY;
     private final Color gridColor = Color.LIGHT_GRAY;
 
     private int ticks;
-    private int tPause = 25;     // pause time between draws
-    final int DEFAULT_SIZE = 512;
-    private int width  = DEFAULT_SIZE;
-    private int height = DEFAULT_SIZE;
-    public GridDraw(int squares, Draw draw) {
+    private int tPause = 50;     // pause time between draws
+
+    private static double DEFAULT_PEN_RADIUS = 0.002;
+    private static double THICK_PEN_RADIUS = 0.002 * 10;
+    public GridDraw(int squares) {
         this.ticks = squares;
-        this.draw = draw;
+        this.draw = new Draw();
+        this.tPause = tPause;
+        draw.enableDoubleBuffering();
+        draw.setXscale(0,squares);
+        draw.setYscale(0,squares);
     }
-    public void setWidthHeight(int width, int height){
-        this.width = width;
-        this.height = height;
-    }
-    public void setRate(boolean isSlow){
-        tPause = (isSlow? 300: 25);
+
+    public void setPause(int msTime){
+        tPause = msTime;
     }
     public int getPause(){
         return tPause;
     }
-    public void setSquaresPerAxis(int squares){
-        this.ticks = squares;
+    public int getTicks(){
+        return ticks;
     }
     public Draw getDraw() {
         return draw;
     }
+    public JLabel getDrawLabel () {  return draw.getJLabel(); }
+    //@formatter:off
 
-//    //@formatter:off
-//    public static void main(String[] args) {
-//        Display display = new Display(20, new Draw());
-//        display.grid();
-//        Draw draw = display.draw;
-//        display.showMessage("Title Message");
-//        int tPause = display.tPause;
-//        GridPoint[] wall = new GridPoint[]{
-//                new GridPoint ( 3 , 3 ),
-//                new GridPoint ( 7 , 6 ),
-//                new GridPoint ( 6 , 6 ),
-//                new GridPoint ( 6 , 7 ),
-//                new GridPoint ( 8 , 7 ),
-//                new GridPoint ( 8 , 8 ),
-//                new GridPoint ( 7 , 8 ),
-//                new GridPoint ( 7 , 7 ),
-//                new GridPoint ( 10, 10),
-//        };
-//        GridPoint[] known = new GridPoint[]{
-//                new GridPoint ( 6 , 5 ),
-//                new GridPoint ( 5 , 5 ), new GridPoint ( 5 , 4 ),  new GridPoint ( 5 , 6 ),
-//                new GridPoint ( 4 , 5 ), new GridPoint ( 4 , 4 ),  new GridPoint ( 4 , 6 ),
-//                new GridPoint ( 3 , 5 ), new GridPoint ( 3 , 4 ),  new GridPoint ( 3 , 6 ),
-//                new GridPoint ( 2 , 5 ),
-//        };
-//        for( GridPoint p : known ){   display.discovered(p);  }
-//        GridPoint[] path = new GridPoint[]{
-//                new GridPoint ( 5 , 5 ),
-//                new GridPoint ( 4 , 5 ),
-//                new GridPoint ( 3 , 5 ),
-//                new GridPoint ( 3 , 6 ),
-//        };
-//        for(int i = 1; i < path.length ; i ++){
-//            display.path(path[i - 1], path[i], Color.RED.darker());
-//        }
-//        for( GridPoint p : wall  ){   display.drawWall(p);   }
-//
-//        display.drawEndpoint( new GridPoint (1,1), true);
-//        display.drawEndpoint( new GridPoint (9,9), false);
-//        draw.show();
-//
-//
-// //        for(int i = 0; i < 5; i++){ display.eraseSquare(); draw.pause(tPause); }
-//        display.drawEndpoint( new GridPoint (1,1), true);
-//        display.drawEndpoint( new GridPoint (9,9), false);
-// //        display.placeText(new GridPoint(1,5), "Left");
-// //        display.placeText(new GridPoint(9,5), "Right");
-//        draw.show();
-//    }
+    public static void main(String[] args)
+    {
+        GridDraw gridDraw = new GridDraw(15);
+        gridDraw.grid();
+        Draw draw = gridDraw.draw;
+        gridDraw.showMessage("Title Message");
+
+        GridPoint[] wall = new GridPoint[]{
+                new GridPoint ( 3 , 3 ),
+                new GridPoint ( 7 , 6 ),
+                new GridPoint ( 6 , 6 ),
+                new GridPoint ( 6 , 7 ),
+                new GridPoint ( 8 , 7 ),
+                new GridPoint ( 8 , 8 ),
+                new GridPoint ( 7 , 8 ),
+                new GridPoint ( 7 , 7 ),
+                new GridPoint ( 10, 10),
+        };
+        GridPoint[] known = new GridPoint[]{
+                new GridPoint ( 6 , 5 ),
+                new GridPoint ( 5 , 5 ), new GridPoint ( 5 , 4 ),  new GridPoint ( 5 , 6 ),
+                new GridPoint ( 4 , 5 ), new GridPoint ( 4 , 4 ),  new GridPoint ( 4 , 6 ),
+                new GridPoint ( 3 , 5 ), new GridPoint ( 3 , 4 ),  new GridPoint ( 3 , 6 ),
+                new GridPoint ( 2 , 5 ),
+        };
+        for( GridPoint p : known ){   gridDraw.discovered(p);  }
+        GridPoint[] path = new GridPoint[]{
+                new GridPoint ( 5 , 5 ),
+                new GridPoint ( 4 , 5 ),
+                new GridPoint ( 3 , 5 ),
+                new GridPoint ( 3 , 6 ),
+        };
+        for(int i = 1; i < path.length ; i ++){
+            gridDraw.path(path[i - 1], path[i], Color.RED.darker());
+            draw.pause(gridDraw.tPause);
+        }
+        for( GridPoint p : wall  ){   gridDraw.drawWall(p);   }
+
+        gridDraw.drawEndpoint( new GridPoint (1,1), true);
+        gridDraw.drawEndpoint( new GridPoint (9,9), false);
+        draw.pause(gridDraw.tPause);
+        draw.show();
+
+
+         for(int i = 0; i < 5; i++){
+             gridDraw.eraseSquare(wall[i]);
+             draw.show();
+             draw.pause(gridDraw.tPause);
+         }
+
+        gridDraw.drawEndpoint( new GridPoint (1,1), true);
+        gridDraw.drawEndpoint( new GridPoint (9,9), false);
+ //        gridDraw.placeText(new GridPoint(1,5), "Left");
+ //        gridDraw.placeText(new GridPoint(9,5), "Right");
+        draw.show();
+    }
+
     /// Draws a black square for a wall
     public void drawWall(GridPoint p){
         draw.setPenRadius();
         draw.setPenColor();
         fillSquare(p, draw.getPenColor());
+//        draw.show();
     }
 
     // Fills the square with the given color
@@ -103,39 +116,51 @@ public class GridDraw {
         draw.setPenRadius();
     }
 
-
-    // helper for undo last user input. Redraws a single grid square with outlines.
+        // helper for undo last user input. Redraws a single grid square with outlines.
     public void eraseSquare( GridPoint p ){
         fillSquare(p,Color.LIGHT_GRAY.brighter());
         int tDelete = 100;
-        draw.pause(tDelete);
+//        draw.pause(tDelete);
         fillSquare(p, gridColor);
-        draw.pause(tDelete);
+//        draw.pause(tDelete);
         fillSquare(p, backgroundColor);
 
         // redraw the grid with correct weights
         draw.setPenColor(gridColor);
         double gridlineX = ( p.x() % 5 == 0 ? 0.002 : 0.0005);
         draw.setPenRadius(gridlineX);
-        draw.line(  p.x(),  p.y(),
-                p.x() , p.y() + 1.0 );
 
-        gridlineX = ( (p.x()+1.0) % 5 == 0 ? 0.002 : 0.0005);
+//        draw.setPenRadius(); draw.setPenColor(Color.RED);
+        draw.line(  p.x()  -1.0 ,   p.y() -1.0,
+                    p.x()  -1.0 ,   p.y() );
+
+//        draw.show();
+        gridlineX = ( (p.x() + 1.0) % 5 == 0 ? 0.002 : 0.0005);
         draw.setPenRadius(gridlineX);
-        draw.line(  p.x() + 1.0,  p.y() ,
-                p.x() + 1.0,  p.y() +1.0);
+
+//        draw.setPenRadius(); draw.setPenColor(Color.BLUE);
+
+        draw.line(  p.x() ,  p.y() -1.0,
+                    p.x() ,  p.y() );
+//        draw.show();
         draw.setPenColor(gridColor);
         double gridlineY = ( (p.y()) % 5 == 0 ? 0.002 : 0.0005);
-        draw.setPenRadius(gridlineY);
+        draw.setPenRadius( gridlineY);
 
-        draw.line(  p.x()       , p.y(),
-                p.x() + 1.0 , p.y());
-        gridlineY = ( (p.y()+1.0) % 5 == 0 ? 0.002 : 0.0005);
-        draw.setPenRadius(gridlineY);
+//        draw.setPenRadius(); draw.setPenColor(Color.GREEN);
 
-        draw.line(  p.x()       , p.y() + 1.0,
-                p.x() + 1.0 , p.y() + 1.0);
+        draw.line(  p.x() -1.0  , p.y() -1.0,
+                    p.x()       , p.y() -1.0 );
+//        draw.show();
+        gridlineY = ( (p.y() + 1.0) % 5 == 0 ? 0.002 : 0.0005);
+        draw.setPenRadius(gridlineY);
+//         draw.setPenRadius(); draw.setPenColor(Color.YELLOW);
+
+        draw.line(  p.x()  -1.0 , p.y() ,
+                    p.x()       , p.y() );
+
         draw.setPenRadius();
+//        draw.show();
     }
 
     /// Draws two distinct nodes as 'A' for Start and 'B' for Finish. Returns false if unable to place.
@@ -161,11 +186,12 @@ public class GridDraw {
             draw.text(p.x() + shift,p.y() + shift, (isStart? "A" : "B"));
             draw.setPenColor();
             draw.setPenRadius();
+
     }
 
 
     // ----- Simulation  shapes
-    /// Displays the nodes visited as light, translucent overlay.
+    /// GridDraws the nodes visited as light, translucent overlay.
     public void discovered(GridPoint p){
         draw.setPenRadius();
         draw.setPenColor(new Color(255,155,175,80));// Color.PINK.);
@@ -177,10 +203,11 @@ public class GridDraw {
         draw.setPenRadius();
     }
 
-    /// Displays the path taken
+    /// GridDraws the path taken
     public void path(GridPoint p, GridPoint q, Color color){
-        draw.setPenColor(alphaColor(color.darker(),128));
-        draw.setPenRadius(0.03);
+//        draw.setPenColor(alphaColor(color.darker(),128));
+        draw.setPenColor(color);
+        draw.setPenRadius(THICK_PEN_RADIUS);
         draw.line(p.x() + shift, p.y() + shift, q.x() + shift, q.y() + shift );
 
     }
@@ -252,10 +279,9 @@ public class GridDraw {
         for(GridPoint w : walls){ drawWall(w); }
     }
 
-    /// Displays a title message in the top center of the grid
+    /// GridDraws a title message in the top center of the grid
      public void showMessage(String msg){
-        draw.show();
-        draw.setPenColor(Color.BLACK);
+         draw.setPenColor(Color.BLACK);
         draw.filledRectangle(ticks / 2.0 , ticks - 2 , 2, 1);
 
         draw.setPenColor(Color.LIGHT_GRAY);

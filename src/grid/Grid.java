@@ -27,7 +27,7 @@ public class Grid {
     private StackSet excludedV;     //  walls from user input
     private Queue<Integer> endpoints;
     private int endpointCount;
-    private static int ticks = 15;
+    private static int ticks = 5;
     private Graph graph;
     private int[] savedExcludedV;   // saved walls from the previous session(s);
 
@@ -65,6 +65,7 @@ public class Grid {
     }
     /// Returns the `Graph` instance.
     public Graph graph(){
+        buildGraph();
         return graph;
     }
     public boolean isEndpoint(GridPoint p){
@@ -290,7 +291,7 @@ public class Grid {
         return treeSet.contains(v);
     }
     boolean isEmpty(){
-        return treeSet.size() == 0;
+        return treeSet.isEmpty();
     }
     void push(GridPoint p){
         int v = Grid.indexOf(p);

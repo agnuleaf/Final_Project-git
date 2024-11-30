@@ -2,7 +2,9 @@ package paintReference;
 import edu.princeton.cs.algs4.Draw;
 import edu.princeton.cs.algs4.DrawListener;
 
+import javax.swing.*;
 import java.awt.Color;
+import java.awt.event.KeyEvent;
 
 /// TAKEN FROM introcs princeton
 ///
@@ -13,6 +15,7 @@ public class Algs4DrawGrid implements DrawListener {
 
         public Algs4DrawGrid(int n) {
             draw.addListener(this);
+
             draw.setXscale(0, n);
             draw.setYscale(0, n);
 
@@ -22,6 +25,20 @@ public class Algs4DrawGrid implements DrawListener {
             for (int i = 0; i <= n; i++) draw.line(i, 0, i, n);
             for (int j = 0; j <= n; j++) draw.line(0, j, n, j);
             draw.show();
+
+            SwingUtilities.invokeLater(() -> {
+                System.out.println("su");
+                    if (draw.isKeyPressed(KeyEvent.VK_SPACE)) {
+                        System.out.println("space");
+                    }
+                    if(draw.hasNextKeyTyped()){
+                        System.out.println("has next key");
+                    }
+
+
+            });
+
+
         }
 
         public void mousePressed(double x, double y) {
@@ -32,8 +49,9 @@ public class Algs4DrawGrid implements DrawListener {
             draw.show();
         }
 
-        public void keyTyped(char c) {
-            draw.save("squares" + c + ".png");
+
+        public void keyPressed(int keycode) {
+            System.out.println(keycode);
         }
 
         // test client
