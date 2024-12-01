@@ -5,6 +5,9 @@ import grid.GridPoint;
 import grid.Grid;
 import edu.princeton.cs.algs4.*;
 
+import javax.swing.*;
+import java.awt.*;
+
 /// TODO DOES NOT REMEMBER THE SHORTEST PATH.
 /// TODO Need to associate a 'predecessor label' with each stacked neighbor
 ///
@@ -108,29 +111,40 @@ public class GridSearchTargeted implements Runnable {
     //    private boolean isCloserTo
     public static void main(String[] args) {
         int dim = 10;
-        GridDraw gridDraw = new GridDraw(dim);
-        Draw pane = gridDraw.getDraw();
-        gridDraw.grid();
+        JFrame frame = new JFrame();
+        JPanel mainPanel = new JPanel(new FlowLayout(), true);
+        GridDraw gridDraw = new GridDraw(dim, frame);
+        Draw draw = gridDraw.getDraw();
+        mainPanel.add(draw.getJLabel());
+        frame.setContentPane(mainPanel);
+        gridDraw.drawEmptyGrid();
                 Grid grid = new Grid(dim);
-        grid.addWall(new GridPoint[]{
+
+        for(GridPoint p : new GridPoint[]{
+                new GridPoint(1, 1),
+                new GridPoint(3, 5)}){
+            if(grid.addEndpoint(p)){
+                gridDraw.drawEndpoint(p);
+            }
+        }
+        for(GridPoint p : new GridPoint[]{
                 new GridPoint(3, 2),
                 new GridPoint(2, 2),
-                new GridPoint(4,1)
-        });
-        GridPoint[] nodes = new GridPoint[]{
-                new GridPoint(1, 1),
-                new GridPoint(3, 5)
-        };
+                new GridPoint(4,1)})
+        {
+            if(grid.addWall(p)) {
+                gridDraw.drawWall(p);
+            }
+        }
+
         grid.buildGraph();
-        gridDraw.drawCircles(nodes);
-        pane.pause(100);
-        pane.show();
+        draw.show();
         GridSearchTargeted gs = new GridSearchTargeted(grid, gridDraw);
-        /*Iterable<Point> path = */gs.searchWithBacktrack( nodes[0], nodes[1]);
+        /*Iterable<Point> path = */gs.searchWithBacktrack( grid.getStart(), grid.getEnd());
 //        int count = 0;
 //        for(Point p : path){
-//            Display.drawPath(p, 0.01, Draw.BLUE, pane);
-//            pane.show();
+//            Display.drawPath(p, 0.01, Draw.BLUE, draw);
+//            draw.show();
 //            count++;
 //        }
 //        System.out.println(count); // FIXME correct pathresult for grids with obstacles

@@ -1,12 +1,19 @@
 package maze;
 
+import edu.princeton.cs.algs4.Graph;
 import grid.GridDraw;
 import grid.Grid;
 import grid.GridPoint;
-import edu.princeton.cs.algs4.*;
+import edu.princeton.cs.algs4.BreadthFirstPaths;
+import edu.princeton.cs.algs4.Queue;
+import edu.princeton.cs.algs4.Stack;
+import edu.princeton.cs.algs4.StdOut;
 
-import javax.swing.*;
-import java.awt.*;
+
+import edu.princeton.cs.algs4.Draw;
+
+
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -38,51 +45,41 @@ public class BreadthFirstSearchView implements PropertyChangeListener {
         private Grid grid;
         private GridPoint p;
         private GridPoint q;
-
-        private Draw draw;
+        private Queue<GridPoint> returnQ;
+        private Draw draw;     // draw to offscreen with draw.show(), repaint with draw.getJLabel().repaint()
         private GridDraw gridDraw;
         private int tPause = 50;
-        private JFrame frame;
-        public BreadthFirstSearchView(GridPoint p, GridPoint q, Grid grid, GridDraw gridDraw, JFrame frame) {
+//        private JFrame frame;           // for frame.repaint() within the BFS loop
+        public BreadthFirstSearchView(/*GridPoint p, GridPoint q, Grid grid, */GridDraw gridDraw/*, JFrame frame*/) {
             // For displaying the visited nodes
-            this.p = p ;
-            this.q = q ;
-            this.grid = grid;
             this.gridDraw = gridDraw;
+            grid = gridDraw.getGrid();
+            p = gridDraw.getGrid().getStart();
+            q = gridDraw.getGrid().getEnd();
             tPause = gridDraw.getPause();
-            this.draw = gridDraw.getDraw();
-            this.frame = frame;
+            draw = gridDraw.getDraw();
+//            this.frame = frame;
+
             // Original Constructor below
             Graph graph = grid.graph();
             marked = new boolean[graph.V()];
             distTo = new int[graph.V()];
             edgeTo = new int[graph.V()];
-            int s = Grid.indexOf(p);
+            int s = grid.indexOf(p);
             validateVertex(s);
     }
 
-    /// Runs the constructor with a call to Draw at each visited vertex, (like a wavefront).
-    /// Then the shortest path to `q` is displayed from a call to `pathTo`.
-    public void view() {
-
-        System.out.println(Thread.currentThread().getThreadGroup());
-
-        bfs(Grid.indexOf(p), gridDraw, frame);  // view the expanding search radius
-
-        // view the resulting shortest path from p to q
-        GridPoint prev = p;
-        for (var step : pathTo(Grid.indexOf(q))) {
-            gridDraw.path(prev, Grid.pointAt(step), Color.RED);
-            prev = Grid.pointAt(step);
-            draw.pause(tPause);
-            draw.show();
-            frame.repaint();
-        }
-
+    // Runs the constructor with a call to Draw at each visited vertex, (like a wavefront).
+    // Then the shortest path to `q` is displayed from a call to `pathTo`.
+    /// Runs the Constructor with separate `Queue` to accumulate in order every visited
+    /// vertex converted to a `GridPoint` for visualization.
+    public Queue<GridPoint> viewWave() {
+       return bfs(grid.indexOf(p));
     }
-        // breadth-first search from a single source
-        private void bfs( int s, GridDraw gridDraw, JFrame frame) {
 
+        // breadth-first search from a single source
+        private Queue<GridPoint> bfs( int s) {
+            Queue<GridPoint> qConverted = new Queue<>();
             Graph graph = grid.graph();
             Queue<Integer> q = new Queue<>();
             for (int v = 0; v < graph.V(); v++)
@@ -99,14 +96,16 @@ public class BreadthFirstSearchView implements PropertyChangeListener {
                         distTo[w] = distTo[v] + 1;
                         marked[w] = true;
                         q.enqueue(w);
-                        gridDraw.discovered(Grid.pointAt(w));
+                        qConverted.enqueue(grid.pointAt(w));
+                        gridDraw.discovered(grid.pointAt(w));
                         draw.pause(tPause);
-                        frame.repaint();
-
                         draw.show();
+
+                        draw.getJLabel().paintImmediately(draw.getJLabel().getBounds());
                     }
                 }
             }
+            return qConverted;
         }
 
         /**
@@ -150,7 +149,6 @@ public class BreadthFirstSearchView implements PropertyChangeListener {
             path.push(x);
             return path;
         }
-
 
         // check optimality conditions for single source
         private boolean check(Graph G, int s) {

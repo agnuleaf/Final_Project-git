@@ -55,7 +55,7 @@ public class SwingEventsDemo {
                 lbl.setText("Enter your password");
             }
         });
-        timer.setRepeats(false);
+        timer.setRepeats(false);  // sends one event
         timer.start();
         frame.pack();
         frame.getContentPane().setVisible(true);

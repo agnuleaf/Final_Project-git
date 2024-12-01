@@ -1,7 +1,8 @@
 package maze;
 
-
+import edu.princeton.cs.algs4.BreadthFirstPaths;
 import edu.princeton.cs.algs4.Draw;
+import edu.princeton.cs.algs4.Queue;
 import grid.GridDraw;
 import grid.Grid;
 import grid.GridPoint;
@@ -9,14 +10,15 @@ import grid.GridPoint;
 //import java.awt.;
 import javax.swing.*;
 import java.awt.*;
-
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+ //SwingUtilities2;
 import static javax.swing.SwingConstants.CENTER;
 
 //import javax.util.*;
 
-
 /// main class
-public class MazeApp{
+public class MazeApp {
 
 	static int ticks = 10;	// number of squares on the axis
 	static int tPause = 10;	// pause (ms) between draw updates
@@ -28,89 +30,78 @@ public class MazeApp{
 	JFrame frame;//= new JFrame();
 	JPanel pnlMain;
 	JLabel instructions;
+
 	private final Color background = Color.DARK_GRAY;
-	/// Maze gui app
+	/// Maze GUI Constructor
 	public MazeApp() {
 
 		frame = new JFrame();
 
-		grid 		= new Grid(ticks);
-		gridDraw	= new GridDraw(ticks);
+		gridDraw	= new GridDraw(ticks, frame);
+		grid = gridDraw.getGrid();
 		gridDraw.setPause(5);
-		gridDraw.grid();
+		gridDraw.drawEmptyGrid();
 		draw = gridDraw.getDraw();
-		draw.show(); frame.repaint();
+
 		drawCanvas = draw.getJLabel();
-		pnlMain = new JPanel(new BorderLayout());
+		pnlMain = new JPanel(new BorderLayout(), true);
 		pnlMain.add(drawCanvas, BorderLayout.CENTER);
 		instructions = new JLabel("place start & end points", CENTER);
 		pnlMain.add(instructions, BorderLayout.NORTH);
-		pnlControl = new MazeControlPanel( grid, gridDraw, frame);
+		pnlControl = new MazeControlPanel( grid, gridDraw); //
 		pnlMain.add(pnlControl,BorderLayout.SOUTH);
 
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // algs4Draw uses DISPOSE instead
 		frame.setTitle("Maze");
-		draw  		= gridDraw.getDraw();
 		frame.add(pnlMain);
 		frame.setContentPane(pnlMain);
 		frame.pack();
 		frame.setVisible(true);
 		pnlMain.setVisible(true);
-//		pnlMain.setOpaque(true);
+		pnlMain.setOpaque(true);
 
-
-		pnlControl.control();
-
+		gridDraw.drawEmptyGrid();
 		draw.show(); frame.repaint();
 
 
+//		Timer timer = new Timer(100, new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				draw.show(); draw.getJLabel().repaint(); frame.repaint();
+//			}
+//		});
+//
+//		timer.setRepeats(true);  // sends one event
+//		timer.start();
 	}
 
-	public static void main(String[] args) {
-		MazeApp app = new MazeApp();
-
-	//testSim(app.frame, app.grid, app.gridDraw, app.pnlControl);
-	}
-
-		private static void testSim( JFrame frame, Grid grid, GridDraw gridDraw, MazeControlPanel controller) {
-
-
-		var p = new GridPoint(3, 3);
-		var q = new GridPoint(9, 8);
-
-		grid.addEndpoint(p);
-		gridDraw.drawEndpoint(p, true);
-		gridDraw.getDraw().show();
-		grid.addEndpoint(q);
-		gridDraw.drawEndpoint(q, false);
-
-		GridPoint[] walls = new GridPoint[]{
-				new GridPoint(1, 4),
-				new GridPoint(1, 3),
-				new GridPoint(1, 2),
-				new GridPoint(8, 6),
-				new GridPoint(7, 6),
-				new GridPoint(8, 7),
-				new GridPoint(8, 8),
-
-		};
-		for(GridPoint w : walls){
-			grid.addWall(w);
-			gridDraw.drawWall(w);
-			gridDraw.getDraw().show(); frame.repaint();
+	/// Expected to be ran after `viewWave` to view the path if it exists.
+	/// @param pathToIfExists - Adds the path in order to the `Queue` if it exists
+	/// @return true if a path exists, false otherwise
+	public boolean viewPath(BreadthFirstPaths bfp, GridDraw gridDraw, Queue<GridPoint> pathToIfExists){
+		Grid grid = gridDraw.getGrid();
+		GridPoint p = grid.getStart();
+		GridPoint q = grid.getEnd();
+		if(!bfp.hasPathTo(grid.indexOf(q))){
+			return false;
 		}
 
-		grid.buildGraph();
-		frame.getContentPane();
-		// Start threads for the wavefront of `BreadthFirstSearchView` and the path taken
-			BreadthFirstSearchView wavefront = new BreadthFirstSearchView(p, q, grid, gridDraw, frame);
-			wavefront.view();
+		GridPoint prev = p;
+		for (int step : bfp.pathTo(grid.indexOf(q))) {
+			gridDraw.path(prev, grid.pointAt(step), Color.RED);
+			gridDraw.getDraw().show();
+			gridDraw.getDrawLabel().repaint();
+			gridDraw.mainFrame.getContentPane().repaint();
+			prev = grid.pointAt(step);
+		}
+		return true;
 	}
-	void runSimulation (GridPoint p, GridPoint q){
-		BreadthFirstSearchView wavefront = new BreadthFirstSearchView(p, q, grid, gridDraw, frame);
-		wavefront.view();
-		//		var gst = new GridSearchTargeted(grid, display); // TODO extract shortest path or find alternate algorithm
-		//		gst.searchWithBacktrack(p, q)
-	}
+	public static void main(String[] args) {
+	SwingUtilities.invokeLater(() -> {
+		MazeApp app = new MazeApp();
+		app.pnlControl.control(); // run event handlers
 
+	});
+
+	}
 }
