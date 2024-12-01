@@ -15,7 +15,7 @@ public class GridDraw {
     private int ticks;
     private int width;
 //    private int height;
-    private int tPause = 50;     // pause time between draws todo speed of animation
+    private int tPause = 5;     // pause time between draws todo speed of animation
 
     private static double DEFAULT_PEN_RADIUS = 0.002;
     private static double THICK_PEN_RADIUS = 0.002 * 10;
@@ -28,7 +28,6 @@ public class GridDraw {
         grid = new Grid(ticks);
 
         this.draw = new Draw();
-//        this.tPause = tPause;
         draw.enableDoubleBuffering();
         draw.setXscale(0,ticks);
         draw.setYscale(0,ticks);

@@ -3,7 +3,6 @@ package maze;
 // import edu.princeton.cs.algs4.BreadthFirstPaths;
 import edu.princeton.cs.algs4.Draw;
 import grid.GridDraw;
-import grid.Grid;
 
 import javax.swing.*;
 import java.awt.Color;
@@ -11,12 +10,11 @@ import java.awt.BorderLayout;
 import static javax.swing.SwingConstants.CENTER;
 
 /// Main App to run the interactive maze gui. Holds reference to the main `JFrame`, and
-///
 public class MazeApp {
 
 	static int ticks = 10;	// number of squares on the axis
-	static int tPause = 1;	// pause (ms) between draw updates
-//	Grid 			grid ;			//
+	static int tPause = 10;	// pause (ms) between draw updates
+
 	GridDraw 		gridDraw;		//
 	Draw 			draw  ;			//
 	MazeControlPanel pnlControl;	//
@@ -35,12 +33,15 @@ public class MazeApp {
 //		grid = gridDraw.getGrid();
 		gridDraw.setPause(tPause);
 		gridDraw.drawEmptyGrid();
+		gridDraw.setPause(5);
 		draw = gridDraw.getDraw();
+		draw.setVisible(false);
 
 		drawCanvas = draw.getJLabel();
 		pnlMain = new JPanel(new BorderLayout(), true);
 		pnlMain.add(drawCanvas, BorderLayout.CENTER);
 		instructions = new JLabel("place start & end points", CENTER);
+
 		pnlMain.add(instructions, BorderLayout.NORTH);
 		pnlControl = new MazeControlPanel(gridDraw); //
 		pnlMain.add(pnlControl,BorderLayout.SOUTH);

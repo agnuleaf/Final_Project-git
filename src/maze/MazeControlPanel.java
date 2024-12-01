@@ -50,8 +50,7 @@ public class MazeControlPanel extends JPanel {
         add(btnUndo);
         add(btnRun);
 //        setEnableUndoAndRun(false);       // dont disable buttons just ignore presses
-
-
+        
     }
 
     void control() {
