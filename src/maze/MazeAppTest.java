@@ -42,7 +42,7 @@ public class MazeAppTest {
 
             }
         }
-        grid.buildGraph();
+        grid.graph();
 //		gridDraw.getDraw().getJLabel().repaint();
         gridDraw.mainFrame.repaint();
         // Start threads for the wavefront of `BreadthFirstSearchView` and the path taken

@@ -35,11 +35,13 @@ public class MazeControlPanel extends JPanel {
     private int ymax;
     JLabel drawCanvas;
 
-    MazeControlPanel(Grid grid, GridDraw gridDraw) {
-        this.grid = grid;
+    MazeControlPanel(GridDraw gridDraw) {
+
         this.gridDraw = gridDraw;
+
+        this.grid = gridDraw.getGrid();
         this.draw = gridDraw.getDraw();
-        drawCanvas = draw.getJLabel(); // reference to algs4.Draw
+        drawCanvas = draw.getJLabel();      // for including algs4.Draw canvas in a larger gui
         xmax = gridDraw.getTicks();
         ymax = xmax;
 
@@ -56,18 +58,15 @@ public class MazeControlPanel extends JPanel {
         boolean runSim = false;
             if(btnRun.isSelected()) {
                 btnRun.setEnabled(false);
-                runSimEDTrepaint();
                 btnRun.setEnabled(true);
             }
             drawCanvas.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent mouseEvent) {
                     if (!isSimRunning) {
 
-                        // borrowed from `algs4.Draw` for user friendly coordinates
-                        double x = userX(mouseEvent.getX());
-                        double y = userY(mouseEvent.getY());
-
-                        GridPoint p = new GridPoint(
+                        double x = userX(mouseEvent.getX()); // "borrowed" from algs4.Draw to convert mouse press locations
+                        double y = userY(mouseEvent.getY()); //  to user friendly coordinates in the draw canvas
+                        GridPoint p = new GridPoint(            // convert to nearest grid center
                                 (int) (Math.floor(x) + 1.0),
                                 (int) (Math.floor(y) + 1.0));
 //                    printThreadDebug();
@@ -98,13 +97,13 @@ public class MazeControlPanel extends JPanel {
             {
                 if (!isSimRunning && grid.recentGridEndpoint() >= 2) {
                     isSimRunning = true;
-                    runSimEDTrepaint();
-                    System.out.println("btnRun event");
+                    runSimEDTrepaint(gridDraw.getPause());
+//                    System.out.println("btnRun event");
                     isSimRunning = false;
                 }
             });
 
-            // only enable when
+            // allow undo when all endpoints placed and at least one wall is placed.
             btnUndo.addActionListener(e -> {
                 if (!isSimRunning) {
                     if (grid.recentGridEndpoint() >= 2 && grid.countWalls() > 0) {
@@ -113,8 +112,6 @@ public class MazeControlPanel extends JPanel {
                             gridDraw.eraseSquare(tmp);
                             gridDraw.mainFrame.repaint();
                         }
-//                    if (grid.countWalls() == 2)
-//                        btnUndo.setEnabled(false);
                     }
                 }
             });
@@ -146,7 +143,11 @@ public class MazeControlPanel extends JPanel {
 //        }
 //    }
 
-    void runSimEDTrepaint() {
+    /// The animation method for breadth-first search visualization. Starts a new `Thread` to sleep
+    /// between calls to `repaint()`. Using a separate thread bypasses Swing's optimization of contiguous draw calls.
+    /// Other options to animate may be a `Swing Timer` or `SwingWorker`.
+    void runSimEDTrepaint(int pause) {
+        tPause = pause;
         new Thread(() -> {
             BreadthFirstSearchView wavefront = new BreadthFirstSearchView(/*grid,*/ gridDraw/*, frame*/);
             Queue<GridPoint> wave = wavefront.viewWave();
@@ -162,7 +163,7 @@ public class MazeControlPanel extends JPanel {
                 });
             }
             try {
-                Thread.sleep(200);
+                Thread.sleep(tPause);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

@@ -40,7 +40,7 @@ public class Grid {
     private int lastEndpointToAdd = 2;  // only 2 endpoints at a time allowed
     //    private GridPair endpoints;
     private Graph graph;
-//  private int[] savedExcludedV = new int[0];   // saved walls from the previous session(s);
+    private int[] savedExcludedV = new int[0];   // saved walls from the previous session(s);
 
     /// Constructor for a square `Grid` instance where width and height are the same.
     /// @param width number of squares along each axis
@@ -55,24 +55,23 @@ public class Grid {
 //        width = (n >= 0 && n <= 512 ? n: width);
 //    }
 
-    /// The total number of walls
+    /// The number of walls placed for this phase.
     public int countWalls(){
         return excludedV.size() ;
-        //+ savedExcludedV.length;
     }
-
+    /// The total number of walls in the grid.
+    public int totalCountWalls(){
+        return excludedV.size()
+        + savedExcludedV.length;
+    }
+    /// The most recently added grid endpoint.
     public int recentGridEndpoint(){
         return recentGridEndpoint;
     }
 
-    /// Checks and adds an endpoint if not already there, if successful returns true.
+    /// Tries to add endpoint to grid, returning true if add is successful.
     public boolean addEndpoint(GridPoint p) {
         if (!isEndpoint(p) && !isWall(p) && recentGridEndpoint < lastEndpointToAdd) {
-//            if (endpoints == null) {          // add the first end point
-//                endpoints = new GridPair(p, null);
-//            } else if (endpoints.end() == null) {
-//                endpoints = new GridPair(endpoints.start(), p);
-            // theres no logic to remove start and endpoint yet
             endpoints.enqueue(indexOf(p));
             recentGridEndpoint++;
             return true;
@@ -84,32 +83,25 @@ public class Grid {
     }
 
     /// Check if a given point is an endpoint
+    /// @return true if point already exists as an endpoint
     public boolean isEndpoint(GridPoint p){
         boolean b = false;           // check if the  queue contains p
         for(int v : endpoints){  b |= (v == indexOf(p));  }
         return b;
-//        if(endpoints == null || endpoints.start() == null || endpoints.end() == null)
-//        { throw new UnsupportedOperationException(
-//                "all endpoints must be placed before walls"); }
-//        return endpoints.contains(p);
     }
 
-    ///  returns endpoints as a `Queue<GridPoint>` in order start to end
+    ///  Gets endpoints as in the order start to end
+    /// @return endpoints as a `Queue<GridPoint>`
     public Queue<GridPoint> getEndpoints(){
         Queue<GridPoint> q = new Queue<>();
-//        if(endpoints == null || endpoints.start() == null || endpoints.end() == null)
-//                {   throw new UnsupportedOperationException("endpoints null"); }
-//        else {
-//            q.enqueue(endpoints.start());
-//            q.enqueue(endpoints.end());
-//        }
         return q;
     }
 
+    /// Gets the start endpoint
     public GridPoint getStart(){
         return pointAt(endpoints.peek());
     }
-
+    ///  Gets the final endpoint
     public GridPoint getEnd(){
         int start = endpoints.dequeue();
         int end = endpoints.dequeue();
@@ -117,7 +109,6 @@ public class Grid {
         endpoints.enqueue(end);
         return pointAt(end);
     }
-    /// Builds graph from current set of data and returns the `Graph` instance.
 
     /// Converts and array of points in (x,y) grid coordinates to an array of graph vertices
     public int[] indexArrayOf(GridPoint[] points){
@@ -206,7 +197,7 @@ public class Grid {
     /// Skips attaching edges to excluded vertices.
     /// Nodes at grid-corners have 2 edges, nodes along grid-borders have 3, and internal nodes have 4.
     /// The `Graph` vertices are indexed in the range = \[0, (dim*dim -1 )\] A dense graph is formed by
-    public void buildGraph() {
+    private void buildGraph() {
         this.graph = new Graph(width * width);
 
         for(int v = 0; v < width * width; v++){
@@ -358,9 +349,9 @@ public class Grid {
         int pop(){
 
             int tmp = stack.pop();
-            System.out.print(pointAt(tmp) + "popped");
+//            System.out.print(pointAt(tmp) + "popped");
             treeSet.remove(tmp);
-            System.out.println("treeSet n:" + treeSet.size() + " stack n:" + stack.size());
+//            System.out.println("treeSet n:" + treeSet.size() + " stack n:" + stack.size());
             return tmp;
         }
 
