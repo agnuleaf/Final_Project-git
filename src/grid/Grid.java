@@ -9,12 +9,8 @@ import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.StdRandom;
 
 
-import javax.swing.event.ChangeEvent;
 import java.util.HashSet;
 import java.util.Iterator;
-
-import static java.lang.Math.abs;
-import static java.lang.Math.min;
 
 /// Provides a dense graph representation of a 2D grid using [Graph] api, and conversions from its 0-based vertex array
 /// to 1-based coordinates of the positive XY plane presented as an immutable [GridPoint].
@@ -50,10 +46,6 @@ public class Grid {
         excludedV = new StackSet();
         endpoints = new Queue<>();
     }
-
-//    public void setDim(int n){
-//        width = (n >= 0 && n <= 512 ? n: width);
-//    }
 
     /// The number of walls placed for this phase.
     public int countWalls(){
@@ -143,11 +135,6 @@ public class Grid {
             throw new IllegalStateException("attempted to at wall at invalid location: "+p);
         }
     }
-//    record GridPair(GridPoint start, GridPoint end){
-//        boolean contains(GridPoint p){
-//            return start.equals(p) && end.equals(p);
-//        }
-//    }
 
     /// Checks if the given point is a wall
     public boolean isWall(GridPoint p){
@@ -167,12 +154,7 @@ public class Grid {
     public GridPoint peekLastWall(){
         return pointAt(endpoints.peek());
     }
-//
-//    // Converts individual 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
-//    private int indexOf(int x, int y){
-//        if(x == 0 || y == 0) return -1; // TODO: Remove and add bounds check elsewhere like file input conversion
-//        return (x - 1) * dim + (y - 1);
-//    }
+
 
     /// Converts a `Point` as 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
     public int indexOf(GridPoint p){
@@ -192,11 +174,13 @@ public class Grid {
         buildGraph();
         return graph;
     }
-    /// Assigns edges to adjacent nodes in a `dim` x `dim` grid, nodes in the grid are only connected horizontally and
-    /// vertically to other adjacent nodes. Diagonal connections are NOT created.
-    /// Skips attaching edges to excluded vertices.
-    /// Nodes at grid-corners have 2 edges, nodes along grid-borders have 3, and internal nodes have 4.
-    /// The `Graph` vertices are indexed in the range = \[0, (dim*dim -1 )\] A dense graph is formed by
+    /** 
+     Assigns edges to adjacent nodes in a `dim` x `dim` grid, nodes in the grid are only connected horizontally and
+     vertically to other adjacent nodes. Diagonal connections are NOT created.
+     Skips attaching edges to excluded vertices.
+     Nodes at grid-corners have 2 edges, nodes along grid-borders have 3, and internal nodes have 4.
+     The `Graph` vertices are indexed in the range = \[0, (dim*dim -1 )\] A dense graph is formed by
+     **/
     private void buildGraph() {
         this.graph = new Graph(width * width);
 
@@ -209,17 +193,7 @@ public class Grid {
             }
         }
     }
-    //    void save(){ // to accumulate walls session
-//        savedExcludedV = excludedV.combineArrays(savedExcludedV);
-//    }
-//    ///  Converts nodes as (x,y) grid coordinates to graph vertices
-//    public Iterable<Integer> indicesOf(Iterable<GridPoint> nodes) {
-//        Bag<Integer> indices = new Bag<>();
-//        for(GridPoint p : nodes) {
-//            indices.add(indexOf(p));
-//        }
-//        return indices;
-//    }
+
     /// The total number of squares in the grid, including empty and nonempty
     int count(){
         return height*width;
@@ -255,68 +229,6 @@ public class Grid {
         }
         return uniqueNodes.toArray(new GridPoint[0]);
     }
-
-//    ///  Finds shortest component of vector 'pq'. From 'p' this points to the closest line through 'q'
-//    public static GridPoint toIntersection(GridPoint p, GridPoint q){
-//        int magPQx = abs(q.x() - p.x()) ; int magPQy = abs(q.y() - p.y());
-//        // select line through q closest to p
-//        if(magPQx > magPQy) {
-//            return new GridPoint( 0 , q.y() - p.y() );
-//        }
-//        else if( magPQy > magPQx){
-//            return new GridPoint(q.x() - p.x(), 0);
-//        } else return new GridPoint(0, 0);
-//    }
-//
-//    private Graph subGraph(int[] ll, int[] ur, Graph graph){
-//        if( ur[0] < ll[0] && ur[1] < ll[1])  throw new IllegalArgumentException("invalid bounds provided for subgraph");
-//        Graph subGraph = new Graph((ur[0] - ll[0]) * (ur[1] - ll[1]));
-//
-//        for(int v = 0; v < ticks * ticks; v++){
-//            int vx = xOf(v);  int vy = yOf(v);
-//            if(( vx >= ll[0] && vx < ur[0]) && ( vy >= ll[1] && vy < ur[1] )) {
-//                // attach vertex upward of v unless adding to top or exclude list
-//                if (v < ticks * ticks - (ticks)  && !excludedV.contains(v + ticks))
-//                    subGraph.addEdge(v, v + ticks);
-//                // attach vertex rightward of v edge to right except at rightmost spot
-//                if ((v + 1) % ticks != 0  && !excludedV.contains(v + 1))
-//                    subGraph.addEdge(v, (v + 1));
-//            }
-//        }
-//        return subGraph;
-//    }
-//
-//    /// Creates a subgraph, or window, of a grid graph using inclusive bounds defined by two [GridPoint]s
-//    /// 'll' (lower left) and 'ur'(upper right).
-//    /// @return the subGraph
-//    /// @throws IllegalArgumentException if `ll` and 'ur' are invalid coordinates relative to one another
-//    public Graph subGraph(GridPoint ll, GridPoint ur, Graph graph){
-//        if( ur.x() < ll.x() && ur.y() < ll.y())  throw new IllegalArgumentException("invalid bounds provided for subgraph");
-//        Graph subGraph = new Graph((ur.x() - ll.x()) * (ur.y() - ll.y()));
-//
-//        for(int v = 0; v < ticks * ticks; v++){
-//            int vx = xOf(v);  int vy = yOf(v);
-//            if(( vx >= ll.x() && vx < ur.x()) && ( vy >= ll.y() && vy < ur.y() )) {
-//                // attach vertex upward of v unless adding to top or exclude list
-//                if (v < ticks * ticks - (ticks)  && !excludedV.contains(v + ticks))
-//                    subGraph.addEdge(v, v + ticks);
-//                // attach vertex rightward of v edge to right except at rightmost spot
-//                if ((v + 1) % ticks != 0  && !excludedV.contains(v + 1))
-//                    subGraph.addEdge(v, (v + 1));
-//            }
-//        }
-//        return subGraph;
-//    }
-//
-//    // is the graph vertex 'v' within the 'll'-'ur' window?
-//    private boolean contained(int v, GridPoint ll, GridPoint ur){
-//        int vx = xOf(v);  int vy = yOf(v);
-//        return (vx > ll.x() && vx < ur.x()) && (vy > ll.y() && vy < ur.y());
-//    }
-
-    // converts individual axis coordinates
-    private int xOf(int index){ return (index) / width + 1; }
-    private int yOf(int index){ return (index) % width + 1; }
 
     // Provides fast removal by recency and fast check for duplicates.
     // Inner class for debug: allows using pointAt and indexOf without making the grid dimensions (ticks) static
@@ -381,4 +293,3 @@ public class Grid {
         }
     }
 }
-

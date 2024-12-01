@@ -50,12 +50,13 @@ public class MazeControlPanel extends JPanel {
         add(btnUndo);
         add(btnRun);
 //        setEnableUndoAndRun(false);       // dont disable buttons just ignore presses
-        
+
+
     }
 
     void control() {
-        boolean runSim = false;
             if(btnRun.isSelected()) {
+            	// i dont think we need this anymore
                 btnRun.setEnabled(false);
                 btnRun.setEnabled(true);
             }
@@ -82,7 +83,7 @@ public class MazeControlPanel extends JPanel {
                 }
             });
 
-            btnRun.addChangeListener(new ChangeListener() {
+         /**   btnRun.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
                     if (grid.recentGridEndpoint() >= 2) {
@@ -90,15 +91,14 @@ public class MazeControlPanel extends JPanel {
                         System.out.println("btnRun enabled");
                     }
                 }
-            });
+            }); **/ // Note By Ty Greenburg: Dont really know what this is used for and didnt see any difference when i run with it and without it
 
             btnRun.addActionListener(e ->
             {
                 if (!isSimRunning && grid.recentGridEndpoint() >= 2) {
                     isSimRunning = true;
                     runSimEDTrepaint(gridDraw.getPause());
-//                    System.out.println("btnRun event");
-                    isSimRunning = false;
+                    // Need to setter to set it to false when we reset the maze
                 }
             });
 
@@ -148,7 +148,7 @@ public class MazeControlPanel extends JPanel {
     void runSimEDTrepaint(int pause) {
         tPause = pause;
         new Thread(() -> {
-            BreadthFirstSearchView wavefront = new BreadthFirstSearchView(/*grid,*/ gridDraw/*, frame*/);
+            BreadthFirstSearchView wavefront = new BreadthFirstSearchView(gridDraw);
             Queue<GridPoint> wave = wavefront.viewWave();
             Draw draw = gridDraw.getDraw();
             JFrame frame = gridDraw.getFrame();
@@ -178,9 +178,10 @@ public class MazeControlPanel extends JPanel {
                     frame.repaint();
                 });
             }
-        }).start();         // use start() .  run() collapses draw calls inside EDT
-            //		var gst = new GridSearchTargeted(grid, display); // TODO extract shortest path or find alternate algorithm
-            //		gst.searchWithBacktrack(p, q)
+            System.out.println("Sim Done");
+            // restart stuff here
+            }).start();         
+        
     }
 
     void printThreadDebug(){
@@ -203,31 +204,17 @@ public class MazeControlPanel extends JPanel {
     }
     public int getWidth() { return width;  }
     public int getHeight(){ return height; }
+    
+    /**
+     * For the reset of the maze
+     */
+    public void setRunnable() {
+    	isSimRunning = false;
+    }
 
 
     // From algs4.Draw . Helpers to convert from native coordintes to user friendly ones.
     private double userX  (double x) { return xmin + x * (xmax - xmin) / width;    }
     private double userY  (double y) { return ymax - y * (ymax - ymin) / height;   }
-    private double scaleX (double x) { return width  * (x - xmin) / (xmax - xmin); }
-    private double scaleY (double y) { return height * (ymax - y) / (ymax - ymin); }
-    private double factorX(double w) { return w * width  / Math.abs(xmax - xmin);  }
-    private double factorY(double h) { return h * height / Math.abs(ymax - ymin);  }
-//    public void addChangeListener(ChangeListener listener){
-//        listenerList.add(ChangeListener.class, listener);
-//    }
-//
-//    public void removeChangeListener(ChangeListener listener){
-//        listenerList.remove(ChangeListener.class, listener);
-//    }
-//
-//    protected void fireStateChanged() {
-//        ChangeListener[] listeners = listenerList.getListeners(ChangeListener.class);
-//        if (listeners != null && listeners.length > 0) {
-//            ChangeEvent evt = new ChangeEvent(this);
-//            for (ChangeListener listener : listeners) {
-//                listener.stateChanged(evt);
-//            }
-//        }
-//    }
 
 }
