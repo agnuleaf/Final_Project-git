@@ -1,0 +1,393 @@
+package grid;
+
+import edu.princeton.cs.algs4.Graph;
+import edu.princeton.cs.algs4.Queue;
+import edu.princeton.cs.algs4.Stack;
+
+import edu.princeton.cs.algs4.SET;      // import java.util.HashSet;
+import edu.princeton.cs.algs4.Bag;
+import edu.princeton.cs.algs4.StdRandom;
+
+
+import javax.swing.event.ChangeEvent;
+import java.util.HashSet;
+import java.util.Iterator;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.min;
+
+/// Provides a dense graph representation of a 2D grid using [Graph] api, and conversions from its 0-based vertex array
+/// to 1-based coordinates of the positive XY plane presented as an immutable [GridPoint].
+/// ### Overview
+///
+/// A 2D rectilinear grid graph contains equally distanced nodes, with only vertical and horizontal edges to adjacent nodes.
+/// In a square grid, by disallowing diagonal movement the minimum distance between p and q becomes :
+/// <p>  dM = |q.x - p.x| + |q.y - p.y| , called Manhattan or taxicab distance. </p>
+/// Unlike the more familiar Euclidean distance on a Cartesian plane or the Chebyshev distance for a king on a chessboard,
+/// there can be many routes with equal Manhattan distance exist can take possible shortest paths from p to q.
+///
+/// [Manhattan distance](https://en.wikipedia.org/wiki/Taxicab_geometry)
+/// [Lattice graph](https://en.wikipedia.org/wiki/Lattice_graph)
+/// [Lattice path](https://en.wikipedia.org/wiki/Lattice_path)
+/// [Hanan Grid](https://en.wikipedia.org/wiki/Hanan_grid)
+/// @author Wesley Miller
+public class Grid {
+    private int width = 5;     // squares for x axis
+    private int height ;
+    private StackSet excludedV;   //  walls from user input, can pop the most recent and search faster than stack
+    private Queue<Integer> endpoints;
+    private int recentGridEndpoint = 0; // increments when point added to Grid instance, but before being drawn
+    private int lastEndpointToAdd = 2;  // only 2 endpoints at a time allowed
+    //    private GridPair endpoints;
+    private Graph graph;
+//  private int[] savedExcludedV = new int[0];   // saved walls from the previous session(s);
+
+    /// Constructor for a square `Grid` instance where width and height are the same.
+    /// @param width number of squares along each axis
+    public Grid(int width){
+        this.width = width;
+        height = this.width;
+        excludedV = new StackSet();
+        endpoints = new Queue<>();
+    }
+
+//    public void setDim(int n){
+//        width = (n >= 0 && n <= 512 ? n: width);
+//    }
+
+    /// The total number of walls
+    public int countWalls(){
+        return excludedV.size() ;
+        //+ savedExcludedV.length;
+    }
+
+    public int recentGridEndpoint(){
+        return recentGridEndpoint;
+    }
+
+    /// Checks and adds an endpoint if not already there, if successful returns true.
+    public boolean addEndpoint(GridPoint p) {
+        if (!isEndpoint(p) && !isWall(p) && recentGridEndpoint < lastEndpointToAdd) {
+//            if (endpoints == null) {          // add the first end point
+//                endpoints = new GridPair(p, null);
+//            } else if (endpoints.end() == null) {
+//                endpoints = new GridPair(endpoints.start(), p);
+            // theres no logic to remove start and endpoint yet
+            endpoints.enqueue(indexOf(p));
+            recentGridEndpoint++;
+            return true;
+        } else {
+            System.out.println(
+                    "failed to add: endpoint or wall already at" + p);    // incase we allow walls to accumulate
+            return false;
+        }
+    }
+
+    /// Check if a given point is an endpoint
+    public boolean isEndpoint(GridPoint p){
+        boolean b = false;           // check if the  queue contains p
+        for(int v : endpoints){  b |= (v == indexOf(p));  }
+        return b;
+//        if(endpoints == null || endpoints.start() == null || endpoints.end() == null)
+//        { throw new UnsupportedOperationException(
+//                "all endpoints must be placed before walls"); }
+//        return endpoints.contains(p);
+    }
+
+    ///  returns endpoints as a `Queue<GridPoint>` in order start to end
+    public Queue<GridPoint> getEndpoints(){
+        Queue<GridPoint> q = new Queue<>();
+//        if(endpoints == null || endpoints.start() == null || endpoints.end() == null)
+//                {   throw new UnsupportedOperationException("endpoints null"); }
+//        else {
+//            q.enqueue(endpoints.start());
+//            q.enqueue(endpoints.end());
+//        }
+        return q;
+    }
+
+    public GridPoint getStart(){
+        return pointAt(endpoints.peek());
+    }
+
+    public GridPoint getEnd(){
+        int start = endpoints.dequeue();
+        int end = endpoints.dequeue();
+        endpoints.enqueue(start);
+        endpoints.enqueue(end);
+        return pointAt(end);
+    }
+    /// Builds graph from current set of data and returns the `Graph` instance.
+
+    /// Converts and array of points in (x,y) grid coordinates to an array of graph vertices
+    public int[] indexArrayOf(GridPoint[] points){
+        int[] indexArray = new int[points.length];
+        for(int i = 0 ; i < points.length ; i++) {
+            indexArray[i] = indexOf(points[i]);
+        }
+        return indexArray;
+    }
+
+    ///  Converts an array of points as (x,y) grid coordinates to graph vertices
+    public Iterable<Integer> indicesOf(GridPoint[] points) {
+        Bag<Integer> indices = new Bag<>();
+        for(int i = 1 ; i < points.length ; i+=2) {
+            indices.add(indexOf(points[i]));
+        }
+        return indices;
+    }
+
+    /// Checks to add wall unless an endpoint or wall already exists there.
+    /// @return true if successfully added a wall, otherwise false.
+    public boolean addWall(GridPoint p){
+        if(!isWall(p) && !isEndpoint(p)){
+            excludedV.push(indexOf(p));
+            return true;
+        }
+        else if(isEndpoint(p) || isWall(p)){                  // DEBUG print for
+            System.out.println("can't add wall on wall or other endpoint");
+            return false;
+        }
+        else{
+            throw new IllegalStateException("attempted to at wall at invalid location: "+p);
+        }
+    }
+//    record GridPair(GridPoint start, GridPoint end){
+//        boolean contains(GridPoint p){
+//            return start.equals(p) && end.equals(p);
+//        }
+//    }
+
+    /// Checks if the given point is a wall
+    public boolean isWall(GridPoint p){
+        return excludedV.contains(indexOf(p));
+    }
+
+    /// Removes the last wall placed, or null if there is none.
+    public GridPoint removeLastWall() {
+        return (!excludedV.isEmpty()? pointAt(excludedV.pop()) : null);
+    }
+    public boolean tryRemoveLastWall(){
+        if (!excludedV.isEmpty()) {
+            excludedV.pop();
+            return true;
+        } else
+            return false;    }
+    public GridPoint peekLastWall(){
+        return pointAt(endpoints.peek());
+    }
+//
+//    // Converts individual 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
+//    private int indexOf(int x, int y){
+//        if(x == 0 || y == 0) return -1; // TODO: Remove and add bounds check elsewhere like file input conversion
+//        return (x - 1) * dim + (y - 1);
+//    }
+
+    /// Converts a `Point` as 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
+    public int indexOf(GridPoint p){
+        if(p.x() == 0 || p.y() == 0)
+            return -1; // TODO: Remove and add bounds check elsewhere like file input conversion
+        return ((p.x() - 1) * width + (p.y() - 1));
+    }
+
+    /// Converts a 0-based indexed vertex in `Graph` to a Point with 1-based (x, y) coordinates.
+    public GridPoint pointAt(int index){
+        return new GridPoint(
+            (index) / width + 1,
+            (index) % width + 1);
+    }
+    /// Builds the graph with the grid's data then returns it.
+    public Graph graph(){
+        buildGraph();
+        return graph;
+    }
+    /// Assigns edges to adjacent nodes in a `dim` x `dim` grid, nodes in the grid are only connected horizontally and
+    /// vertically to other adjacent nodes. Diagonal connections are NOT created.
+    /// Skips attaching edges to excluded vertices.
+    /// Nodes at grid-corners have 2 edges, nodes along grid-borders have 3, and internal nodes have 4.
+    /// The `Graph` vertices are indexed in the range = \[0, (dim*dim -1 )\] A dense graph is formed by
+    public void buildGraph() {
+        this.graph = new Graph(width * width);
+
+        for(int v = 0; v < width * width; v++){
+            if(!excludedV.contains(v)){
+                if(v < width * width - (width)  && !excludedV.contains(v+ width)) // skip attaching beyond top border and excluded
+                    graph.addEdge(v, v + width);
+                if((v + 1) % width != 0   && !excludedV.contains(v+1)) // skip attaching beyond right border and excluded
+                    graph.addEdge(v, (v+1));
+            }
+        }
+    }
+    //    void save(){ // to accumulate walls session
+//        savedExcludedV = excludedV.combineArrays(savedExcludedV);
+//    }
+//    ///  Converts nodes as (x,y) grid coordinates to graph vertices
+//    public Iterable<Integer> indicesOf(Iterable<GridPoint> nodes) {
+//        Bag<Integer> indices = new Bag<>();
+//        for(GridPoint p : nodes) {
+//            indices.add(indexOf(p));
+//        }
+//        return indices;
+//    }
+    /// The total number of squares in the grid, including empty and nonempty
+    int count(){
+        return height*width;
+    }
+    int countUnoccupied(){
+        return count() - (recentGridEndpoint() + countWalls());
+    }
+    /// Generates a random set of `GridPoint`s within the grid's bounds and under its limit
+    /// @return - set of `GridPoint`s
+    public SET<GridPoint> generateNodes(int count){
+        int pointCount = Math.max(count, this.countUnoccupied());
+        SET<GridPoint> uniqueNodes = new SET<>();
+        for(int i = 0 ; i < pointCount; i++) {
+            GridPoint n;
+            do{
+                n = new GridPoint(StdRandom.uniformInt(1, width), StdRandom.uniformInt(1, width));
+            }while(uniqueNodes.contains(n));
+            uniqueNodes.add(n);
+        }
+        return uniqueNodes;
+    }
+
+    /// Generates a unique random `GridPoint[]`
+    public GridPoint[] generateNodeArray(int count){
+        HashSet<GridPoint> uniqueNodes = new HashSet<>();
+        int pointCount = Math.max(count, this.countUnoccupied());
+        for(int i = 0 ; i < pointCount; i++) {
+            GridPoint n;
+            do {
+                n = new GridPoint(StdRandom.uniformInt(1, width), StdRandom.uniformInt(1, width));
+            } while (uniqueNodes.contains(n));
+            uniqueNodes.add(n);
+        }
+        return uniqueNodes.toArray(new GridPoint[0]);
+    }
+
+//    ///  Finds shortest component of vector 'pq'. From 'p' this points to the closest line through 'q'
+//    public static GridPoint toIntersection(GridPoint p, GridPoint q){
+//        int magPQx = abs(q.x() - p.x()) ; int magPQy = abs(q.y() - p.y());
+//        // select line through q closest to p
+//        if(magPQx > magPQy) {
+//            return new GridPoint( 0 , q.y() - p.y() );
+//        }
+//        else if( magPQy > magPQx){
+//            return new GridPoint(q.x() - p.x(), 0);
+//        } else return new GridPoint(0, 0);
+//    }
+//
+//    private Graph subGraph(int[] ll, int[] ur, Graph graph){
+//        if( ur[0] < ll[0] && ur[1] < ll[1])  throw new IllegalArgumentException("invalid bounds provided for subgraph");
+//        Graph subGraph = new Graph((ur[0] - ll[0]) * (ur[1] - ll[1]));
+//
+//        for(int v = 0; v < ticks * ticks; v++){
+//            int vx = xOf(v);  int vy = yOf(v);
+//            if(( vx >= ll[0] && vx < ur[0]) && ( vy >= ll[1] && vy < ur[1] )) {
+//                // attach vertex upward of v unless adding to top or exclude list
+//                if (v < ticks * ticks - (ticks)  && !excludedV.contains(v + ticks))
+//                    subGraph.addEdge(v, v + ticks);
+//                // attach vertex rightward of v edge to right except at rightmost spot
+//                if ((v + 1) % ticks != 0  && !excludedV.contains(v + 1))
+//                    subGraph.addEdge(v, (v + 1));
+//            }
+//        }
+//        return subGraph;
+//    }
+//
+//    /// Creates a subgraph, or window, of a grid graph using inclusive bounds defined by two [GridPoint]s
+//    /// 'll' (lower left) and 'ur'(upper right).
+//    /// @return the subGraph
+//    /// @throws IllegalArgumentException if `ll` and 'ur' are invalid coordinates relative to one another
+//    public Graph subGraph(GridPoint ll, GridPoint ur, Graph graph){
+//        if( ur.x() < ll.x() && ur.y() < ll.y())  throw new IllegalArgumentException("invalid bounds provided for subgraph");
+//        Graph subGraph = new Graph((ur.x() - ll.x()) * (ur.y() - ll.y()));
+//
+//        for(int v = 0; v < ticks * ticks; v++){
+//            int vx = xOf(v);  int vy = yOf(v);
+//            if(( vx >= ll.x() && vx < ur.x()) && ( vy >= ll.y() && vy < ur.y() )) {
+//                // attach vertex upward of v unless adding to top or exclude list
+//                if (v < ticks * ticks - (ticks)  && !excludedV.contains(v + ticks))
+//                    subGraph.addEdge(v, v + ticks);
+//                // attach vertex rightward of v edge to right except at rightmost spot
+//                if ((v + 1) % ticks != 0  && !excludedV.contains(v + 1))
+//                    subGraph.addEdge(v, (v + 1));
+//            }
+//        }
+//        return subGraph;
+//    }
+//
+//    // is the graph vertex 'v' within the 'll'-'ur' window?
+//    private boolean contained(int v, GridPoint ll, GridPoint ur){
+//        int vx = xOf(v);  int vy = yOf(v);
+//        return (vx > ll.x() && vx < ur.x()) && (vy > ll.y() && vy < ur.y());
+//    }
+
+    // converts individual axis coordinates
+    private int xOf(int index){ return (index) / width + 1; }
+    private int yOf(int index){ return (index) % width + 1; }
+
+    // Provides fast removal by recency and fast check for duplicates.
+    // Inner class for debug: allows using pointAt and indexOf without making the grid dimensions (ticks) static
+    class StackSet implements Iterable <Integer>{
+        private final Stack<Integer> stack  ;
+        private final SET <Integer>  treeSet;
+        StackSet(){
+            stack    = new Stack<>();
+            treeSet  = new SET<>();  // better to use HashSet rather than use compareTo in TreeSet
+        }
+        boolean contains(int v){
+            return treeSet.contains(v);
+        }
+        boolean isEmpty(){
+            return treeSet.isEmpty();
+        }
+        void push(int v){
+            if( !contains(v) ){
+                stack.push(v);
+                treeSet.add(v);
+                System.out.print(pointAt(v)
+                        + "push successes\n stack n: "+ stack.size()
+                        + " treeSee n:" + treeSet.size());
+            } else{
+                System.out.println(pointAt(v)
+                        + "push failed\t is something in the way?");
+            }
+        }
+
+        int pop(){
+
+            int tmp = stack.pop();
+            System.out.print(pointAt(tmp) + "popped");
+            treeSet.remove(tmp);
+            System.out.println("treeSet n:" + treeSet.size() + " stack n:" + stack.size());
+            return tmp;
+        }
+
+        int peek(){
+            return stack.peek();
+        }
+        int size(){
+            return treeSet.size();
+        }
+        Iterable<Integer> getSet(){
+            return treeSet;
+        }
+        @Override
+        public Iterator<Integer> iterator() {
+            return stack.iterator();
+        }
+        // for saving all to a single array in case of combining placement of walls
+        int[] combineArrays(int[] lArray){
+            int[] combined = new int[lArray.length + treeSet.size()];
+            for(int i = lArray.length ; i < lArray.length + treeSet.size() ; i++) {
+                int min = treeSet.min();
+                treeSet.remove(min);
+                stack.pop();
+                combined[i] = min;
+            }
+            return combined;
+        }
+    }
+}
+

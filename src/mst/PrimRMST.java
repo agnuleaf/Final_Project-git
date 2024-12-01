@@ -1,20 +1,23 @@
-package autoRouter;
+package mst;
 
+import grid.Grid;
+import grid.GridPoint;
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.MergeX;
 import edu.princeton.cs.algs4.IndexMinPQ;
 
-import edu.princeton.cs.algs4.PrimMST;
 import edu.princeton.cs.algs4.EdgeWeightedGraph;
 import edu.princeton.cs.algs4.Edge;
 
-import static  autoRouter.Point.distSqEuclid;
+import static  grid.GridPoint.distSqEuclid;
+
+import java.awt.*;
 import java.util.Arrays;
 /// Goal: Generate a spanning tree over a selection of points in a rectilinear graph.
 /// Input:     Rectilinear Dense Grid Graph, selection of nodes to include
 /// Output:    TODO standard MST or ideally Rectilinear MST with some Steiner points
 /// First determines the MST for nodes given their cartesian coordinates,
-/// 1. Sort all nodes by distance from origin , or a per-axis basis
+/// 1. perform a scan for nearest neighbors, start with a window halfwidth of 1, and length of the axis
 /// 2. Find nearest neighbors, 1 per quadrant for each node in ascending order
 /// assigning weights to edges equal to their Euclidean distance .
 /// 3. Perform Minimum Spanning Tree on this newly formed `EdgeWeightedGraph`
@@ -22,12 +25,12 @@ import java.util.Arrays;
 /// @author Wesley Miller
 public class PrimRMST {
 
-    private Point[] pins;
+    private GridPoint[] pins;
     private Graph rectilinearGraph;             // integer coordinates, no diagonal edges
     private EdgeWeightedGraph cartesianGraph;   // edges between nodes are their real valued Euclidean distance
 
     /// Constructor holds reference to the underlying dense rectilinear graph
-    PrimRMST(Graph graph, Point[] pins){
+    PrimRMST(Graph graph, GridPoint[] pins){
         this.pins = pins;
         this.rectilinearGraph = graph;
     }
@@ -57,20 +60,20 @@ public class PrimRMST {
     // TODO f: MST -> RMST
     public static void main(String[] args) {
         Grid grid = new Grid(10);
-        Point[] pinsTest = {
-                new Point(2, 3),
-                new Point(3, 1),
-                new Point(1, 2),
-                new Point(2, 1),
-                new Point( 1,1),
+        GridPoint[] pinsTest = {
+                new GridPoint(2, 3),
+                new GridPoint(3, 1),
+                new GridPoint(1, 2),
+                new GridPoint(2, 1),
+                new GridPoint( 1,1),
 //                new Point(3, 5),
 //                new Point(1,2),
 //                new Point(7,8),
 //                new Point(4,4)
         };
-        Point[] pinsByX = Arrays.copyOf(pinsTest, pinsTest.length);
-        Point[] pinsByY = Arrays.copyOf(pinsTest, pinsTest.length);
-        MergeX.sort(pinsByX, Point.compareX);  MergeX.sort(pinsByY, Point.compareY);
+        GridPoint[] pinsByX = Arrays.copyOf(pinsTest, pinsTest.length);
+        GridPoint[] pinsByY = Arrays.copyOf(pinsTest, pinsTest.length);
+        MergeX.sort(pinsByX, GridPoint.compareX);  MergeX.sort(pinsByY, GridPoint.compareY);
 
         // TODO associate pinsByX and pinsByY to the same index in pinsTest
         // TODO quadrant check for neighborsbv
@@ -87,7 +90,7 @@ public class PrimRMST {
 //        }
         PrimRMST rmst = new PrimRMST(grid.graph(), pinsTest);
 
-        IndexMinPQ<Point> pinsSorted = new IndexMinPQ<>(pinsTest.length);
+        IndexMinPQ<GridPoint> pinsSorted = new IndexMinPQ<>(pinsTest.length);
         for(int i = 0 ; i < pinsTest.length - 1; i++){
             pinsSorted.insert(i, pinsTest[i] );
         }
@@ -103,6 +106,26 @@ public class PrimRMST {
 
 //        for(int i = 0; i < pinsSorted.size(); i++){
 //            System.out.println(i + ": " + pinsSorted.keyOf(i));
+//        }
+
+//        private static void printAdjacency(Grid grid) {
+//            for(int v = 0; v < grid.graph().V() ; v++){
+//                System.out.print(grid.pointAt(v) + " adj: ");
+//                for(int adj : grid.graph().adj(v)){
+//                    System.out.print( grid.pointAt(adj));
+//                }
+//                System.out.println();
+//            }
+//        }
+//        private void printBFSPath(int graphIndex, BreadthFirstPaths bfp, Grid grid, Color color){
+//            if( bfp.hasPathTo(graphIndex) ){
+//                for(int step : bfp.pathTo(graphIndex)) {
+//                    display.drawPoint(grid.pointAt(step),color);
+////                    System.out.print("("+grid.nodeAt(step)[0]+ " " + grid.nodeAt(step)[1]+")");
+//                    pane.pause(200 );
+//                    pane.show();
+//                }
+//            }
 //        }
     }
 }

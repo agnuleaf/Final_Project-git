@@ -1,27 +1,17 @@
-# AutoRouter
+# Grid Graph 
 
-## Overview
+Basic 2D square grid graph representation using Java. 
+Grid uses the graph api from `edu.princeton.cs.algs4.Graph` and is displayed in Java using `algs4.Draw`.
 
-`MinimumDetour` - finds shortest Manhattan path for each contiguous pair of vertices in an array.
+## Maze
+ User creates start/end points and obstacles in a maze. The shortest path is visualized as a breadth first search expanding wavefront over the grid and ...
+ TODO alternate targeted search algorithm 
 
-
-
-## Todo
-
-### SP Manhattan path
-- [] Adjust `MinimumDetour` to prefer x or y axis of movement. 
-- [] Set preference as initial condition 
-
-### MST of all paths
-- [] Accumulate paths as weighted-edges, perform the MST over all paths
-
-### Features
-- [] Weights for nodes: e.g infinite weight blocks access
+## TODO Maze 
 
  
 
 ## Dependencies
 
 - `edu.princeton.cs.algs4` library
-- `org.junit.jupiter` for tests
-- Openjdk 23 for markdown doc-comments
+- Java23 for markdown doc-comments

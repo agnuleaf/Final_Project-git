@@ -1,0 +1,164 @@
+package maze;
+
+import grid.GridDraw;
+import grid.GridPoint;
+import grid.Grid;
+import edu.princeton.cs.algs4.*;
+
+import javax.swing.*;
+import java.awt.*;
+
+/// TODO DOES NOT REMEMBER THE SHORTEST PATH.
+/// TODO Need to associate a 'predecessor label' with each stacked neighbor
+///
+/// 'brute force'
+/// Brainstorm notes:
+/// Can we define a branch somehow based off the target, source and stack history??
+/// Features of a dead end path:
+/// - If the target is not collinear with the path, a turn must occur. Otherwise it is a dead end
+///     - When does this dead end begin ? the top of the stack
+///     - How long is this dead end ??  peek stack for the node coordinates,
+///         - pStack : one of the coordinates is off by one(in the orthogonal direction),
+///             the other (collinear direction)is off by the number of steps taken
+///         - nStack : Can either follow the pStack rule, or if collinear it is off by (number of steps - 1)
+///
+/// Search for a target in a rectilinear grid graph. Finds a path to the target, using two stacks of neighbors
+/// of previously visited nodes. The `pStack` contains neighbors closer to target than the node at which they were
+/// stacked, and an `nStack` contains neighbors farther from target.
+/// Unlike a BFS-style, it heads directly toward the target instead of expanding a search radius.
+/// 'graph-index' refers to the vertex's position in the array of the `algs4.Graph` instance.
+/// 'node' is the `Point` instance from mapping its 'graph-index' to a 2D-plane.
+/// or `int[2]` //TODO remove int[2] references outside `Grid` and any unnecessary methods
+public class GridSearchTargeted implements Runnable {
+
+    private boolean[] marked;                   // marked[v] = is there an s-v path?
+    private int gU;
+    private int gT;
+    private final Grid grid;
+    private final GridDraw gridDraw;
+    private final Draw pane;       // VISUAL
+
+
+    /// Computes a shortest path to `q` from `p` in ~sqrt(V) time for a square grid.
+    /// @param grid the grid graph instance
+    /// @throws IllegalArgumentException unless {@code 0 <= p,q < V}
+    public GridSearchTargeted(Grid grid, GridDraw gridDraw) {
+        this.gridDraw = gridDraw;
+        this.grid = grid;
+        this.pane = gridDraw.getDraw();
+        //  currently visited graph vertex in 'index-form'
+        //  target graph vertex
+        marked = new boolean[grid.graph().V()];
+        validateVertex(gU);
+        validateVertex(gT);
+    }
+    /// Less expansive search than BFS
+    /// @param p the source node in the grid
+    /// @param q the target node in the grid
+    public /*Iterable<Point>*/ void searchWithBacktrack(GridPoint p, GridPoint q) {
+        gU = grid.indexOf(p);
+        gT = grid.indexOf(q);
+        Stack<Integer> pStack = new Stack<>();          // neighbors closer to target
+        Stack<Integer> nStack = new Stack<>();          // neighbors away from target
+        Stack<GridPoint> pathStack = new Stack<>();
+        Graph graph = grid.graph();
+        marked[gU] = true;
+        pathStack.push(grid.pointAt(gU));
+
+        while (gU != gT) {
+            GridPoint u = grid.pointAt(gU); // currently visited node
+            Bag<Integer> closer =  new Bag<>(); // closer neighbors
+            for (int gV : graph.adj(gU)) {  // evaluate each neighbor of u
+                if (!marked[gV]) {
+                    GridPoint v = grid.pointAt(gV); // the neighbor
+                    if (v.isFarther(u, q)) {
+                        nStack.push(gV);
+                    }else if(!v.isFarther(u, q)){
+                        pStack.push(gV);
+                    }
+                }
+            }
+
+            if (!pStack.isEmpty()) {
+//                if (!marked[pStack.peek()]) {
+                    gU = pStack.pop();
+//                    pathStack.pop();        // TODO How to pop the right amount of nodes??
+                    marked[gU] = true;
+//                    pathStack.push(grid.pointAt(gU));
+
+                    gridDraw.circleOutline(grid.pointAt(gU), Draw.BOOK_RED);     // VISUAL
+                    pane.pause(50);
+                    pane.show();
+
+                    // StdOut.printf("dfs(%d)\n", w);
+//                } else {
+//                 // --- Inefficient Backtrack Step: Pop pathStack until neighboring
+//
+//                    pStack.pop();               // FIXME
+//                    pathStack.pop();
+//                }
+            } else if (!nStack.isEmpty()) {
+                pStack = nStack;        // swap stacks, find a possible detour
+                nStack = new Stack<>();
+
+            } else { // if both stacks are empty there is no path!
+                // TODO
+            }
+        }
+//        return pathStack;
+    }
+
+    //    private boolean isCloserTo
+    public static void main(String[] args) {
+        int dim = 10;
+        JFrame frame = new JFrame();
+        JPanel mainPanel = new JPanel(new FlowLayout(), true);
+        GridDraw gridDraw = new GridDraw(dim, frame);
+        Draw draw = gridDraw.getDraw();
+        mainPanel.add(draw.getJLabel());
+        frame.setContentPane(mainPanel);
+        gridDraw.drawEmptyGrid();
+                Grid grid = new Grid(dim);
+
+        for(GridPoint p : new GridPoint[]{
+                new GridPoint(1, 1),
+                new GridPoint(3, 5)}){
+            if(grid.addEndpoint(p)){
+                gridDraw.drawEndpoint(p);
+            }
+        }
+        for(GridPoint p : new GridPoint[]{
+                new GridPoint(3, 2),
+                new GridPoint(2, 2),
+                new GridPoint(4,1)})
+        {
+            if(grid.addWall(p)) {
+                gridDraw.drawWall(p);
+            }
+        }
+
+        grid.buildGraph();
+        draw.show();
+        GridSearchTargeted gs = new GridSearchTargeted(grid, gridDraw);
+        /*Iterable<Point> path = */gs.searchWithBacktrack( grid.getStart(), grid.getEnd());
+//        int count = 0;
+//        for(Point p : path){
+//            Display.drawPath(p, 0.01, Draw.BLUE, draw);
+//            draw.show();
+//            count++;
+//        }
+//        System.out.println(count); // FIXME correct pathresult for grids with obstacles
+    }
+
+    // throw an IllegalArgumentException unless {@code 0 <= v < V}
+    private void validateVertex(int v) {
+        int V = marked.length;
+        if (v < 0 || v >= V)
+            throw new IllegalArgumentException("vertex " + v + " is not between 0 and " + (V - 1));
+    }
+
+    @Override
+    public void run() {
+
+    }
+}
