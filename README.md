@@ -21,8 +21,8 @@ Buttons :
 - try a few larger grid sizes with faster speeds. Could just parse cli args to set them, instead of gui.
 
 ## Maze
- User creates start/end points and obstacles in a maze. The shortest path is visualized as a breadth first search expanding wavefront over the grid and ...
- TODO alternate targeted search algorithm 
+ User creates start/end points and obstacles in a maze. Breadth first search is visualized as an expanding wavefront over the grid before 
+ the shortest path between the two points is displayed.
 
 ## Dependencies
 
