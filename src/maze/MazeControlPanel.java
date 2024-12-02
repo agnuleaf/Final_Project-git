@@ -57,6 +57,7 @@ public class MazeControlPanel extends JPanel {
         add(btnRun);
     }
 
+
     class VisualizationModel {
         ChangeEvent changeEvent;
 
@@ -126,10 +127,14 @@ public class MazeControlPanel extends JPanel {
                 if (btnRun.getText().equals("Run") && grid.endpointsSize() >= 2){
                     isVisualRunning = true;
                     instructions.setText(instrVis);
+                    // maybe launch new thread here??
                     runVisualization(gridDraw.getPause());
+
                     btnRun.setText("Continue");
                     btnUndo.setText("Reset");
-
+                    System.out.println("btnRun Sim");
+                    btnUndo.setEnabled(false);
+                    btnRun.setEnabled(false);
                 }
                 else if(btnRun.getText().equals("Continue")){
                     instructions.setText(instrInputA);
@@ -143,7 +148,6 @@ public class MazeControlPanel extends JPanel {
                     btnUndo.setText("Undo");
                     draw.show();
                     drawCanvas.repaint();
-
                 }
             }
         });
@@ -161,6 +165,7 @@ public class MazeControlPanel extends JPanel {
                     }
                 } else if (btnUndo.getText().equals("Reset")) {
                     restartRunnable();
+
                     btnUndo.setText("Undo");
                     btnRun.setText("Run");
                     instructions.setText(instrInputA);
@@ -173,24 +178,28 @@ public class MazeControlPanel extends JPanel {
             }
             });
 
-        // Delete the last wall placed with 'd'
-        btnUndo.addKeyListener(new KeyAdapter() {
-            public void keyPressed (KeyEvent ke){
-            if (ke.getKeyCode() == KeyEvent.VK_D) {
-                if (!isVisualRunning && !isRestartScreen && grid.countWalls() > 0) {
-                    GridPoint tmp = grid.removeLastWall();
-                    if(tmp != null) gridDraw.eraseSquare(tmp);
-                    gridDraw.mainFrame.repaint();
-                }
-            }
-            }
-        });
+//        // Delete the last wall placed with 'd'
+//        btnUndo.addKeyListener(new KeyAdapter() {
+//            public void keyPressed (KeyEvent ke){
+//            if (ke.getKeyCode() == KeyEvent.VK_D) {
+//                if (!isVisualRunning && !isRestartScreen && grid.countWalls() > 0) {
+//                    GridPoint tmp = grid.removeLastWall();
+//                    if(tmp != null) gridDraw.eraseSquare(tmp);
+//                    gridDraw.mainFrame.repaint();
+//                }
+//            }
+//            }
+//        });
     }
 
     /// The animation method for breadth-first search visualization. Starts a new `Thread` to bypasses Swing's
     /// optimization by combining draw calls. `algs4.Draw` timer is used to add delay between frame.
-    private void runVisualization(int pause) {
+    /// @param pause - the length of time between animation updates
+    /// @return true if a path was found
+    void runVisualization(int pause) {
+        boolean[] pathFound = new boolean[1];   // FIXME
         tPause = pause;
+        Thread tSim =
         new Thread(() -> {
             BreadthFirstSearchView wavefront = new BreadthFirstSearchView(gridDraw);
             Queue<GridPoint> wave = wavefront.viewWave();
@@ -207,8 +216,14 @@ public class MazeControlPanel extends JPanel {
                 draw.getJLabel().paintImmediately(this.getBounds());
             }
             if(wavefront.pathTo(grid.indexOf(grid.getEnd())) == null){
-//    todo draw message            gridDraw.
+                gridDraw.showMessage("NO PATH FOUND!");
+                draw.show(); frame.repaint();
+                pathFound[0] =false;
+                return;
+            //    todo draw message            gridDraw.
             }
+
+//            for(GridPoint w : wave){
             for (int v : wavefront.pathTo(grid.indexOf(grid.getEnd()))) {
                 gridDraw.path(p, grid.pointAt(v), Color.RED);
                 p = grid.pointAt(v);
@@ -217,34 +232,27 @@ public class MazeControlPanel extends JPanel {
                 frame.repaint();
                 draw.getJLabel().paintImmediately(this.getBounds());
             }
-//                SwingUtilities.invokeLater(() -> {
-//                    draw.show();
-//                    frame.repaint(); // or this.paintImmediately(this.getBounds());
-//                    draw.getJLabel().paintImmediately(this.getBounds());
-//                });
-//            }
-//            try {
-//                Thread.sleep(200);
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//            Grid grid = gridDraw.getGrid();
-//            GridPoint p = grid.getStart();
-//
-//            for (int v : wavefront.pathTo(grid.indexOf(grid.getEnd()))) {
-//                gridDraw.path(p, grid.pointAt(v), Color.RED);
-//                p = grid.pointAt(v);
-//                SwingUtilities.invokeLater(() -> {
-//
-//                    draw.show();
-//                    frame.repaint();
-//                    draw.getJLabel().paintImmediately(this.getBounds());
-//
-//                });
-//
-            }).start();
+            pathFound[0] =true;
+        });
+
+        Thread tPostSim = new Thread(() ->{
             System.out.println("Sim Done");
             visualComplete();
+            btnRun.setEnabled(true);
+            btnUndo.setEnabled(true);
+            isVisualRunning = false;
+        });
+        tSim.start();
+        try {
+
+            tPostSim.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        // These execute directly after the Thread starts . They should wait until the trhead ends.
+        // maybe make new thread for them and join the two?
+
+//            return pathFound[0];
     }
     
     private void visualComplete() {
@@ -253,7 +261,7 @@ public class MazeControlPanel extends JPanel {
         btnUndo.setText("Reset");
         btnRun.setText("Continue");
         instructions.setText(instrRestart);
-//    	isBtnRestart = false;
+    	isBtnRestart = false;
     }
 
     void printThreadDebug(){
