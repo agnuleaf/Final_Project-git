@@ -14,7 +14,7 @@ public class GridDraw {
 
     private int ticks;
     //    private int height;
-    private int tPause;     // pause time between draws
+    private int tPause = 50;     // pause time between draws todo speed of animation
 
     private static double THICK_PEN_RADIUS = 0.002 * 10;
     public JFrame mainFrame;
@@ -25,6 +25,7 @@ public class GridDraw {
         grid = new Grid(ticks);
 
         this.draw = new Draw();
+//        this.tPause = tPause;
         draw.enableDoubleBuffering();
         draw.setXscale(0,ticks);
         draw.setYscale(0,ticks);
@@ -136,8 +137,7 @@ public class GridDraw {
     /// GridDraws the nodes visited as light, translucent overlay.
     public void discovered(GridPoint p){
         draw.setPenRadius();
-        draw.setPenColor(new Color(255,155,175,80)); // translucent
-//        draw.setPenColor(Color.PINK);
+        draw.setPenColor(new Color(255,155,175,80));// Color.PINK.);
         draw.setPenRadius();
         draw.filledSquare(
                 p.x() + shift,
