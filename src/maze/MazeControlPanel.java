@@ -218,6 +218,9 @@ public class MazeControlPanel extends JPanel {
                 gridDraw.showMessage("NO PATH FOUND!");
                 draw.show(); frame.repaint();
                 pathFound[0] =false;
+                btnRun.setEnabled(true);
+                btnUndo.setEnabled(true);
+                isVisualRunning = false;
                 return;
             //    todo draw message            gridDraw.
             }
@@ -232,22 +235,27 @@ public class MazeControlPanel extends JPanel {
                 draw.getJLabel().paintImmediately(this.getBounds());
             }
             pathFound[0] =true;
-        });
-
-        Thread tPostSim = new Thread(() ->{
             System.out.println("Sim Done");
             visualComplete();
             btnRun.setEnabled(true);
             btnUndo.setEnabled(true);
             isVisualRunning = false;
         });
-        tSim.start();
-        try {
 
-            tPostSim.join();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+//        Thread tPostSim = new Thread(() ->{
+//            System.out.println("Sim Done");
+//            visualComplete();
+//            btnRun.setEnabled(true);
+//            btnUndo.setEnabled(true);
+//            isVisualRunning = false;
+//        });
+        tSim.start();
+//        try {
+//
+//            tPostSim.join();
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
         // These execute directly after the Thread starts . They should wait until the trhead ends.
         // maybe make new thread for them and join the two?
 
