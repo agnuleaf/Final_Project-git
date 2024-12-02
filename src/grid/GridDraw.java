@@ -7,10 +7,12 @@ import java.awt.*;
 /// Wraps `algs4.Draw` shape painting methods for painting on a 2D grid.
 public class GridDraw {
     private static final double shift =  -0.5;  // shift placement of shapes
+
     private Draw draw;
     private Grid grid;
     private final Color backgroundColor = Color.DARK_GRAY;
     private final Color gridColor = Color.LIGHT_GRAY;
+    private double gridThickness = 0.5;
 
     private int ticks;
     //    private int height;
@@ -70,33 +72,39 @@ public class GridDraw {
         draw.setPenRadius();
     }
 
-        // helper for undo last user input. Redraws a single grid square with outlines.
+    /// Visually erases a single grid square centered at p, by painting the grid background over it.
     public void eraseSquare( GridPoint p ){
-        fillSquare(p,Color.LIGHT_GRAY.brighter());
-        fillSquare(p, gridColor);
+//        Color DEBUG_RED     = Color.RED     ;
+//        Color DEBUG_BLUE    = Color.BLUE    ;
+//        Color DEBUG_YELLOW  = Color.YELLOW  ;
+//        Color DEBUG_GREEN   = Color.GREEN   ;
+//        fillSquare(p,Color.LIGHT_GRAY.brighter());
+//        fillSquare(p, gridColor);
         fillSquare(p, backgroundColor);
-
-        // redraw the grid with correct weights
         draw.setPenColor(gridColor);
-        double gridlineX = ( p.x() % 5 == 0 ? 0.002 : 0.0005);
-        draw.setPenRadius(gridlineX);
 
+//        draw.setPenColor(DEBUG_RED);
+        // redraw the grid with correct weights
+        double gridlineX = ( (p.x() - 1) % 5 == 0 ? 0.002 : 0.0005) * gridThickness;
+        draw.setPenRadius(gridlineX);
         draw.line(  p.x()  -1.0 ,   p.y() -1.0,
                     p.x()  -1.0 ,   p.y() );
 
-        gridlineX = ( (p.x() + 1.0) % 5 == 0 ? 0.002 : 0.0005);
+//        draw.setPenColor(DEBUG_GREEN);
+        gridlineX  = ( (p.x() ) % 5 == 0 ? 0.002 : 0.0005)  * gridThickness;
         draw.setPenRadius(gridlineX);
-
-        draw.line(  p.x() ,  p.y() -1.0,
+        draw.line(  p.x() ,  p.y() - 1.0,
                     p.x() ,  p.y() );
-        draw.setPenColor(gridColor);
-        double gridlineY = ( (p.y()) % 5 == 0 ? 0.002 : 0.0005);
+
+        double gridlineY = ( (p.y() - 1) % 5 == 0 ? 0.002 : 0.0005) * gridThickness;
         draw.setPenRadius( gridlineY);
+//        draw.setPenColor(DEBUG_BLUE);
 
         draw.line(  p.x() -1.0  , p.y() -1.0,
                     p.x()       , p.y() -1.0 );
-        gridlineY = ( (p.y() + 1.0) % 5 == 0 ? 0.002 : 0.0005);
+        gridlineY = ( (p.y() ) % 5 == 0 ? 0.002 : 0.0005) * gridThickness;
         draw.setPenRadius(gridlineY);
+//        draw.setPenColor(DEBUG_YELLOW);
 
         draw.line(  p.x()  -1.0 , p.y() ,
                     p.x()       , p.y() );
@@ -170,11 +178,11 @@ public class GridDraw {
         draw.setPenColor(Color.LIGHT_GRAY);
 
         for (int x = 0; x < ticks; x++) {
-            draw.setPenRadius((x % 5 == 0) ? 0.002 : 0.0005);
+            draw.setPenRadius(((x % 5 == 0) ? 0.002 : 0.0005) * gridThickness );
             draw.line(x, 0.0, x, ticks);
         }
         for (int y = 0; y < ticks; y++) {
-            draw.setPenRadius((y % 5 == 0) ? 0.002 : 0.0005);
+            draw.setPenRadius(((y % 5 == 0) ? 0.002 : 0.0005) * gridThickness );
             draw.line(0.0, y, ticks, y);
         }
         draw.setPenColor(Draw.BLACK);
@@ -185,11 +193,11 @@ public class GridDraw {
         draw.setPenColor(Color.LIGHT_GRAY);
 
         for (int x = 0; x < ticks; x++) {
-            draw.setPenRadius((x % 5 == 0) ? 0.002 : 0.0005);
+            draw.setPenRadius(((x % 5 == 0) ? 0.002 : 0.0005) * gridThickness );
             draw.line(x, 0.0, x, ticks);
         }
         for (int y = 0; y < ticks; y++) {
-            draw.setPenRadius((y % 5 == 0) ? 0.002 : 0.0005);
+            draw.setPenRadius(((y % 5 == 0) ? 0.002 : 0.0005) * gridThickness );
             draw.line(0.0, y, ticks, y);
         }
         draw.setPenColor(Draw.BLACK);

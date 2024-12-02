@@ -128,20 +128,6 @@ public class MazeControlPanel extends JPanel {
             }
         });
         }
-
-//    private void setEnableUndoAndRun(boolean isEnabled){
-//        btnRun.setEnabled(isEnabled);
-//        btnUndo.setEnabled(isEnabled);
-//    }
-
-//    private class bfsTask extends SwingWorker<Queue<GridPoint>, GridPoint > {
-//
-//        @Override
-//        protected void doInBackground() {
-//
-//        }
-//    }
-
     /// The animation method for breadth-first search visualization. Starts a new `Thread` to sleep
     /// between calls to `repaint()`. Using a separate thread bypasses Swing's optimization of contiguous draw calls.
     /// Other options to animate may be a `Swing Timer` or `SwingWorker`.
