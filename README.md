@@ -14,11 +14,12 @@ Buttons :
 
  ## TODO:
 
-- Reset the maze after each run.
-- Change instructions on `JLabel`. eg. "Place endpoints" -> "Place walls or press run"
-- Cleanup unused or redundant logic & docComments on all public methods/classes except getters/setters.
+[x] Reset the maze after each run.
+[] Test for bad input from user, dead end states, etc.
+[] Change instructions on `JLabel`. eg. "Place endpoints" -> "Place walls or press run"
+[] Cleanup unused or redundant logic & docComments on all public methods/classes except getters/setters.
 
-- try a few larger grid sizes with faster speeds. Could just parse cli args to set them, instead of gui.
+[] try a few larger grid sizes with faster speeds. Could just parse cli args to set them, instead of gui.
 
 ## Maze
  User creates start/end points and obstacles in a maze. The shortest path is visualized as a breadth first search expanding wavefront over the grid and ...
