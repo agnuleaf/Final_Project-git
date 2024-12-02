@@ -195,7 +195,6 @@ public class MazeControlPanel extends JPanel {
     /// The animation method for breadth-first search visualization. Starts a new `Thread` to bypasses Swing's
     /// optimization by combining draw calls. `algs4.Draw` timer is used to add delay between frame.
     /// @param pause - the length of time between animation updates
-    /// @return true if a path was found
     void runVisualization(int pause) {
         boolean[] pathFound = new boolean[1];   // FIXME
         tPause = pause;
