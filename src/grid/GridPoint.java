@@ -1,6 +1,5 @@
 package grid;
 
-import edu.princeton.cs.algs4.Draw;
 import java.util.Comparator;
 import static java.lang.Math.abs;
 /// Immutable representation of (x,y) integer coordinates in a rectilinear grid, with accompany
@@ -39,6 +38,7 @@ public record GridPoint(int x, int y) implements Comparable<GridPoint>{
     public boolean isFarther(GridPoint v, GridPoint q){
         return (distRectilinear(v, q) < distRectilinear(this, q));
     }
+    
     /// Determines the relative diagonal quadrant a given point resides.
     /// For a point `p` the two diagonal lines, with slope = 1, intersecting at p are:
     /// <p> Lpos(x) = x + (p.y - p.x)  and Lneg(x) = -x + p.y + p.x </p>
@@ -91,16 +91,6 @@ public record GridPoint(int x, int y) implements Comparable<GridPoint>{
     }
 
     public static void main(String[] args) {
-
-        // bounding box checks
-//        Point ll = new Point (1,1);
-//        Point ur = new Point (5, 5);
-//        Point[] llur = bounds(ll, ur);
-//        Point ul = new Point ( 2, 6);
-//        Point lr = new Point ( 6, 2);
-//        Point[] ullr = bounds(ul, lr);
-//        Point q1 = new Point(2,1);
-//        System.out.println(ll.compareTo(q1));
         GridPoint[] quadtest = new GridPoint[] {
                 new GridPoint(3, 4), // left
                 new GridPoint(2, 1), // down
@@ -114,12 +104,6 @@ public record GridPoint(int x, int y) implements Comparable<GridPoint>{
         assert(p.vectorTo(quadtest[3]) == RIGHT );
 
         System.out.println();
-//        Point[] points = new Point[] { ll, ur, ul, lr};
-//        Display display = new Display();
-//        Draw pane = display.init();
-//        draw(points, pane); pane.pause(200); pane.show();
-//        draw(llur, pane); pane.pause(200); pane.show();
-//        draw(ullr, pane); pane.pause(200); pane.show();
 
     }
     // Position vectors

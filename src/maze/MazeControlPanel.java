@@ -18,12 +18,13 @@ import static maze.MazeApp.tPause;
 public class MazeControlPanel extends JPanel {
 
 
-    boolean isSimRunning;
+    static boolean isSimRunning;
+    private static boolean restartBtn;
     GridPoint lastMousePosition = GridPoint.ZERO;
     Grid grid;
     GridDraw gridDraw;
     Draw draw;
-    private final JButton btnUndo = new JButton("Undo");
+    private static JButton btnUndo = new JButton("Undo");
     private final JToggleButton btnRun = new JToggleButton("Start");
     // canvas size
     final int DEFAULT_SIZE = 512;
@@ -35,11 +36,13 @@ public class MazeControlPanel extends JPanel {
     private int ymax;
     JLabel drawCanvas;
 
-    MazeControlPanel(Grid grid, GridDraw gridDraw) {
-        this.grid = grid;
+    MazeControlPanel(GridDraw gridDraw) {
+
         this.gridDraw = gridDraw;
+
+        this.grid = gridDraw.getGrid();
         this.draw = gridDraw.getDraw();
-        drawCanvas = draw.getJLabel(); // reference to algs4.Draw
+        drawCanvas = draw.getJLabel();      // for including algs4.Draw canvas in a larger gui
         xmax = gridDraw.getTicks();
         ymax = xmax;
 
@@ -47,27 +50,23 @@ public class MazeControlPanel extends JPanel {
         setLayout(new GridLayout(1, 2, 0, 0));
         add(btnUndo);
         add(btnRun);
-//        setEnableUndoAndRun(false);       // dont disable buttons just ignore presses
 
 
     }
 
     void control() {
-        boolean runSim = false;
-            if(btnRun.isSelected()) {
-                btnRun.setEnabled(false);
-                runSimEDTrepaint();
-                btnRun.setEnabled(true);
-            }
+//            if(btnRun.isSelected()) {
+//            	// i dont think we need this anymore
+// //                btnRun.setEnabled(false);
+// //                btnRun.setEnabled(true);
+//            }
             drawCanvas.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent mouseEvent) {
                     if (!isSimRunning) {
 
-                        // borrowed from `algs4.Draw` for user friendly coordinates
-                        double x = userX(mouseEvent.getX());
-                        double y = userY(mouseEvent.getY());
-
-                        GridPoint p = new GridPoint(
+                        double x = userX(mouseEvent.getX()); // "borrowed" from algs4.Draw to convert mouse press locations
+                        double y = userY(mouseEvent.getY()); //  to user friendly coordinates in the draw canvas
+                        GridPoint p = new GridPoint(            // convert to nearest grid center
                                 (int) (Math.floor(x) + 1.0),
                                 (int) (Math.floor(y) + 1.0));
 //                    printThreadDebug();
@@ -84,37 +83,30 @@ public class MazeControlPanel extends JPanel {
                 }
             });
 
-            btnRun.addChangeListener(new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    if (grid.recentGridEndpoint() >= 2) {
-                        btnRun.setEnabled(true);
-                        System.out.println("btnRun enabled");
-                    }
-                }
-            });
-
             btnRun.addActionListener(e ->
             {
                 if (!isSimRunning && grid.recentGridEndpoint() >= 2) {
                     isSimRunning = true;
-                    runSimEDTrepaint();
-                    System.out.println("btnRun event");
-                    isSimRunning = false;
+                    runSimEDTrepaint(gridDraw.getPause());
                 }
             });
 
-            // only enable when
+            // allow undo when all endpoints placed and at least one wall is placed.
             btnUndo.addActionListener(e -> {
-                if (!isSimRunning) {
-                    if (grid.recentGridEndpoint() >= 2 && grid.countWalls() > 0) {
-                        GridPoint tmp = grid.removeLastWall();
-                        if (tmp != null) {
-                            gridDraw.eraseSquare(tmp);
-                            gridDraw.mainFrame.repaint();
+            	if(restartBtn) {
+            		restartRunnable();
+            		btnUndo.setText("Undo");
+            		//TODO
+            		restartBtn = false;
+            	}
+            	else
+            		if (!isSimRunning) {
+            			if (grid.recentGridEndpoint() >= 2 && grid.countWalls() > 0) {
+            				GridPoint tmp = grid.removeLastWall();
+            				if (tmp != null) {
+            					gridDraw.eraseSquare(tmp);
+            					gridDraw.mainFrame.repaint();
                         }
-//                    if (grid.countWalls() == 2)
-//                        btnUndo.setEnabled(false);
                     }
                 }
             });
@@ -122,65 +114,78 @@ public class MazeControlPanel extends JPanel {
         // Delete the last wall placed with 'd'
         btnUndo.addKeyListener(new KeyAdapter() {
             public void keyPressed (KeyEvent ke){
-                if (ke.getKeyCode() == KeyEvent.VK_D) {
-                    if (grid.countWalls() > 0) {
-                        GridPoint tmp = grid.removeLastWall();
-                        if(tmp != null) gridDraw.eraseSquare(tmp);
-                        gridDraw.mainFrame.repaint();
-                    }
+            if (ke.getKeyCode() == KeyEvent.VK_D) {
+                if (grid.countWalls() > 0) {
+                    GridPoint tmp = grid.removeLastWall();
+                    if(tmp != null) gridDraw.eraseSquare(tmp);
+                    gridDraw.mainFrame.repaint();
                 }
             }
+            }
         });
-        }
+    }
 
-//    private void setEnableUndoAndRun(boolean isEnabled){
-//        btnRun.setEnabled(isEnabled);
-//        btnUndo.setEnabled(isEnabled);
-//    }
-
-//    private class bfsTask extends SwingWorker<Queue<GridPoint>, GridPoint > {
-//
-//        @Override
-//        protected void doInBackground() {
-//
-//        }
-//    }
-
-    void runSimEDTrepaint() {
+    /// The animation method for breadth-first search visualization. Starts a new `Thread` to bypasses Swing's
+    /// optimization by combining draw calls. `algs4.Draw` timer is used to add delay between frame.
+    private void runSimEDTrepaint(int pause) {
+        tPause = pause;
         new Thread(() -> {
-            BreadthFirstSearchView wavefront = new BreadthFirstSearchView(/*grid,*/ gridDraw/*, frame*/);
+
+            BreadthFirstSearchView wavefront = new BreadthFirstSearchView(gridDraw);
             Queue<GridPoint> wave = wavefront.viewWave();
             Draw draw = gridDraw.getDraw();
             JFrame frame = gridDraw.getFrame();
-
+            GridPoint p = grid.getStart();
             for (GridPoint q : wave) {
                 gridDraw.discovered(q);
-                SwingUtilities.invokeLater(() -> {
-                    draw.show();
-                    frame.repaint(); // or this.paintImmediately(this.getBounds());
-                    draw.getJLabel().paintImmediately(this.getBounds());
-                });
+                draw.pause(tPause);
+                draw.show();
+                frame.repaint();
+                draw.getJLabel().paintImmediately(this.getBounds());
             }
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            // Timer delay here
-            Grid grid = gridDraw.getGrid();
-            GridPoint p = grid.getStart();
 
             for (int v : wavefront.pathTo(grid.indexOf(grid.getEnd()))) {
                 gridDraw.path(p, grid.pointAt(v), Color.RED);
                 p = grid.pointAt(v);
-                SwingUtilities.invokeLater(() -> {
-                    draw.show();
-                    frame.repaint();
-                });
+                draw.pause(tPause);
+                draw.show();
+                frame.repaint();
+                draw.getJLabel().paintImmediately(this.getBounds());
             }
-        }).start();         // use start() .  run() collapses draw calls inside EDT
-            //		var gst = new GridSearchTargeted(grid, display); // TODO extract shortest path or find alternate algorithm
-            //		gst.searchWithBacktrack(p, q)
+
+//                SwingUtilities.invokeLater(() -> {
+//                    draw.show();
+//                    frame.repaint(); // or this.paintImmediately(this.getBounds());
+//                    draw.getJLabel().paintImmediately(this.getBounds());
+//                });
+//            }
+//            try {
+//                Thread.sleep(200);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//            Grid grid = gridDraw.getGrid();
+//            GridPoint p = grid.getStart();
+//
+//            for (int v : wavefront.pathTo(grid.indexOf(grid.getEnd()))) {
+//                gridDraw.path(p, grid.pointAt(v), Color.RED);
+//                p = grid.pointAt(v);
+//                SwingUtilities.invokeLater(() -> {
+//
+//                    draw.show();
+//                    frame.repaint();
+//                    draw.getJLabel().paintImmediately(this.getBounds());
+//
+//                });
+//            }
+            System.out.println("Sim Done");
+            restartMaze();
+            }).start();
+    }
+    
+    private static void restartMaze() {
+    	btnUndo.setText("Restart");
+    	restartBtn = true;
     }
 
     void printThreadDebug(){
@@ -188,46 +193,24 @@ public class MazeControlPanel extends JPanel {
                 (javax.swing.SwingUtilities.isEventDispatchThread() ?
                         "T": "F\n\t"+ Thread.currentThread().getName()));
     }
-    record GridSquare(GridPoint p ){
 
-        public Rectangle getBounds(){
-            return new Rectangle();
-        }
-    }
-    public static void main(String[] args) {
-
-    }
     public void setWidthHeight ( int width, int height){
         this.width = width;
         this.height = height;
     }
-    public int getWidth() { return width;  }
-    public int getHeight(){ return height; }
+//    public int getWidth() { return width;  }
+//    public int getHeight(){ return height; }
+    
+    /**
+     * For the reset of the maze
+     */
+    private static void restartRunnable() {
+    	isSimRunning = false;
+    }
 
 
     // From algs4.Draw . Helpers to convert from native coordintes to user friendly ones.
     private double userX  (double x) { return xmin + x * (xmax - xmin) / width;    }
     private double userY  (double y) { return ymax - y * (ymax - ymin) / height;   }
-    private double scaleX (double x) { return width  * (x - xmin) / (xmax - xmin); }
-    private double scaleY (double y) { return height * (ymax - y) / (ymax - ymin); }
-    private double factorX(double w) { return w * width  / Math.abs(xmax - xmin);  }
-    private double factorY(double h) { return h * height / Math.abs(ymax - ymin);  }
-//    public void addChangeListener(ChangeListener listener){
-//        listenerList.add(ChangeListener.class, listener);
-//    }
-//
-//    public void removeChangeListener(ChangeListener listener){
-//        listenerList.remove(ChangeListener.class, listener);
-//    }
-//
-//    protected void fireStateChanged() {
-//        ChangeListener[] listeners = listenerList.getListeners(ChangeListener.class);
-//        if (listeners != null && listeners.length > 0) {
-//            ChangeEvent evt = new ChangeEvent(this);
-//            for (ChangeListener listener : listeners) {
-//                listener.stateChanged(evt);
-//            }
-//        }
-//    }
 
 }
