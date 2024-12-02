@@ -18,12 +18,13 @@ import static maze.MazeApp.tPause;
 public class MazeControlPanel extends JPanel {
 
 
-    boolean isSimRunning;
+    static boolean isSimRunning;
+    private static boolean restartBtn;
     GridPoint lastMousePosition = GridPoint.ZERO;
     Grid grid;
     GridDraw gridDraw;
     Draw draw;
-    private final JButton btnUndo = new JButton("Undo");
+    private static JButton btnUndo = new JButton("Undo");
     private final JToggleButton btnRun = new JToggleButton("Start");
     // canvas size
     final int DEFAULT_SIZE = 512;
@@ -49,7 +50,6 @@ public class MazeControlPanel extends JPanel {
         setLayout(new GridLayout(1, 2, 0, 0));
         add(btnUndo);
         add(btnRun);
-//        setEnableUndoAndRun(false);       // dont disable buttons just ignore presses
 
 
     }
@@ -98,18 +98,24 @@ public class MazeControlPanel extends JPanel {
                 if (!isSimRunning && grid.recentGridEndpoint() >= 2) {
                     isSimRunning = true;
                     runSimEDTrepaint(gridDraw.getPause());
-                    // Need to setter to set it to false when we reset the maze
                 }
             });
 
             // allow undo when all endpoints placed and at least one wall is placed.
             btnUndo.addActionListener(e -> {
-                if (!isSimRunning) {
-                    if (grid.recentGridEndpoint() >= 2 && grid.countWalls() > 0) {
-                        GridPoint tmp = grid.removeLastWall();
-                        if (tmp != null) {
-                            gridDraw.eraseSquare(tmp);
-                            gridDraw.mainFrame.repaint();
+            	if(restartBtn) {
+            		restartRunnable();
+            		btnUndo.setText("Undo");
+            		//TODO
+            		restartBtn = false;
+            	}
+            	else
+            		if (!isSimRunning) {
+            			if (grid.recentGridEndpoint() >= 2 && grid.countWalls() > 0) {
+            				GridPoint tmp = grid.removeLastWall();
+            				if (tmp != null) {
+            					gridDraw.eraseSquare(tmp);
+            					gridDraw.mainFrame.repaint();
                         }
                     }
                 }
@@ -128,19 +134,6 @@ public class MazeControlPanel extends JPanel {
             }
         });
         }
-
-//    private void setEnableUndoAndRun(boolean isEnabled){
-//        btnRun.setEnabled(isEnabled);
-//        btnUndo.setEnabled(isEnabled);
-//    }
-
-//    private class bfsTask extends SwingWorker<Queue<GridPoint>, GridPoint > {
-//
-//        @Override
-//        protected void doInBackground() {
-//
-//        }
-//    }
 
     /// The animation method for breadth-first search visualization. Starts a new `Thread` to sleep
     /// between calls to `repaint()`. Using a separate thread bypasses Swing's optimization of contiguous draw calls.
@@ -179,9 +172,14 @@ public class MazeControlPanel extends JPanel {
                 });
             }
             System.out.println("Sim Done");
-            // restart stuff here
+            restartMaze();
             }).start();         
         
+    }
+    
+    private static void restartMaze() {
+    	btnUndo.setText("Restart");
+    	restartBtn = true;
     }
 
     void printThreadDebug(){
@@ -208,7 +206,7 @@ public class MazeControlPanel extends JPanel {
     /**
      * For the reset of the maze
      */
-    public void setRunnable() {
+    private static void restartRunnable() {
     	isSimRunning = false;
     }
 
