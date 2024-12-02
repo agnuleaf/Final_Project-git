@@ -6,6 +6,7 @@ import java.awt.*;
 
 /// Wraps `algs4.Draw` shape painting methods for painting on a 2D grid.
 public class GridDraw {
+
     private static final double shift =  -0.5;  // shift placement of shapes
     private Draw draw;
     private Grid grid;
@@ -14,7 +15,7 @@ public class GridDraw {
     private double gridThickness = 1.0;
     private int ticks;
     //    private int height;
-    private int tPause = 50;     // pause time between draws todo speed of animation
+    private int tPause;     // pause time between draws todo speed of animation
 
     private static double THICK_PEN_RADIUS = 0.002 * 10;
     public JFrame mainFrame;
@@ -217,90 +218,77 @@ public class GridDraw {
         }
         draw.setPenColor(Draw.BLACK);
     }
-    /// Draws grid in 5-square blocks, dark-gray background
-    public void drawEmptyGrid(GridPoint[] walls){
-        draw.clear(Color.DARK_GRAY);
-        draw.setPenColor(Color.LIGHT_GRAY);
-
-        for (int x = 0; x < ticks; x++) {
-            draw.setPenRadius(((x % 5 == 0) ? 0.002 : 0.0005) * gridThickness);
-            draw.line(x, 0.0, x, ticks);
-        }
-        for (int y = 0; y < ticks; y++) {
-            draw.setPenRadius(((y % 5 == 0) ? 0.002 : 0.0005) * gridThickness);
-            draw.line(0.0, y, ticks, y);
-        }
-        draw.setPenColor(Draw.BLACK);
-        for(GridPoint w : walls){ drawWall(w); }
-    }
+    
     // @formatter:off
-//
-//    public static void main(String[] args)
-//    {
-//        JFrame frame = new JFrame();
-//        JPanel mainPanel = new JPanel(new FlowLayout(), true); // creates JPanel, sets DoubleBuffering and sets to opaque
-//        GridDraw gridDraw = new GridDraw(15, frame );
-//        Draw draw = gridDraw.draw;
-//        mainPanel.add(draw.getJLabel());
-//        frame.setContentPane(mainPanel);
-//        gridDraw.drawEmptyGrid();
-//        draw.show();
-//        draw.getJLabel().repaint();
-//
-//        frame.repaint();
-//
-//        gridDraw.showMessage("Title Message");
-//
-//        GridPoint[] wall = new GridPoint[]{
-//                new GridPoint ( 3 , 3 ),
-//                new GridPoint ( 7 , 6 ),
-//                new GridPoint ( 6 , 6 ),
-//                new GridPoint ( 6 , 7 ),
-//                new GridPoint ( 8 , 7 ),
-//                new GridPoint ( 8 , 8 ),
-//                new GridPoint ( 7 , 8 ),
-//                new GridPoint ( 7 , 7 ),
-//                new GridPoint ( 10, 10),
-//        };
-//        GridPoint[] known = new GridPoint[]{
-//                new GridPoint ( 6 , 5 ),
-//                new GridPoint ( 5 , 5 ), new GridPoint ( 5 , 4 ),  new GridPoint ( 5 , 6 ),
-//                new GridPoint ( 4 , 5 ), new GridPoint ( 4 , 4 ),  new GridPoint ( 4 , 6 ),
-//                new GridPoint ( 3 , 5 ), new GridPoint ( 3 , 4 ),  new GridPoint ( 3 , 6 ),
-//                new GridPoint ( 2 , 5 ),
-//        };
-//        for( GridPoint p : known ){   gridDraw.discovered(p);  }
-//        GridPoint[] path = new GridPoint[]{
-//                new GridPoint ( 5 , 5 ),
-//                new GridPoint ( 4 , 5 ),
-//                new GridPoint ( 3 , 5 ),
-//                new GridPoint ( 3 , 6 ),
-//        };
-//        for(int i = 1; i < path.length ; i ++){
-//            gridDraw.path(path[i - 1], path[i], Color.RED.darker());
-//            draw.pause(gridDraw.tPause);
-//            draw.show();   draw.getJLabel().repaint();
-//
-//        }
-//        for( GridPoint p : wall  ){   gridDraw.drawWall(p);   }
-//
-//        gridDraw.drawEndpoint( new GridPoint (1,1));
-//        gridDraw.drawEndpoint( new GridPoint (9,9));
-//        draw.pause(gridDraw.tPause);
-//        draw.show();  draw.getJLabel().repaint();
-//
-//
-//
-//        for(int i = 0; i < 5; i++){
-//             gridDraw.eraseSquare(wall[i]);
-//             draw.show();
-//             draw.getJLabel().repaint(); draw.pause(gridDraw.tPause);
-//         }
-//
-//        gridDraw.drawEndpoint( new GridPoint (1,1));
-//        gridDraw.drawEndpoint( new GridPoint (9,9));
-// //        gridDraw.placeText(new GridPoint(1,5), "Left");
-// //        gridDraw.placeText(new GridPoint(9,5), "Right");
-//        draw.show();
-//    }
+
+    /// For testing the graphics and drawing functions.
+    public static void main(String[] args)
+    {
+        JFrame frame = new JFrame();
+        JPanel mainPanel = new JPanel(new FlowLayout(), true); // creates JPanel, sets DoubleBuffering and sets to opaque
+        GridDraw gridDraw = new GridDraw(15, frame );
+        Draw draw = gridDraw.draw;
+        mainPanel.add(draw.getJLabel());
+        frame.setContentPane(mainPanel);
+        gridDraw.drawEmptyGrid();
+        draw.show();
+        draw.getJLabel().repaint();
+
+        frame.repaint();
+
+        gridDraw.showMessage("Title Message");
+
+        GridPoint[] wall = new GridPoint[]{
+                new GridPoint ( 3 , 3 ),
+                new GridPoint ( 7 , 6 ),
+                new GridPoint ( 6 , 6 ),
+                new GridPoint ( 6 , 7 ),
+                new GridPoint ( 8 , 7 ),
+                new GridPoint ( 8 , 8 ),
+                new GridPoint ( 7 , 8 ),
+                new GridPoint ( 7 , 7 ),
+                new GridPoint ( 10, 10),
+        };
+        GridPoint[] known = new GridPoint[]{
+                new GridPoint ( 6 , 5 ),
+                new GridPoint ( 5 , 5 ), new GridPoint ( 5 , 4 ),  new GridPoint ( 5 , 6 ),
+                new GridPoint ( 4 , 5 ), new GridPoint ( 4 , 4 ),  new GridPoint ( 4 , 6 ),
+                new GridPoint ( 3 , 5 ), new GridPoint ( 3 , 4 ),  new GridPoint ( 3 , 6 ),
+                new GridPoint ( 2 , 5 ),
+        };
+        for( GridPoint p : known ){   gridDraw.discovered(p);  }
+        GridPoint[] path = new GridPoint[]{
+                new GridPoint ( 5 , 5 ),
+                new GridPoint ( 4 , 5 ),
+                new GridPoint ( 3 , 5 ),
+                new GridPoint ( 3 , 6 ),
+        };
+        for(int i = 1; i < path.length ; i ++){
+            gridDraw.path(path[i - 1], path[i], Color.RED.darker());
+            draw.pause(gridDraw.tPause);
+            draw.show();   draw.getJLabel().repaint();
+
+        }
+        for( GridPoint p : wall  ){   gridDraw.drawWall(p);   }
+
+        gridDraw.drawEndpoint( new GridPoint (1,1));
+        gridDraw.drawEndpoint( new GridPoint (9,9));
+        draw.pause(gridDraw.tPause);
+        draw.show();  draw.getJLabel().repaint();
+
+
+
+        for(int i = 0; i < 5; i++){
+             gridDraw.eraseSquare(wall[i]);
+             draw.show();
+             draw.getJLabel().repaint(); draw.pause(gridDraw.tPause);
+         }
+
+        gridDraw.drawEndpoint( new GridPoint (1,1));
+        gridDraw.drawEndpoint( new GridPoint (9,9));
+ //        gridDraw.placeText(new GridPoint(1,5), "Left");
+ //        gridDraw.placeText(new GridPoint(9,5), "Right");
+        draw.show();
+    }
+
 }

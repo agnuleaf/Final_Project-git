@@ -12,7 +12,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 
-import static maze.MazeApp.tPause;
+//import static maze.MazeApp.tPause;
 
 /// Collects user input from mouse and keyboard events.
 public class MazeControlPanel extends JPanel {
@@ -26,18 +26,20 @@ public class MazeControlPanel extends JPanel {
     Grid grid;
     GridDraw gridDraw;
     Draw draw;
-    private static JButton btnUndo = new JButton("Undo");
-    private final JButton btnRun = new JButton("Run");
+
+    JButton btnUndo = new JButton("Undo");
+    JButton btnRun = new JButton("Run");
+
     // canvas size
     final int DEFAULT_SIZE = 512;
-    private int width = DEFAULT_SIZE; //384;
-    private int height = DEFAULT_SIZE; //384;
+    int width = DEFAULT_SIZE; //384;
+    int height = DEFAULT_SIZE; //384;
     private int xmin = 0;
     private int ymin = 0;
     private int xmax;
     private int ymax;
     JLabel drawCanvas;
-    JLabel instructions;
+    private JLabel instructions;
     private String instrInputA = "Place two endpoints";
     private String instrInputB = "Place Walls or Run";
     private String instrVis = "Breadth First Search Visualization";
@@ -122,21 +124,25 @@ public class MazeControlPanel extends JPanel {
         });
 
         // Run Visualization and Continue with the same walls
+        String labelUndo = "Undo";
+        String labelReset = "Reset";
+        String labelRun = "Run";
         btnRun.addActionListener(e ->  {
             if(!isVisualRunning) {
-                if (btnRun.getText().equals("Run") && grid.endpointsSize() >= 2){
+                String labelContinue = "Continue";
+                if (btnRun.getText().equals(labelRun) && grid.endpointsSize() >= 2){
                     isVisualRunning = true;
                     instructions.setText(instrVis);
                     // maybe launch new thread here??
                     runVisualization(gridDraw.getPause());
 
-                    btnRun.setText("Continue");
-                    btnUndo.setText("Reset");
+                    btnRun.setText(labelContinue);
+                    btnUndo.setText(labelReset);
                     System.out.println("btnRun Sim");
                     btnUndo.setEnabled(false);
                     btnRun.setEnabled(false);
                 }
-                else if(btnRun.getText().equals("Continue")){
+                else if(btnRun.getText().equals(labelContinue)){
                     instructions.setText(instrInputA);
                     grid.restart(true);
                     gridDraw.drawEmptyGrid();
@@ -144,8 +150,8 @@ public class MazeControlPanel extends JPanel {
                     for (int v : grid.getWalls()) {  // add last path
                         gridDraw.drawWall(grid.pointAt(v));
                     }
-                    btnRun.setText("Run");
-                    btnUndo.setText("Undo");
+                    btnRun.setText(labelRun);
+                    btnUndo.setText(labelUndo);
                     draw.show();
                     drawCanvas.repaint();
                 }
@@ -155,7 +161,7 @@ public class MazeControlPanel extends JPanel {
         // Undo previous recent placement or Clear and Restart after Visualization
         btnUndo.addActionListener(e -> {
             if(!isVisualRunning){
-                if (btnUndo.getText().equals("Undo")){
+                if (btnUndo.getText().equals(labelUndo)){
                     if (grid.endpointsSize() >= 2 && grid.countWalls() > 0) {
                         GridPoint tmp = grid.removeLastWall();
                         if (tmp != null) {
@@ -163,11 +169,11 @@ public class MazeControlPanel extends JPanel {
                             gridDraw.mainFrame.repaint();
                         }
                     }
-                } else if (btnUndo.getText().equals("Reset")) {
+                } else if (btnUndo.getText().equals(labelReset)) {
                     restartRunnable();
 
-                    btnUndo.setText("Undo");
-                    btnRun.setText("Run");
+                    btnUndo.setText(labelUndo);
+                    btnRun.setText(labelRun);
                     instructions.setText(instrInputA);
                     grid.restart(false);   // clears the grid
                     gridDraw.drawEmptyGrid();
@@ -178,18 +184,18 @@ public class MazeControlPanel extends JPanel {
             }
             });
 
-//        // Delete the last wall placed with 'd'
-//        btnUndo.addKeyListener(new KeyAdapter() {
-//            public void keyPressed (KeyEvent ke){
-//            if (ke.getKeyCode() == KeyEvent.VK_D) {
-//                if (!isVisualRunning && !isRestartScreen && grid.countWalls() > 0) {
-//                    GridPoint tmp = grid.removeLastWall();
-//                    if(tmp != null) gridDraw.eraseSquare(tmp);
-//                    gridDraw.mainFrame.repaint();
-//                }
-//            }
-//            }
-//        });
+        // Delete the last wall placed with 'd'
+        btnUndo.addKeyListener(new KeyAdapter() {
+            public void keyPressed (KeyEvent ke){
+            if (btnUndo.getText().equals(labelUndo) && ke.getKeyCode() == KeyEvent.VK_D) {
+                if (!isVisualRunning && !isRestartScreen && grid.countWalls() > 0) {
+                    GridPoint tmp = grid.removeLastWall();
+                    if(tmp != null) gridDraw.eraseSquare(tmp);
+                    gridDraw.mainFrame.repaint();
+                }
+            }
+            }
+        });
     }
 
     /// The animation method for breadth-first search visualization. Starts a new `Thread` to bypasses Swing's
@@ -197,9 +203,7 @@ public class MazeControlPanel extends JPanel {
     /// @param pause - the length of time between animation updates
     void runVisualization(int pause) {
         boolean[] pathFound = new boolean[1];   // FIXME
-        tPause = pause;
-        Thread tSim =
-        new Thread(() -> {
+        Thread tSim = new Thread(() -> {
             BreadthFirstSearchView wavefront = new BreadthFirstSearchView(gridDraw);
             Queue<GridPoint> wave = wavefront.viewWave();
 
@@ -209,7 +213,7 @@ public class MazeControlPanel extends JPanel {
             GridPoint p = grid.getStart();
             for (GridPoint q : wave) {
                 gridDraw.discovered(q);
-                draw.pause(tPause);
+                draw.pause(gridDraw.getPause());
                 draw.show();
                 frame.repaint();
                 draw.getJLabel().paintImmediately(this.getBounds());
@@ -229,7 +233,7 @@ public class MazeControlPanel extends JPanel {
             for (int v : wavefront.pathTo(grid.indexOf(grid.getEnd()))) {
                 gridDraw.path(p, grid.pointAt(v), Color.RED);
                 p = grid.pointAt(v);
-                draw.pause(tPause);
+                draw.pause(gridDraw.getPause());
                 draw.show();
                 frame.repaint();
                 draw.getJLabel().paintImmediately(this.getBounds());

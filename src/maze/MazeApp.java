@@ -10,8 +10,8 @@ import static javax.swing.SwingConstants.CENTER;
 ///
 public class MazeApp {
 
-	static int ticks = 10;	// number of squares on the axis
-	static int tPause = 10;	// pause (ms) between draw . I think it is much slower than
+	static int ticks;	// number of squares on the axis
+	int tPause;	// pause (ms) between draw . I think it is much slower than
 	GridDraw 		gridDraw;		//
 	Draw 			draw  ;			//
 	MazeControlPanel pnlControl;	//
@@ -20,9 +20,8 @@ public class MazeApp {
 	JPanel pnlMain;					// contentPane holds the canvas, button panel and instructions label
 	JLabel instructions;			// instructions label
 
-	/// Maze GUI Constructor
-	public MazeApp() {
-
+	public MazeApp(int animPause){
+		this.tPause = animPause;
 		frame = new JFrame();
 
 		gridDraw	= new GridDraw(ticks, frame);
@@ -51,6 +50,11 @@ public class MazeApp {
 		gridDraw.drawEmptyGrid();
 		draw.show(); frame.repaint();
 	}
+	/// Maze GUI Constructor
+	public MazeApp() {
+		this(10);
+
+	}
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
@@ -59,4 +63,5 @@ public class MazeApp {
 		});
 
 	}
+
 }

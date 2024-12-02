@@ -302,16 +302,5 @@ public class Grid {
         public Iterator<Integer> iterator() {
             return stack.iterator();
         }
-//        // for saving all to a single array in case of combining placement of walls
-//        int[] combineToArray(int[] lArray){
-//            int[] combined = new int[lArray.length + treeSet.size()];
-//            for(int i = lArray.length ; i < lArray.length + treeSet.size() ; i++) {
-// //                int min = treeSet.min();
-//                 //treeSetx.remove(min);
-//                 combined[i] = stack.pop();
-// //                combined[i] = min;
-//            }
-//            return combined;
-//        }
     }
 }
