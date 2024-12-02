@@ -36,7 +36,7 @@ public class MazeApp {
 		pnlMain.add(drawCanvas, BorderLayout.CENTER);
 		instructions = new JLabel("place start & end points", CENTER);
 		pnlMain.add(instructions, BorderLayout.NORTH);
-		pnlControl = new MazeControlPanel(gridDraw); //
+		pnlControl = new MazeControlPanel(gridDraw, instructions); //
 		pnlMain.add(pnlControl,BorderLayout.SOUTH);
 
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // algs4Draw uses DISPOSE instead

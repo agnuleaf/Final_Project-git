@@ -32,11 +32,11 @@ public class Grid {
     private int height ;
     private StackSet excludedV;   //  walls from user input, can pop the most recent and search faster than stack
     private Queue<Integer> endpoints;
-    private int recentGridEndpoint = 0; // increments when point added to Grid instance, but before being drawn
-    private int lastEndpointToAdd = 2;  // only 2 endpoints at a time allowed
+//    private int recentGridEndpoint = 0; // increments when point added to Grid instance, but before being drawn
+    private int endpointsAllowed = 2;  // only 2 endpoints at a time allowed
     //    private GridPair endpoints;
     private Graph graph;
-    private int[] savedExcludedV = new int[0];   // saved walls from the previous session(s);
+//    private int[] savedExcludedV = new int[0];   // saved walls from the previous session(s);
 
     /// Constructor for a square `Grid` instance where width and height are the same.
     /// @param width number of squares along each axis
@@ -49,27 +49,29 @@ public class Grid {
 
     /// The number of walls placed for this phase.
     public int countWalls(){
-        return excludedV.size() ;
+        return excludedV.stackSize() ;
     }
     /// The total number of walls in the grid.
     public int totalCountWalls(){
-        return excludedV.size()
-        + savedExcludedV.length;
+        return excludedV.size();
     }
-    /// The most recently added grid endpoint.
-    public int recentGridEndpoint(){
-        return recentGridEndpoint;
+    /// Gets all walls in the grid.
+    public Iterable<Integer> getWalls(){
+        return excludedV.getSet();
+    }
+    /// The most recently added endpoint's place in Queue.
+    public int endpointsSize(){
+        return endpoints.size();
     }
 
     /// Tries to add endpoint to grid, returning true if add is successful.
     public boolean addEndpoint(GridPoint p) {
-        if (!isEndpoint(p) && !isWall(p) && recentGridEndpoint < lastEndpointToAdd) {
+        if (!isEndpoint(p) && !isWall(p) && endpointsSize() < endpointsAllowed) {
             endpoints.enqueue(indexOf(p));
-            recentGridEndpoint++;
             return true;
         } else {
-            System.out.println(
-                    "failed to add: endpoint or wall already at" + p);    // incase we allow walls to accumulate
+//            System.out.println(
+//                    "failed to add endpoint" + p);    // incase we allow walls to accumulate
             return false;
         }
     }
@@ -143,11 +145,11 @@ public class Grid {
 
     /// Removes the last wall placed, or null if there is none.
     public GridPoint removeLastWall() {
-        return (!excludedV.isEmpty()? pointAt(excludedV.pop()) : null);
+        return (!excludedV.isEmpty()? pointAt(excludedV.remove()) : null);
     }
     public boolean tryRemoveLastWall(){
         if (!excludedV.isEmpty()) {
-            excludedV.pop();
+            excludedV.remove();
             return true;
         } else
             return false;    }
@@ -199,7 +201,7 @@ public class Grid {
         return height*width;
     }
     int countUnoccupied(){
-        return count() - (recentGridEndpoint() + countWalls());
+        return count() - (endpointsSize() + countWalls());
     }
     /// Generates a random set of `GridPoint`s within the grid's bounds and under its limit
     /// @return - set of `GridPoint`s
@@ -215,7 +217,19 @@ public class Grid {
         }
         return uniqueNodes;
     }
+    public void restart(boolean doSaveWalls){
+         if(doSaveWalls) {
+             while(!excludedV.isStackEmpty()){ // unload sessions stack but retain the set
+                 excludedV.pop();
+             }
+         }else {    // reset completely
+             excludedV = new StackSet();
+         }
+         endpoints = new Queue<>();
+         // We could load the shortest path to the endpoints queue and add to set walls
 
+
+    }
     /// Generates a unique random `GridPoint[]`
     public GridPoint[] generateNodeArray(int count){
         HashSet<GridPoint> uniqueNodes = new HashSet<>();
@@ -245,20 +259,25 @@ public class Grid {
         boolean isEmpty(){
             return treeSet.isEmpty();
         }
+        boolean isStackEmpty() { return stack.isEmpty(); }
         void push(int v){
             if( !contains(v) ){
                 stack.push(v);
                 treeSet.add(v);
-                System.out.print(pointAt(v)
-                        + "push successes\n stack n: "+ stack.size()
-                        + " treeSee n:" + treeSet.size());
-            } else{
-                System.out.println(pointAt(v)
-                        + "push failed\t is something in the way?");
+//                System.out.print(pointAt(v)
+//                        + "push successes\n stack n: "+ stack.size()
+//                        + " treeSee n:" + treeSet.size());
             }
+//            else{
+//                System.out.println(pointAt(v)
+//                        + "push failed\t is something in the way?");
+//            }
         }
-
+        // only pops the stack, leaving the element in the set. For storing between sessions
         int pop(){
+            return stack.pop();
+        }
+        int remove(){
 
             int tmp = stack.pop();
 //            System.out.print(pointAt(tmp) + "popped");
@@ -266,13 +285,16 @@ public class Grid {
 //            System.out.println("treeSet n:" + treeSet.size() + " stack n:" + stack.size());
             return tmp;
         }
-
         int peek(){
             return stack.peek();
         }
         int size(){
             return treeSet.size();
         }
+        int stackSize(){
+            return stack.size();
+        }
+
         Iterable<Integer> getSet(){
             return treeSet;
         }
@@ -280,16 +302,16 @@ public class Grid {
         public Iterator<Integer> iterator() {
             return stack.iterator();
         }
-        // for saving all to a single array in case of combining placement of walls
-        int[] combineArrays(int[] lArray){
-            int[] combined = new int[lArray.length + treeSet.size()];
-            for(int i = lArray.length ; i < lArray.length + treeSet.size() ; i++) {
-                int min = treeSet.min();
-                treeSet.remove(min);
-                stack.pop();
-                combined[i] = min;
-            }
-            return combined;
-        }
+//        // for saving all to a single array in case of combining placement of walls
+//        int[] combineToArray(int[] lArray){
+//            int[] combined = new int[lArray.length + treeSet.size()];
+//            for(int i = lArray.length ; i < lArray.length + treeSet.size() ; i++) {
+// //                int min = treeSet.min();
+//                 //treeSetx.remove(min);
+//                 combined[i] = stack.pop();
+// //                combined[i] = min;
+//            }
+//            return combined;
+//        }
     }
 }
