@@ -41,17 +41,15 @@ public class BreadthFirstSearchView implements PropertyChangeListener {
         private GridPoint p;
         private Draw draw;     // draw to offscreen with draw.show(), repaint with draw.getJLabel().repaint(), display Disabled
         private GridDraw gridDraw;
-        private int tPause = 50;
-//        private JFrame frame;           // for frame.repaint() within the BFS loop
+//        private int tPause;
         public BreadthFirstSearchView(GridDraw gridDraw) {
             // For displaying the visited nodes
             this.gridDraw = gridDraw;
             grid = gridDraw.getGrid();
             p = gridDraw.getGrid().getStart();
-            gridDraw.getGrid().getEnd();
-            tPause = gridDraw.getPause();
+//            gridDraw.getGrid().getEnd();
+//            tPause = gridDraw.getPause();
             draw = gridDraw.getDraw();
-//            this.frame = frame;
 
             // Original Constructor below
             Graph graph = grid.graph();
@@ -62,10 +60,11 @@ public class BreadthFirstSearchView implements PropertyChangeListener {
             validateVertex(s);
     }
 
-    // Runs the constructor with a call to Draw at each visited vertex, (like a wavefront).
-    // Then the shortest path to `q` is displayed from a call to `pathTo`.
-    /// Runs the Constructor with separate `Queue` to accumulate in order every visited
-    /// vertex converted to a `GridPoint` for visualization.
+
+    /// Runs the breadth first search method `bfs` with an internal timer from `algs4.Draw` to add delay between drawing
+    ///  each visited vertex. Call this method from a new `Thread` when running on the Event Dispatch Thread,
+    /// or else all individual draw calls will be combined and occur simultaneously after the delay, defeating
+    /// the attempt at animation.
     public Queue<GridPoint> viewWave() {
        return bfs(grid.indexOf(p));
     }
@@ -90,11 +89,10 @@ public class BreadthFirstSearchView implements PropertyChangeListener {
                         marked[w] = true;
                         q.enqueue(w);
                         qConverted.enqueue(grid.pointAt(w));
-                        gridDraw.discovered(grid.pointAt(w));
-                        draw.pause(tPause);
-                        draw.show();
-
-                        draw.getJLabel().paintImmediately(draw.getJLabel().getBounds());
+//                        gridDraw.discovered(grid.pointAt(w));
+//                        draw.pause(tPause);
+//                        draw.show();
+//                        draw.getJLabel().paintImmediately(draw.getJLabel().getBounds());
                     }
                 }
             }

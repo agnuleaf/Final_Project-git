@@ -11,7 +11,7 @@ import static javax.swing.SwingConstants.CENTER;
 public class MazeApp {
 
 	static int ticks = 10;	// number of squares on the axis
-	static int tPause = 1;	// pause (ms) between draw updates
+	static int tPause = 10;	// pause (ms) between draw . I think it is much slower than
 	GridDraw 		gridDraw;		//
 	Draw 			draw  ;			//
 	MazeControlPanel pnlControl;	//

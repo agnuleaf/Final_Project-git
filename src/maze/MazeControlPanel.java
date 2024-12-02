@@ -55,11 +55,11 @@ public class MazeControlPanel extends JPanel {
     }
 
     void control() {
-            if(btnRun.isSelected()) {
-            	// i dont think we need this anymore
-                btnRun.setEnabled(false);
-                btnRun.setEnabled(true);
-            }
+//            if(btnRun.isSelected()) {
+//            	// i dont think we need this anymore
+// //                btnRun.setEnabled(false);
+// //                btnRun.setEnabled(true);
+//            }
             drawCanvas.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent mouseEvent) {
                     if (!isSimRunning) {
@@ -82,16 +82,6 @@ public class MazeControlPanel extends JPanel {
                     }
                 }
             });
-
-         /**   btnRun.addChangeListener(new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    if (grid.recentGridEndpoint() >= 2) {
-                        btnRun.setEnabled(true);
-                        System.out.println("btnRun enabled");
-                    }
-                }
-            }); **/ // Note By Ty Greenburg: Dont really know what this is used for and didnt see any difference when i run with it and without it
 
             btnRun.addActionListener(e ->
             {
@@ -124,57 +114,73 @@ public class MazeControlPanel extends JPanel {
         // Delete the last wall placed with 'd'
         btnUndo.addKeyListener(new KeyAdapter() {
             public void keyPressed (KeyEvent ke){
-                if (ke.getKeyCode() == KeyEvent.VK_D) {
-                    if (grid.countWalls() > 0) {
-                        GridPoint tmp = grid.removeLastWall();
-                        if(tmp != null) gridDraw.eraseSquare(tmp);
-                        gridDraw.mainFrame.repaint();
-                    }
+            if (ke.getKeyCode() == KeyEvent.VK_D) {
+                if (grid.countWalls() > 0) {
+                    GridPoint tmp = grid.removeLastWall();
+                    if(tmp != null) gridDraw.eraseSquare(tmp);
+                    gridDraw.mainFrame.repaint();
                 }
             }
+            }
         });
-        }
+    }
 
-    /// The animation method for breadth-first search visualization. Starts a new `Thread` to sleep
-    /// between calls to `repaint()`. Using a separate thread bypasses Swing's optimization of contiguous draw calls.
-    /// Other options to animate may be a `Swing Timer` or `SwingWorker`.
-    void runSimEDTrepaint(int pause) {
+    /// The animation method for breadth-first search visualization. Starts a new `Thread` to bypasses Swing's
+    /// optimization by combining draw calls. `algs4.Draw` timer is used to add delay between frame.
+    private void runSimEDTrepaint(int pause) {
         tPause = pause;
         new Thread(() -> {
+
             BreadthFirstSearchView wavefront = new BreadthFirstSearchView(gridDraw);
             Queue<GridPoint> wave = wavefront.viewWave();
             Draw draw = gridDraw.getDraw();
             JFrame frame = gridDraw.getFrame();
-
+            GridPoint p = grid.getStart();
             for (GridPoint q : wave) {
                 gridDraw.discovered(q);
-                SwingUtilities.invokeLater(() -> {
-                    draw.show();
-                    frame.repaint(); // or this.paintImmediately(this.getBounds());
-                    draw.getJLabel().paintImmediately(this.getBounds());
-                });
+                draw.pause(tPause);
+                draw.show();
+                frame.repaint();
+                draw.getJLabel().paintImmediately(this.getBounds());
             }
-            try {
-                Thread.sleep(tPause);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            // Timer delay here
-            Grid grid = gridDraw.getGrid();
-            GridPoint p = grid.getStart();
 
             for (int v : wavefront.pathTo(grid.indexOf(grid.getEnd()))) {
                 gridDraw.path(p, grid.pointAt(v), Color.RED);
                 p = grid.pointAt(v);
-                SwingUtilities.invokeLater(() -> {
-                    draw.show();
-                    frame.repaint();
-                });
+                draw.pause(tPause);
+                draw.show();
+                frame.repaint();
+                draw.getJLabel().paintImmediately(this.getBounds());
             }
+
+//                SwingUtilities.invokeLater(() -> {
+//                    draw.show();
+//                    frame.repaint(); // or this.paintImmediately(this.getBounds());
+//                    draw.getJLabel().paintImmediately(this.getBounds());
+//                });
+//            }
+//            try {
+//                Thread.sleep(200);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//            Grid grid = gridDraw.getGrid();
+//            GridPoint p = grid.getStart();
+//
+//            for (int v : wavefront.pathTo(grid.indexOf(grid.getEnd()))) {
+//                gridDraw.path(p, grid.pointAt(v), Color.RED);
+//                p = grid.pointAt(v);
+//                SwingUtilities.invokeLater(() -> {
+//
+//                    draw.show();
+//                    frame.repaint();
+//                    draw.getJLabel().paintImmediately(this.getBounds());
+//
+//                });
+//            }
             System.out.println("Sim Done");
             restartMaze();
-            }).start();         
-        
+            }).start();
     }
     
     private static void restartMaze() {
@@ -187,21 +193,13 @@ public class MazeControlPanel extends JPanel {
                 (javax.swing.SwingUtilities.isEventDispatchThread() ?
                         "T": "F\n\t"+ Thread.currentThread().getName()));
     }
-    record GridSquare(GridPoint p ){
 
-        public Rectangle getBounds(){
-            return new Rectangle();
-        }
-    }
-    public static void main(String[] args) {
-
-    }
     public void setWidthHeight ( int width, int height){
         this.width = width;
         this.height = height;
     }
-    public int getWidth() { return width;  }
-    public int getHeight(){ return height; }
+//    public int getWidth() { return width;  }
+//    public int getHeight(){ return height; }
     
     /**
      * For the reset of the maze
