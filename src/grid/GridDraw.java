@@ -15,7 +15,7 @@ public class GridDraw {
     private double gridThickness = 1.0;
     private int ticks;
     //    private int height;
-    private int tPause;     // pause time between draws todo speed of animation
+    private int tPause = 50;     // pause time between draws todo speed of animation
 
     private static double THICK_PEN_RADIUS = 0.002 * 10;
     public JFrame mainFrame;

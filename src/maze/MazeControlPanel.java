@@ -5,18 +5,16 @@ import edu.princeton.cs.algs4.Queue;
 import grid.GridDraw;
 import grid.Grid;
 import grid.GridPoint;
-
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.GridLayout;
+
 import java.awt.event.*;
 
 //import static maze.MazeApp.tPause;
 
 /// Collects user input from mouse and keyboard events.
 public class MazeControlPanel extends JPanel {
-
 
     static boolean isRestartScreen;
     static boolean isVisualRunning;
@@ -26,9 +24,8 @@ public class MazeControlPanel extends JPanel {
     Grid grid;
     GridDraw gridDraw;
     Draw draw;
-
-    JButton btnUndo = new JButton("Undo");
-    JButton btnRun = new JButton("Run");
+    JButton btnUndo;
+    JButton btnRun;
 
     // canvas size
     final int DEFAULT_SIZE = 512;
@@ -38,12 +35,11 @@ public class MazeControlPanel extends JPanel {
     private int ymin = 0;
     private int xmax;
     private int ymax;
-    JLabel drawCanvas;
-    private JLabel instructions;
-    private String instrInputA = "Place two endpoints";
-    private String instrInputB = "Place Walls or Run";
-    private String instrVis = "Breadth First Search Visualization";
-    private String instrRestart = "Reset or Continue with Walls";
+    private final JLabel drawCanvas;
+    private final JLabel instructions;
+
+
+
     /// Constructor for the control panel.
     MazeControlPanel(GridDraw gridDraw, JLabel instructions) {
         this.gridDraw = gridDraw;
@@ -54,49 +50,24 @@ public class MazeControlPanel extends JPanel {
         xmax = gridDraw.getTicks();
         ymax = xmax;
 
+        btnUndo = new JButton("Undo");
+        btnRun = new JButton("Run");
         setLayout(new GridLayout(1, 2, 0, 0));
         add(btnUndo);
         add(btnRun);
+        btnUndo.setFont(MazeApp.AppFont.LABEL.font);
+        btnRun.setFont(MazeApp.AppFont.LABEL.font);
+
     }
 
-
-    class VisualizationModel {
-        ChangeEvent changeEvent;
-
-        public void addChangeListener(ChangeListener l) {
-            listenerList.add(ChangeListener.class, l);
-        }
-
-        public void removeChangeListener(ChangeListener l) {
-            listenerList.remove(ChangeListener.class, l);
-        }
-
-        protected void fireStateChanged() {
-            Object[] listeners = listenerList.getListenerList();
-            for (int i = listeners.length - 2; i >= 0; i -=2 ) {
-                if (listeners[i] == ChangeListener.class) {
-                    if (changeEvent == null) {
-                        changeEvent = new ChangeEvent(this);
-                    }
-                    ((ChangeListener)listeners[i+1]).stateChanged(changeEvent);
-                }
-            }
-        }
-    }
-
-    class VisualizationListener implements ChangeListener {
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-
-        }
-    }
-    class VisualizationEvent extends ChangeEvent {
-
-        public VisualizationEvent(Object source) {
-            super(source);
-        }
-    }
+    final String instrInputA = "Place two endpoints";
+    final String instrInputB = "Place Walls or Run";
+    final String instrVis = "Breadth First Search Visualization";
+    final String instrRestart = "Reset or Continue with Walls";
+    final String labelUndo = "Undo";
+    final String labelReset = "Reset";
+    final String labelRun = "Run";
+    final String labelContinue = "Continue";
     /// Runs program logic and handles user input. Runs on the EDT, except for the timer delay and draw calls for
     ///  animation.
     void control() {
@@ -113,9 +84,13 @@ public class MazeControlPanel extends JPanel {
                     System.out.println(p);
                     if (grid.addEndpoint(p)) {
                         gridDraw.drawEndpoint(p);
+                        if(grid.endpointsSize()==2){
+                            instructions.setText(instrInputB);
+                        }
                     } else if (grid.addWall(p)) {
                         gridDraw.drawWall(p);
                     }
+
                     lastMousePosition = p;
                     draw.show();
                     drawCanvas.repaint();
@@ -124,18 +99,13 @@ public class MazeControlPanel extends JPanel {
         });
 
         // Run Visualization and Continue with the same walls
-        String labelUndo = "Undo";
-        String labelReset = "Reset";
-        String labelRun = "Run";
+
         btnRun.addActionListener(e ->  {
             if(!isVisualRunning) {
-                String labelContinue = "Continue";
                 if (btnRun.getText().equals(labelRun) && grid.endpointsSize() >= 2){
                     isVisualRunning = true;
                     instructions.setText(instrVis);
-                    // maybe launch new thread here??
-                    runVisualization(gridDraw.getPause());
-
+                    newThreadVisualization(gridDraw.getPause()); // new Thread, reenables buttons at it's end
                     btnRun.setText(labelContinue);
                     btnUndo.setText(labelReset);
                     System.out.println("btnRun Sim");
@@ -201,7 +171,7 @@ public class MazeControlPanel extends JPanel {
     /// The animation method for breadth-first search visualization. Starts a new `Thread` to bypasses Swing's
     /// optimization by combining draw calls. `algs4.Draw` timer is used to add delay between frame.
     /// @param pause - the length of time between animation updates
-    void runVisualization(int pause) {
+    void newThreadVisualization(int pause) {
         boolean[] pathFound = new boolean[1];   // FIXME
         Thread tSim = new Thread(() -> {
             BreadthFirstSearchView wavefront = new BreadthFirstSearchView(gridDraw);
