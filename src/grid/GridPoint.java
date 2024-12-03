@@ -1,7 +1,11 @@
 package grid;
 
 import java.util.Comparator;
+import java.util.function.BiFunction;
+
 import static java.lang.Math.abs;
+import static java.util.Comparator.comparing;
+
 /// Immutable representation of (x,y) integer coordinates in a rectilinear grid, with accompany
 /// arithmetic and comparison methods. Two `Point`s are `Comparable` by their distance from origin.
 /// Per axis `Comparator`s are given as well.
@@ -72,10 +76,15 @@ public record GridPoint(int x, int y) implements Comparable<GridPoint>{
         return (q.x - p.x)*(q.x - p.x) - (q.y - p.y)*(q.y - p.y);
     }
 
+
     /// Rectilinear Distance between two points.
-    public static double distRectilinear(GridPoint p, GridPoint q){
-        return abs(q.x - p.x) + abs(q.y - p.y);
+    public static int distRectilinear(GridPoint p, GridPoint q){
+        return (int)(abs(q.x - p.x) + abs(q.y - p.y));
     }
+//
+   public static BiFunction<GridPoint, GridPoint, Integer> taxiDist =
+        (p, q) ->  (Math.abs(q.x() - p.x()) + Math.abs(q.y() - p.y()));
+
 
     /// Returns the bounding box of two `Point`s as an array { lowerLeft, upperRight }
     public static GridPoint[] bounds(GridPoint p , GridPoint q){

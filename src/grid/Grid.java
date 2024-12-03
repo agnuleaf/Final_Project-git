@@ -12,7 +12,6 @@ import edu.princeton.cs.algs4.StdRandom;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import static grid.GridPoint.distRectilinear;
 import static java.lang.Math.abs;
 
 /// Provides a dense graph representation of a 2D grid using [Graph] api, and conversions from its 0-based vertex array
@@ -170,38 +169,38 @@ public class Grid {
             (index) / width + 1,
             (index) % width + 1);
     }
-    /// Checks if two points are in the same quadrant.
-    /// @return - true if `p` and `q` are on the same quadrant.
-    public  boolean onSameQuad(GridPoint p, GridPoint q){
-        boolean sameX = (p.x() - width/2 > 0) && (q.x() - width/2 > 0);
-        boolean sameY = (p.y() - height/2 > 0) && (q.y() - height/2 > 0);
-        return sameX && sameY;
+    /// Checks if two points are in the different quadrants.
+    /// @return - true if `p` and `q` are in different quadrants.
+    public  boolean onDifferentQuads(GridPoint p, GridPoint q){
+        boolean testX = (p.x() > width/2) ^ (q.x() > width/2);
+        boolean testY = (p.y() > height/2) ^ (q.y() > height/2);
+        return testX || testY;
     }
 
 
     /// Builds the graph with the grid's data then returns it.
     public Graph graph(){
-        buildGraph();
+//        buildGraph();
         return graph;
     }
-    /** 
-     Assigns edges to adjacent nodes in a `dim` x `dim` grid, nodes in the grid are only connected horizontally and
-     vertically to other adjacent nodes. Diagonal connections are NOT created.
-     Skips attaching edges to excluded vertices.
-     Nodes at grid-corners have 2 edges, nodes along grid-borders have 3, and internal nodes have 4.
-     The `Graph` vertices are indexed in the range = \[0, (dim*dim -1 )\] A dense graph is formed by
-     **/
-    private void buildGraph() {
-        this.graph = new Graph(width * width);
 
-        for(int v = 0; v < width * width; v++){
+    /// Assigns edges to adjacent nodes in a `dim` x `dim` grid, nodes in the grid are only connected horizontally and
+    /// vertically to other adjacent nodes. Diagonal connections are NOT created.
+    /// Skips attaching edges to excluded vertices.
+    /// Nodes at grid-corners have 2 edges, nodes along grid-borders have 3, and internal nodes have 4.
+    /// The `Graph` vertices are indexed in the range = \[0, (dim*dim -1 )\] A dense graph is formed by
+    public Graph buildGraph() {
+        this.graph = new Graph(width * height);
+
+        for(int v = 0; v < width * height; v++){
             if(!excludedV.contains(v)){
-                if(v < width * width - (width)  && !excludedV.contains(v+ width)) // skip attaching beyond top border and excluded
+                if(v < width * height - (height)  && !excludedV.contains(v+ height)) // skip attaching beyond top border and excluded
                     graph.addEdge(v, v + width);
                 if((v + 1) % width != 0   && !excludedV.contains(v+1)) // skip attaching beyond right border and excluded
                     graph.addEdge(v, (v+1));
             }
         }
+        return graph;
     }
 
     /// The total number of squares in the grid, including empty and nonempty

@@ -44,7 +44,7 @@ public class MazeApp {
 	/// Maze GUI Constructor with a 10x10 grid.
 	public MazeApp() {
 		this(2,10, AppMode.DEMO);
-		setMode(appMode.DEMO);
+		setMode(AppMode.DEMO);
 	}
 
 	/// Constructor for the main Maze App.
@@ -53,11 +53,11 @@ public class MazeApp {
 	/// @param mode - demo or game mode
 	public MazeApp(int sections, int pause, AppMode mode){
 		this.sections = sections;
-		tPause = pause;/*1000 / (speed * speed) ;*/
+		this.appMode = mode;
+		this.tPause = pause;
 		frame = new JFrame();
 		gridDraw	= new GridDraw(sections * 5, frame);
 		gridDraw.setPause(tPause);
-		gridDraw.drawEmptyGrid();
 		draw = gridDraw.getDraw();
 		draw.setVisible(false);
 
@@ -84,7 +84,9 @@ public class MazeApp {
 		draw.show(); frame.repaint();
 	}
 	void gameMode(){
-		double density = 1.0;
+		double density = 1.0;   // does not give variety
+		gridDraw.setGridThickness(3);
+		gridDraw.drawEmptyGrid();
 		gridDraw.generateRandomWalls(density);
 		gridDraw.getDraw().show();
 		gridDraw.getDrawLabel().repaint();
@@ -104,29 +106,35 @@ public class MazeApp {
 				JOptionPane.YES_NO_OPTION,
 				JOptionPane.QUESTION_MESSAGE);
 	}
-
+	// sets the mode to DEMO: demonstrate placement and pathfinding or
+	// GAME: survive as many rounds and cover as many squares by placing endpoints
 	void setMode(AppMode appMode){
 		this.appMode = appMode;
 		this.pnlControl.setMode(appMode);
 	}
 
-	enum AppMode {
+	public enum AppMode {
 		DEMO(0),
 		GAME(1);
 		int mode;
 		AppMode(int mode){
 			this.mode = mode;
 		}
-		static AppMode getMode(int mode){
-			if(mode == 0) return DEMO;
+		static AppMode getMode(int code){
+			if(code == 0){
+				return DEMO;
+			}
 			else return GAME;
 		}
 	}
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
-			MazeApp maze = new MazeApp(2, AppMode.getMode(startupDialog()));
-
+			int m = startupDialog();
+			System.out.println(m);
+			MazeApp maze = new MazeApp(2, AppMode.getMode(m));
+			System.out.println(maze.appMode);
 			maze.pnlControl.control(maze.appMode); // run event handler
 		});
 	}
+
 }

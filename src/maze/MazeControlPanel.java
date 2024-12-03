@@ -1,7 +1,6 @@
 package maze;
 
-import edu.princeton.cs.algs4.Draw;
-import edu.princeton.cs.algs4.Queue;
+import edu.princeton.cs.algs4.*;
 import grid.GridDraw;
 import grid.Grid;
 import grid.GridPoint;
@@ -9,6 +8,8 @@ import javax.swing.*;
 import java.awt.*;
 
 import java.awt.event.*;
+import java.util.Comparator;
+import java.util.function.Supplier;
 
 import static grid.GridPoint.distRectilinear;
 import static java.awt.Color.PINK;
@@ -43,20 +44,22 @@ public class MazeControlPanel extends JPanel {
 
     // challenge mode
     private MazeApp.AppMode mode;
-    private int topScore = 0;
+    private int MostRounds = 0;
     private double topCoverage = 0.0;
-    private int score = 0;
+    private int rounds = 0;
     private double coverage = 0.0;
     private JLabel lblScore;
     private final Queue<Integer> path = new Queue<>();
     private double density = 1.0;
-
+    private boolean lastRunFailed;
+    private int spacing;
     /// Constructor for the control panel.
     MazeControlPanel(GridDraw gridDraw, JLabel instructions, MazeApp.AppMode mode) {
         this.gridDraw = gridDraw;
         this.instructions = instructions;
         this.grid = gridDraw.getGrid();
         this.draw = gridDraw.getDraw();
+        this.mode = mode;
         drawCanvas = draw.getJLabel();      // for including algs4.Draw canvas in a larger gui
         xmax = gridDraw.getSquares();
         ymax = xmax;
@@ -64,17 +67,18 @@ public class MazeControlPanel extends JPanel {
         setLayout(new BorderLayout());
         btnUndo = new JButton("Undo");
         btnRun = new JButton("Run");
-        if(mode == GAME){
-            lblScore = new JLabel(" 0");
-            lblScore.setFont(MazeApp.AppFont.TITLE.font);
-            add(lblScore,BorderLayout.EAST);
-        }
+        spacing = gridDraw.getSquares()*gridDraw.getSquares() / 25;
+//        if(mode == GAME){
+//            lblScore = new JLabel(" 0");
+//            lblScore.setFont(MazeApp.AppFont.TITLE.font);
+//            add(lblScore,BorderLayout.EAST);
+//        }
 
         add(btnUndo, BorderLayout.WEST);
         add(btnRun, BorderLayout.CENTER);
         btnUndo.setFont(MazeApp.AppFont.LABEL.font);
         btnRun.setFont(MazeApp.AppFont.LABEL.font);
-
+        System.out.println("mode "+ mode);
     }
 
     String instrInputA = "Place two endpoints";
@@ -88,8 +92,7 @@ public class MazeControlPanel extends JPanel {
 
     String ChallengeStart = "Paths Turn to Walls";
     String ChallengeRun = "Finding Path";
-
-    void challengeLabels(){
+    void gameInsructions(){
         instrInputA = ChallengeStart;
         instrInputB = ChallengeRun;
         instrRunning = ChallengeRun;
@@ -98,10 +101,10 @@ public class MazeControlPanel extends JPanel {
     void setMode(MazeApp.AppMode mode){
         this.mode = mode;
     }
-    /// Runs program logic and handles user input.
+    // Runs program logic and handles mouse and button input events.
     void control(MazeApp.AppMode mode) {
         if(mode == GAME)
-            challengeLabels();
+            gameInsructions();
         // user input for grid placement
         drawCanvas.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent mouseEvent) {
@@ -114,19 +117,21 @@ public class MazeControlPanel extends JPanel {
                             (int) (Math.floor(y) + 1.0));
                     System.out.println(p);
                     if(mode != GAME){
-                    if (grid.addEndpoint(p)) {
-                        gridDraw.drawEndpoint(p);
-                        if(grid.endpointsSize() == 2){
-                            instructions.setText(instrInputB);
+                        if (grid.addEndpoint(p)) {
+                            gridDraw.drawEndpoint(p);
+                            if(grid.endpointsSize() == 2){
+                                instructions.setText(instrInputB);
+                            }
+                        } else if (grid.addWall(p) ) {
+                            gridDraw.drawWall(p);
                         }
-                    } else if (grid.addWall(p) ) {
-                        gridDraw.drawWall(p);
-                    }
                     } else {
                         challengePlaceEndpoints(p);
                     }
                     draw.show();
                     drawCanvas.repaint();
+                }else if(mode != DEMO && lastRunFailed || isRestartScreen){ // click anywhere to reset and continue
+                    btnRun.doClick();
                 }
             }
         });
@@ -138,7 +143,6 @@ public class MazeControlPanel extends JPanel {
                 if (btnRun.getText().equals(labelRun) && grid.endpointsSize() >= 2){
                     isVisualRunning = true;
                     instructions.setText(instrRunning);
-
                     newThreadVisualization(gridDraw.getPause()); // new Thread, reenables buttons at it's end
                     btnRun.setText(labelContinue);
                     btnUndo.setText(labelReset);
@@ -146,6 +150,11 @@ public class MazeControlPanel extends JPanel {
                     btnRun.setEnabled(false);
                 }
                 else if(btnRun.getText().equals(labelContinue)){
+                    if(mode != DEMO ) {
+                        MazeReset reset = (lastRunFailed ? MazeReset.CLEARALL : MazeReset.SAVE);
+                        restartMaze(reset, mode);
+                    }
+                    else
                         restartMaze(MazeReset.SAVE, mode);
                 }
             }
@@ -157,12 +166,13 @@ public class MazeControlPanel extends JPanel {
                 if (btnUndo.getText().equals(labelUndo)){
                     if ((grid.endpointsSize() >= 2) && (grid.countWalls() > 0)) {
                         GridPoint tmp = grid.removeLastWall();
+//                          removeLast(grid.removeLastWall());
                         if (tmp != null) {
                             gridDraw.eraseSquare(tmp);
                             gridDraw.mainFrame.repaint();
                         }
                     }
-                    else if(grid.endpointsSize() <= 2 ){
+                    else if(mode != DEMO && (grid.endpointsSize() <= 2 )){
                         GridPoint tmp = grid.removeLastEndpoint();
                         if(tmp != null) {
                             gridDraw.eraseSquare(tmp);
@@ -173,59 +183,68 @@ public class MazeControlPanel extends JPanel {
                     restartMaze(MazeReset.CLEARALL, mode);
                 }
             }
-            });
+        });
 
-
-        // Delete the last wall placed with 'd' key.
+        // Delete the last wall placed with 'U' key.
         btnUndo.addKeyListener(new KeyAdapter() {
             public void keyPressed (KeyEvent ke){
-                if (btnUndo.getText().equals(labelUndo) && ke.getKeyCode() == KeyEvent.VK_D) {
+                if (btnUndo.getText().equals(labelUndo) && (ke.getKeyCode() == KeyEvent.VK_D) || (ke.getKeyCode() == KeyEvent.VK_U)) {
                     if (!isVisualRunning && (grid.countWalls() > 0) && !isRestartScreen) {
-                        GridPoint tmp = grid.removeLastWall();
-                        if(tmp != null) gridDraw.eraseSquare(tmp);
-                        gridDraw.mainFrame.repaint();
+                        btnUndo.doClick();
                     }
                 }
             }
         });
     }
 
+    GridPoint removeLast(Supplier<GridPoint> remove){
+        GridPoint p = remove.get();
+        if(p != null) {
+            gridDraw.eraseSquare(p);
+            gridDraw.mainFrame.repaint();
+        }
+        return p;
+    };
     // Challenge mode endpoints must be in different quadrants.
     private void challengePlaceEndpoints(GridPoint p) {
+        String msgQuad = "Place in Different Quadrant. ";
+        String msgTooClose = "Too close! Place " + spacing +" Apart";
+
         if (grid.endpointsSize() == 0 && grid.addEndpoint(p)) {
             gridDraw.drawEndpoint(p);
-        } else if (grid.endpointsSize() == 1) {
+        } else if (grid.endpointsSize() == 1) { // check placement is correct
             boolean sameQuad = false;
             boolean tooClose = false;
-            if (grid.onSameQuad(p, grid.getStart())) {
-                System.out.println(p+"  same quadrant " + grid.getStart());
-                sameQuad = true;
-            } else if (areTooClose(p, grid.getStart())) {
-                tooClose = true;
-                int space = (grid.getWidth() * grid.getHeight()) / 25;
-                System.out.println(p + " within " + space +" from " + grid.getStart());
-            }
-            if (!sameQuad && !tooClose) { // ok to add
-                if(grid.addEndpoint(p))
-                    gridDraw.drawEndpoint(p);
-                btnRun.doClick();  // last placement launches pathfinding
-            }
+
+            sameQuad = !grid.onDifferentQuads(p, grid.getStart());
+            tooClose = areTooClose(p, grid.getStart());
+
+        if (!sameQuad && !tooClose) { // ok to add
+            if (grid.addEndpoint(p))
+                gridDraw.drawEndpoint(p);
+            btnRun.doClick();  // last placement launches pathfinding
+        } else {
+            instructions.setText((sameQuad ? msgQuad : "") + (tooClose ? msgTooClose : ""));
         }
     }
+        }
+
     // Checks if two points and spaced too close for placement in Challenge mode.
     private boolean areTooClose(GridPoint p, GridPoint q){
         int space = (grid.getWidth() * grid.getHeight()) / 25;
-        System.out.println("dist: "+  (int)distRectilinear(p, q) + " space:"+ space);
-        return (int)distRectilinear(p, q) <= space;
+        System.out.println("dist: "+  distRectilinear(p, q) + " space:"+ space);
+        return distRectilinear(p, q) <= space;
     }
     private void updateScore(){
 
     }
 
+
     // Common maze reset helper
     private void restartMaze(MazeReset reset, MazeApp.AppMode mode) {
 
         btnUndo.setText(labelUndo);
+        btnUndo.setVisible(true);
         btnRun.setText(labelRun);
         instructions.setText(instrInputA);
         gridDraw.drawEmptyGrid();
@@ -235,7 +254,7 @@ public class MazeControlPanel extends JPanel {
                 pathToWalls(path);
             }
             else {
-                score = 0;
+                rounds = 0;
                 grid.restart(false);  // clear grid memory
                 gridDraw.generateRandomWalls(density); // generate and draw random walls
             }
@@ -292,12 +311,13 @@ public class MazeControlPanel extends JPanel {
             if(wavefront.pathTo(grid.indexOf(grid.getEnd())) == null){
                 gridDraw.showMessage("NO PATH FOUND!");
                 draw.show(); frame.repaint();
-                draw.pause(1000);
+                if(mode != DEMO) // only need 1 button in Game over
+                    btnUndo.setVisible(false);
+                lastRunFailed = true;
                 visualComplete();
                 return;
             }
 
-//            for(GridPoint w : wave){
             for (int v : wavefront.pathTo(grid.indexOf(grid.getEnd()))) {
                 gridDraw.path(p, grid.pointAt(v), Color.RED);
                 path.enqueue(v);
@@ -307,7 +327,8 @@ public class MazeControlPanel extends JPanel {
                 frame.repaint();
                 draw.getJLabel().paintImmediately(this.getBounds());
             }
-            score++;
+            rounds++;
+            lastRunFailed = false;
             visualComplete();
             System.out.println("thread Sim complete");
         }).start();
@@ -322,21 +343,26 @@ public class MazeControlPanel extends JPanel {
         if(mode == DEMO)
             instructions.setText(instrRestart);
         else {
-            topScore = max(topScore, score);
-            String msgScore = (((score > topScore)? "Top Score! " : "Score: ") + score);
-            double totalWalls = (double)grid.totalCountWalls();
-            System.out.println(totalWalls);
-            System.out.println(grid.getWidth()*grid.getHeight());
-            coverage = ( totalWalls / grid.getWidth()*grid.getHeight() );
-            String.format("%s", msgScore);
-            String.format("%3.3f", coverage);
-            double tmp = topCoverage;
-            topCoverage = max(topCoverage, coverage);
-            String msgCoverage = (((topCoverage - tmp) > 0.0001)? "Top Coverage! ": "Coverage ") + coverage + "%";
-            instructions.setText(msgScore + " " +msgCoverage);
-            draw.pause(1000);
+            scoreSession();
         }
         isVisualRunning = false;
+    }
+
+    private void scoreSession() {
+//        MostRounds = max(MostRounds, rounds);
+//        String msgScore = (((rounds > MostRounds)? "Most Rounds! " : "Rounds: ") + rounds);
+        double totalWalls = (double)grid.totalCountWalls();
+        System.out.println(totalWalls);
+        System.out.println(grid.getWidth() * grid.getHeight());
+        coverage = ( totalWalls / grid.getWidth() * grid.getHeight() );
+        String msgScore = String.format("rounds: %d |  ", rounds);
+        String msgCoverage =  String.format(" %3.1f%% |", coverage);
+//        double tmp = topCoverage;
+//        topCoverage = max(topCoverage, coverage);
+//        String msgCoverage = ((lastRunFailed && (topCoverage - tmp) > 0.0001)? "Top Coverage! ": "Coverage ") + coverage + "%";
+
+        instructions.setText(msgScore + " " + msgCoverage + " " + (lastRunFailed  /* && largeCC()*/ ? " You Missed a Path!" : ""));
+
     }
 
     // Converts that last path to a wall, for a game challenge.
@@ -358,10 +384,49 @@ public class MazeControlPanel extends JPanel {
         this.width = width;
         this.height = height;
     }
-//    public int getWidth() { return width;  }
-//    public int getHeight(){ return height; }
-    
 
+    // todo work in progress
+    // filters out the connected components that don't meet the spacing requirement.
+    // then checks if one crosses a 5x5 section and
+    private Iterable<Integer> largeCC(){
+        Graph graph = gridDraw.getGrid().graph();
+        int distRequired = spacing + 2;
+        CC cc = new CC( graph );
+        LinearProbingHashST<Integer, Bag<Integer>> stIdV = new LinearProbingHashST<>();
+
+        Bag<Integer> viablePath = new Bag<>();
+        for(int v = 0; v < graph.V() ; v++){
+            if(!grid.isWall(grid.pointAt(v)) && (cc.size(v) > distRequired )) { // ignore cc with size < spacing
+                if(stIdV.contains(cc.id(v))) {
+                   stIdV.get(cc.id(v)).add(v);
+                }
+                else{
+                    Bag<Integer> bag = new Bag<>();
+                    bag.add(v);
+                    stIdV.put(cc.id(v), bag);
+                }
+            }
+        }
+        return viablePath;
+    }
+
+//    // returns the ids of the values that meet a minimum distance requirement in a 2D grid.
+//    private Iterable<Integer> validPaths (ST<Integer, Iterable<Integer>> stIdV, int minDistRequired){
+//
+//        Bag<Queue<Integer>> minDistMet = new Bag<>();
+//        for(int id : stIdV.keys()){
+//            Stack<Integer> stack = new Stack<>();
+//            int maxDist = 0; int minDist = -1; int lastV = -1; boolean diffQuad = false;
+//            for(int v : stIdV.get(id)){
+//                lastV = (stack.peek() == null ?  v : stack.peek());
+//                minDist =
+//                maxDist = max(maxDist, GridPoint.distRectilinear(grid.pointAt(v), grid.pointAt(lastV)));
+//                stack.push(v);
+//            }
+//            if(maxDist)
+//        }
+//        return minDistMet;
+//    }
 
     // From algs4.Draw . Helpers to convert from native coordintes to user friendly ones.
     private double userX  (double x) { return xmin + x * (xmax - xmin) / width;    }

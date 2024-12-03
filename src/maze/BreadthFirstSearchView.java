@@ -53,7 +53,7 @@ public class BreadthFirstSearchView {
         draw = gridDraw.getDraw();
 
         // Original Constructor below
-        Graph graph = grid.graph();
+        Graph graph = grid.buildGraph();
         marked = new boolean[graph.V()];
         distTo = new int[graph.V()];
         edgeTo = new int[graph.V()];

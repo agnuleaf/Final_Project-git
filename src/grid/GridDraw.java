@@ -50,10 +50,11 @@ public class GridDraw {
     public int getSquares(){
         return squares;
     }
-    ///
+    /// Returns the `Draw` instance
     public Draw getDraw() {
         return draw;
     }
+    ///  Returns the `Draw` instance's `JLabel` for including in another `JFrame`.
     public JLabel getDrawLabel () {  return draw.getJLabel(); }
 
     /// Draws a black square for a wall
@@ -62,7 +63,10 @@ public class GridDraw {
         draw.setPenColor();
         fillSquare(p, draw.getPenColor());
     }
-
+    /// Makes the grid more or less visible.
+    public void setGridThickness(int multiplier){
+        gridThickness = multiplier;
+    }
     // Fills the square with the given color
     private void fillSquare(GridPoint p, Color color){
         draw.setPenRadius();
@@ -173,7 +177,8 @@ public class GridDraw {
                 0.2);
         draw.setPenRadius();
     }
-    private void placeText(GridPoint p, String msg){
+    // prints a message
+    public void placeText(GridPoint p, String msg){
         if(p.x() < squares / 2){ // left justify
             draw.setPenColor(gridColor);
             draw.filledRectangle(p.x() + 0.5,p.y(),0.8,0.4);
@@ -200,6 +205,7 @@ public class GridDraw {
     }
     /// Draws grid in 5-square blocks, dark-gray background
     public void drawEmptyGrid(){
+
         draw.clear(Color.DARK_GRAY);
         draw.setPenColor(Color.LIGHT_GRAY);
 
@@ -213,6 +219,7 @@ public class GridDraw {
         }
         draw.setPenColor(Draw.BLACK);
     }
+
     /// Generates and draws random walls in the grid.
     /// @param density where 0 is empty and 1 means the generator was ran for at least as many times as the total number squares in the grid.
     public void generateRandomWalls(double density) {
