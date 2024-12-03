@@ -1,14 +1,10 @@
 package grid;
 
 import java.util.Comparator;
-import java.util.function.BiFunction;
-
 import static java.lang.Math.abs;
-import static java.util.Comparator.comparing;
 
-/// Immutable representation of (x,y) integer coordinates in a rectilinear grid, with accompany
-/// arithmetic and comparison methods. Two `Point`s are `Comparable` by their distance from origin.
-/// Per axis `Comparator`s are given as well.
+/// Representation of (x,y) coordinates in a discrete grid, with a few methods for arithmetic, comparison and
+/// relative orientation.
 /// @author Wesley Miller
 public record GridPoint(int x, int y) implements Comparable<GridPoint>{
 
@@ -16,33 +12,6 @@ public record GridPoint(int x, int y) implements Comparable<GridPoint>{
     GridPoint plus (GridPoint q) { return new GridPoint(x + q.x(), y + q.y()); }
 
     int magRect(){ return abs(x) + abs(y); }
-
-    /// Compares by relative distance from origin, negative means closer.
-    @Override
-    public int compareTo(GridPoint q) {
-        return magRect() - q.magRect();
-    }
-
-    public String toString(){ return "(" + x + ", " + y + ") "; }
-    /// Checks if point w is within the window
-    public boolean inWindow(GridPoint w, int halfWidth){
-        return (nearX(w, halfWidth) && nearY(w, halfWidth));
-    }
-    /// Checks if point w is within the window of this points axis
-    public boolean nearX(GridPoint w, int halfWidth){
-        return (    w.x > x - halfWidth
-                 && w.x < x + halfWidth);
-    }
-    public boolean nearY(GridPoint w, int halfWidth){
-        return (   w.y > y - halfWidth
-                && w.y < y + halfWidth);
-    }
-
-    /// Check if this vertex is farther from q than v.
-    public boolean isFarther(GridPoint v, GridPoint q){
-        return (distRectilinear(v, q) < distRectilinear(this, q));
-    }
-    
     /// Determines the relative diagonal quadrant a given point resides.
     /// For a point `p` the two diagonal lines, with slope = 1, intersecting at p are:
     /// <p> Lpos(x) = x + (p.y - p.x)  and Lneg(x) = -x + p.y + p.x </p>
@@ -68,23 +37,45 @@ public record GridPoint(int x, int y) implements Comparable<GridPoint>{
             throw new UnsupportedOperationException("Point: directionOf");
         }
     }
-    public static Comparator<GridPoint> compareX = Comparator.comparingInt(GridPoint::x);
-    public static Comparator<GridPoint> compareY = Comparator.comparingInt(GridPoint::y);
 
-    /// Distance squared between two points in Cartesian plane.
-    public static double distSqEuclid(GridPoint p, GridPoint q){
-        return (q.x - p.x)*(q.x - p.x) - (q.y - p.y)*(q.y - p.y);
+    public String toString(){ return "(" + x + ", " + y + ") "; }
+
+    /// Checks if point w is within a given window
+    public boolean inWindow(GridPoint w, int halfWidth){
+        return (nearX(w, halfWidth) && nearY(w, halfWidth));
+    }
+    // Checks if point w is inside the window of this points axis
+    private boolean nearX(GridPoint w, int halfWidth){
+        return (    w.x > x - halfWidth
+                && w.x < x + halfWidth);
+    }
+    private boolean nearY(GridPoint w, int halfWidth){
+        return (   w.y > y - halfWidth
+                && w.y < y + halfWidth);
+    }
+    /// Check if this vertex is farther from q than v.
+    public boolean isFarther(GridPoint v, GridPoint q){
+        return (distRectilinear(v, q) < distRectilinear(this, q));
     }
 
+    /// Compares by relative distance from origin, negative means closer.
+    @Override
+    public int compareTo(GridPoint q) {
+        return magRect() - q.magRect();
+    }
 
+    // ---- Static Methods ---- //
+    /// Comparators for per axis magnitude sorting of GridPoints
+    public static Comparator<GridPoint> compareX = Comparator.comparingInt(GridPoint::x);
+    public static Comparator<GridPoint> compareY = Comparator.comparingInt(GridPoint::y);
     /// Rectilinear Distance between two points.
     public static int distRectilinear(GridPoint p, GridPoint q){
         return (int)(abs(q.x - p.x) + abs(q.y - p.y));
     }
-//
-   public static BiFunction<GridPoint, GridPoint, Integer> taxiDist =
-        (p, q) ->  (Math.abs(q.x() - p.x()) + Math.abs(q.y() - p.y()));
-
+    /// Distance squared between two points in Cartesian plane.
+    public static double distSqEuclid(GridPoint p, GridPoint q){
+        return (q.x - p.x)*(q.x - p.x) - (q.y - p.y)*(q.y - p.y);
+    }
 
     /// Returns the bounding box of two `Point`s as an array { lowerLeft, upperRight }
     public static GridPoint[] bounds(GridPoint p , GridPoint q){

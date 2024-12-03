@@ -3,17 +3,10 @@ package grid;
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.Stack;
-
-import edu.princeton.cs.algs4.SET;      // import java.util.HashSet;
+import edu.princeton.cs.algs4.SET;
 import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.StdRandom;
-
-
-import java.util.HashSet;
 import java.util.Iterator;
-
-import static java.lang.Math.abs;
-
 /// Provides a dense graph representation of a 2D grid using [Graph] api, and conversions from its 0-based vertex array
 /// to 1-based coordinates of the positive XY plane presented as an immutable [GridPoint].
 /// ### Overview
@@ -34,7 +27,6 @@ public class Grid {
     private int height ;
     private StackSet<Integer> excludedV;   //  walls from user input, can pop the most recent and search faster than stack
     private Queue<Integer> endpoints;
-    private final int endpointsAllowed = 2;  // only 2 endpoints at a time allowed
     private Graph graph;
 
     /// Constructor for a square `Grid` instance where width and height are the same.
@@ -42,13 +34,14 @@ public class Grid {
     public Grid(int width){
         this.width = width;
         height = this.width;
-        excludedV = new StackSet();
+        excludedV = new StackSet<>();
         endpoints = new Queue<>();
     }
-
+    /// Returns the width in squares of the grid
     public int getWidth(){
         return width;
     }
+    /// Returns the height in squares of the grid
     public int getHeight(){
         return height;
     }
@@ -71,12 +64,12 @@ public class Grid {
 
     /// Tries to add endpoint to grid, returning true if add is successful.
     public boolean addEndpoint(GridPoint p) {
+        // only 2 endpoints at a time allowed
+        int endpointsAllowed = 2;
         if (!isEndpoint(p) && !isWall(p) && endpointsSize() < endpointsAllowed) {
             endpoints.enqueue(indexOf(p));
             return true;
         } else {
-//            System.out.println(
-//                    "failed to add endpoint" + p);    // incase we allow walls to accumulate
             return false;
         }
     }
@@ -137,39 +130,40 @@ public class Grid {
             excludedV.push(indexOf(p));
             return true;
         }
-        else if(isEndpoint(p) || isWall(p)){                  // DEBUG print for
-            System.out.println("can't add wall on wall or other endpoint");
+        else if(isEndpoint(p) || isWall(p))
             return false;
-        }
-        else{
+        else
             throw new IllegalStateException("attempted to at wall at invalid location: "+p);
-        }
     }
 
-    /// Checks if the given point is a wall
+    /// Checks if the given point is a wall, ie no edges connect to it.
+    /// @return true if a wall in the grid
     public boolean isWall(GridPoint p){
         return excludedV.contains(indexOf(p));
     }
 
     /// Removes the last wall placed, or null if there is none.
+    /// @return the last wall placed as `GridPoint`, or `null` if empty.
     public GridPoint removeLastWall() {
         return (!excludedV.isStackEmpty()? pointAt(excludedV.remove()) : null);
     }
 
-    /// Converts a `Point` as 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
+    /// Converts a `GridPoint` as 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
+    /// @param p - the `GridPoint` to check
     public int indexOf(GridPoint p){
         if(p.x() == 0 || p.y() == 0)
-            return -1; // TODO: Remove and add bounds check elsewhere like file input conversion
+            return -1;
         return ((p.x() - 1) * width + (p.y() - 1));
     }
 
     /// Converts a 0-based indexed vertex in `Graph` to a Point with 1-based (x, y) coordinates.
+    /// @return the `GridPoint` in the grid associated with the given graph `index`, or vertex.
     public GridPoint pointAt(int index){
         return new GridPoint(
             (index) / width + 1,
             (index) % width + 1);
     }
-    /// Checks if two points are in the different quadrants.
+    /// Checks if two points are in the different quadrants of the grid.
     /// @return - true if `p` and `q` are in different quadrants.
     public  boolean onDifferentQuads(GridPoint p, GridPoint q){
         boolean testX = (p.x() > width/2) ^ (q.x() > width/2);
@@ -177,18 +171,19 @@ public class Grid {
         return testX || testY;
     }
 
-
-    /// Builds the graph with the grid's data then returns it.
+    /// Returns a [Graph] object from representing the current grid.
+    /// @return the unweighted undirected graph
     public Graph graph(){
 //        buildGraph();
         return graph;
     }
 
-    /// Assigns edges to adjacent nodes in a `dim` x `dim` grid, nodes in the grid are only connected horizontally and
-    /// vertically to other adjacent nodes. Diagonal connections are NOT created.
+    /// Assigns edges to adjacent nodes in a `width` x `height` grid, nodes in the grid are only connected
+    /// horizontally and vertically to other adjacent points. Diagonal connections are NOT created.
     /// Skips attaching edges to excluded vertices.
-    /// Nodes at grid-corners have 2 edges, nodes along grid-borders have 3, and internal nodes have 4.
-    /// The `Graph` vertices are indexed in the range = \[0, (dim*dim -1 )\] A dense graph is formed by
+    /// Points at grid-corners have 2 edges, nodes along grid-borders have 3, and internal nodes have 4.
+    /// The [Graph] vertices are indexed in the range = \[0, (dim*dim -1 )\] A dense graph is formed by
+    /// @return the new graph instance.
     public Graph buildGraph() {
         this.graph = new Graph(width * height);
 
@@ -203,15 +198,17 @@ public class Grid {
         return graph;
     }
 
-    /// The total number of squares in the grid, including empty and nonempty
+    // The total number of squares in the grid, including empty and nonempty
     int count(){
         return height*width;
     }
+    // The total count of unoccupied squares (no walls or endpoints).
     int countUnoccupied(){
         return count() - (endpointsSize() + totalCountWalls());
     }
 
     /// Generates a random set of `GridPoint`s within the grid's bounds and under its limit
+    /// @return a random set of `GridPoint`s within the grid's bounds.
     public SET<GridPoint> generateGridPoints(int count){
         int pointCount = Math.max(count, this.countUnoccupied());
         SET<GridPoint> uniqueNodes = new SET<>();
@@ -228,39 +225,23 @@ public class Grid {
     }
 
     /// Resets the grid completely or resets retaining the walls placed.
+    /// @param doSaveWalls - true if walls should be saved (ie only the stack history is cleared),
+    /// false if all history should be cleared.
     public void restart(boolean doSaveWalls){
          if(doSaveWalls) {
              while(!excludedV.isStackEmpty()){ // unload sessions stack but retain the set
                  excludedV.pop();
              }
          }else {    // reset completely
-             excludedV = new StackSet();
+             excludedV = new StackSet<Integer>();
          }
          endpoints = new Queue<>();
-         // We could load the shortest path to the endpoints queue and add to set walls
-
-
-    }
-    /// Generates a unique random `GridPoint[]`
-    public GridPoint[] generateNodeArray(int count){
-        HashSet<GridPoint> uniqueNodes = new HashSet<>();
-        int pointCount = Math.max(count, this.countUnoccupied());
-        for(int i = 0 ; i < pointCount; i++) {
-            GridPoint n;
-            do {
-                n = new GridPoint(StdRandom.uniformInt(1, width), StdRandom.uniformInt(1, width));
-            } while (uniqueNodes.contains(n));
-            uniqueNodes.add(n);
-        }
-        return uniqueNodes.toArray(new GridPoint[0]);
     }
 
-
-    // Provides fast removal by recency and fast check for duplicates.
-    // Inner class for debug: allows using pointAt and indexOf without making the grid dimensions (ticks) static
+    // Provides fast removal by recency and fast check for duplicates. Used to store the walls in the grid.
     class StackSet<E extends Comparable<E>> implements Iterable <E>{
-        private final Stack<E> stack  ;
-        private final SET <E>  treeSet;
+        final Stack<E> stack  ;
+        final SET <E>  treeSet;
         StackSet(){
             stack    = new Stack<>();
             treeSet  = new SET<>();  // better to use HashSet rather than use compareTo in TreeSet
@@ -272,18 +253,12 @@ public class Grid {
             return treeSet.isEmpty();
         }
         boolean isStackEmpty() { return stack.isEmpty(); }
-        void push(E v){
-            if( !contains(v) ){
+
+        void push(E v) {
+            if (!contains(v)) {
                 stack.push(v);
                 treeSet.add(v);
-//                System.out.print(pointAt(v)
-//                        + "push successes\n stack n: "+ stack.size()
-//                        + " treeSee n:" + treeSet.size());
             }
-//            else{
-//                System.out.println(pointAt(v)
-//                        + "push failed\t is something in the way?");
-//            }
         }
         // only pops the stack, leaving the element in the set. For storing between sessions
         E pop(){
