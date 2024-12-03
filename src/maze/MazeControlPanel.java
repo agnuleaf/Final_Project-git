@@ -1,5 +1,6 @@
 package maze;
 
+import edu.princeton.cs.algs4.BreadthFirstPaths;
 import edu.princeton.cs.algs4.Draw;
 import edu.princeton.cs.algs4.Queue;
 import grid.GridDraw;
@@ -16,18 +17,18 @@ import java.awt.event.*;
 /// Collects user input from mouse and keyboard events.
 public class MazeControlPanel extends JPanel {
 
-    static boolean isRestartScreen;
-    static boolean isVisualRunning;
-    private static boolean isBtnRestart;
+    private static boolean isRestartScreen;
+    private static boolean isVisualRunning;
 
-    GridPoint lastMousePosition = GridPoint.ZERO;
     Grid grid;
     GridDraw gridDraw;
     Draw draw;
     JButton btnUndo;
     JButton btnRun;
+    private final JLabel drawCanvas;
+    private final JLabel instructions;
 
-    // canvas size
+    // canvas variables
     final int DEFAULT_SIZE = 512;
     int width = DEFAULT_SIZE; //384;
     int height = DEFAULT_SIZE; //384;
@@ -35,11 +36,9 @@ public class MazeControlPanel extends JPanel {
     private int ymin = 0;
     private int xmax;
     private int ymax;
-    private final JLabel drawCanvas;
-    private final JLabel instructions;
 
 
-
+    private BreadthFirstPaths path;
     /// Constructor for the control panel.
     MazeControlPanel(GridDraw gridDraw, JLabel instructions) {
         this.gridDraw = gridDraw;
@@ -74,7 +73,7 @@ public class MazeControlPanel extends JPanel {
         // user input for grid placement
         drawCanvas.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent mouseEvent) {
-                if (!isVisualRunning || !isRestartScreen) {
+                if (!isVisualRunning  && !isRestartScreen) {
 
                     double x = userX(mouseEvent.getX()); // "borrowed" from algs4.Draw to convert mouse press locations
                     double y = userY(mouseEvent.getY()); //  to user friendly coordinates in the draw canvas
@@ -90,8 +89,6 @@ public class MazeControlPanel extends JPanel {
                     } else if (grid.addWall(p)) {
                         gridDraw.drawWall(p);
                     }
-
-                    lastMousePosition = p;
                     draw.show();
                     drawCanvas.repaint();
                 }
@@ -105,23 +102,20 @@ public class MazeControlPanel extends JPanel {
                 if (btnRun.getText().equals(labelRun) && grid.endpointsSize() >= 2){
                     isVisualRunning = true;
                     instructions.setText(instrVis);
+                    System.out.println("Thread start: btnRun ");
                     newThreadVisualization(gridDraw.getPause()); // new Thread, reenables buttons at it's end
                     btnRun.setText(labelContinue);
                     btnUndo.setText(labelReset);
-                    System.out.println("btnRun Sim");
                     btnUndo.setEnabled(false);
                     btnRun.setEnabled(false);
                 }
                 else if(btnRun.getText().equals(labelContinue)){
-                    instructions.setText(instrInputA);
-                    grid.restart(true);
-                    gridDraw.drawEmptyGrid();
+                    restartMaze(MazeReset.SAVE);
 
-                    for (int v : grid.getWalls()) {  // add last path
-                        gridDraw.drawWall(grid.pointAt(v));
-                    }
+
                     btnRun.setText(labelRun);
                     btnUndo.setText(labelUndo);
+                    isRestartScreen = false;
                     draw.show();
                     drawCanvas.repaint();
                 }
@@ -140,40 +134,68 @@ public class MazeControlPanel extends JPanel {
                         }
                     }
                 } else if (btnUndo.getText().equals(labelReset)) {
-                    restartRunnable();
+                    restartMaze(MazeReset.CLEAR);
 
-                    btnUndo.setText(labelUndo);
-                    btnRun.setText(labelRun);
-                    instructions.setText(instrInputA);
-                    grid.restart(false);   // clears the grid
-                    gridDraw.drawEmptyGrid();
-                    draw.show();
-                    drawCanvas.repaint();
-                    isBtnRestart = false;
                 }
             }
             });
 
-        // Delete the last wall placed with 'd'
+
+        // Delete the last wall placed with 'd' key.
         btnUndo.addKeyListener(new KeyAdapter() {
             public void keyPressed (KeyEvent ke){
-            if (btnUndo.getText().equals(labelUndo) && ke.getKeyCode() == KeyEvent.VK_D) {
-                if (!isVisualRunning && !isRestartScreen && grid.countWalls() > 0) {
-                    GridPoint tmp = grid.removeLastWall();
-                    if(tmp != null) gridDraw.eraseSquare(tmp);
-                    gridDraw.mainFrame.repaint();
+                if (btnUndo.getText().equals(labelUndo) && ke.getKeyCode() == KeyEvent.VK_D) {
+                    if (!isVisualRunning && (grid.countWalls() > 0) && !isRestartScreen) {
+                        GridPoint tmp = grid.removeLastWall();
+                        if(tmp != null) gridDraw.eraseSquare(tmp);
+                        gridDraw.mainFrame.repaint();
+                    }
                 }
-            }
             }
         });
     }
+    // Common maze reset helper
+    private void restartMaze(MazeReset reset) {
 
+        btnUndo.setText(labelUndo);
+        btnRun.setText(labelRun);
+        instructions.setText(instrInputA);
+        gridDraw.drawEmptyGrid();
+
+        if(reset == MazeReset.HARD) {  // convert path to walls
+            pathToWalls(path.pathTo(grid.indexOf(grid.getEnd())));
+        }
+        grid.restart(reset.areWallsSaved);   // clears or saves the grid memory
+
+        if(reset.areWallsSaved){
+            for (int v : grid.getWalls()) {  // add last path
+                gridDraw.drawWall(grid.pointAt(v));
+            }
+        }
+
+        draw.show();
+        drawCanvas.repaint();
+        isRestartScreen = false;
+        isVisualRunning = false;
+
+    }
+    // for clarity
+    enum MazeReset{
+        CLEAR(false,false),
+        SAVE(true,false),
+        HARD(true,true);
+        boolean areWallsSaved;
+        boolean arePathsConverted;
+        MazeReset(boolean areWallsSaved, boolean arePathsConverted){
+            this.areWallsSaved = areWallsSaved;
+            this.arePathsConverted = arePathsConverted;
+        }
+    }
     /// The animation method for breadth-first search visualization. Starts a new `Thread` to bypasses Swing's
     /// optimization by combining draw calls. `algs4.Draw` timer is used to add delay between frame.
     /// @param pause - the length of time between animation updates
     void newThreadVisualization(int pause) {
-        boolean[] pathFound = new boolean[1];   // FIXME
-        Thread tSim = new Thread(() -> {
+        new Thread(() -> {
             BreadthFirstSearchView wavefront = new BreadthFirstSearchView(gridDraw);
             Queue<GridPoint> wave = wavefront.viewWave();
 
@@ -191,7 +213,6 @@ public class MazeControlPanel extends JPanel {
             if(wavefront.pathTo(grid.indexOf(grid.getEnd())) == null){
                 gridDraw.showMessage("NO PATH FOUND!");
                 draw.show(); frame.repaint();
-                pathFound[0] =false;
                 btnRun.setEnabled(true);
                 btnUndo.setEnabled(true);
                 isVisualRunning = false;
@@ -208,41 +229,31 @@ public class MazeControlPanel extends JPanel {
                 frame.repaint();
                 draw.getJLabel().paintImmediately(this.getBounds());
             }
-            pathFound[0] =true;
-            System.out.println("Sim Done");
             visualComplete();
-            btnRun.setEnabled(true);
-            btnUndo.setEnabled(true);
-            isVisualRunning = false;
-        });
-
-//        Thread tPostSim = new Thread(() ->{
-//            System.out.println("Sim Done");
-//            visualComplete();
-//            btnRun.setEnabled(true);
-//            btnUndo.setEnabled(true);
-//            isVisualRunning = false;
-//        });
-        tSim.start();
-//        try {
-//
-//            tPostSim.join();
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
-        // These execute directly after the Thread starts . They should wait until the trhead ends.
-        // maybe make new thread for them and join the two?
-
-//            return pathFound[0];
+            System.out.println("thread Sim complete");
+        }).start();
     }
     
     private void visualComplete() {
     	isRestartScreen = true;
-        isVisualRunning = false;
         btnUndo.setText("Reset");
+        btnUndo.setEnabled(true);
         btnRun.setText("Continue");
+        btnRun.setEnabled(true);
         instructions.setText(instrRestart);
-    	isBtnRestart = false;
+        isVisualRunning = false;
+    }
+
+    // Converts that last path to a wall, for a game challenge.
+    void pathToWalls(Iterable<Integer> path){
+        var iterator = path.iterator();
+        if(iterator.hasNext()) iterator.next(); // ignore the first and last points
+        while(iterator.hasNext()) {
+            int p = iterator.next();
+            if (iterator.hasNext()) {
+                grid.addWall(grid.pointAt(p));
+            }
+        }
     }
 
     void printThreadDebug(){
@@ -258,12 +269,6 @@ public class MazeControlPanel extends JPanel {
 //    public int getWidth() { return width;  }
 //    public int getHeight(){ return height; }
     
-    /**
-     * For the reset of the maze
-     */
-    private void restartRunnable() {
-    	isVisualRunning = false;
-    }
 
 
     // From algs4.Draw . Helpers to convert from native coordintes to user friendly ones.

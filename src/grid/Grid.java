@@ -32,11 +32,8 @@ public class Grid {
     private int height ;
     private StackSet excludedV;   //  walls from user input, can pop the most recent and search faster than stack
     private Queue<Integer> endpoints;
-//    private int recentGridEndpoint = 0; // increments when point added to Grid instance, but before being drawn
-    private int endpointsAllowed = 2;  // only 2 endpoints at a time allowed
-    //    private GridPair endpoints;
+    private final int endpointsAllowed = 2;  // only 2 endpoints at a time allowed
     private Graph graph;
-//    private int[] savedExcludedV = new int[0];   // saved walls from the previous session(s);
 
     /// Constructor for a square `Grid` instance where width and height are the same.
     /// @param width number of squares along each axis
@@ -145,18 +142,8 @@ public class Grid {
 
     /// Removes the last wall placed, or null if there is none.
     public GridPoint removeLastWall() {
-        return (!excludedV.isEmpty()? pointAt(excludedV.remove()) : null);
+        return (!excludedV.isStackEmpty()? pointAt(excludedV.remove()) : null);
     }
-    public boolean tryRemoveLastWall(){
-        if (!excludedV.isEmpty()) {
-            excludedV.remove();
-            return true;
-        } else
-            return false;    }
-    public GridPoint peekLastWall(){
-        return pointAt(endpoints.peek());
-    }
-
 
     /// Converts a `Point` as 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
     public int indexOf(GridPoint p){
@@ -217,6 +204,7 @@ public class Grid {
         }
         return uniqueNodes;
     }
+    /// Resets the grid completely or resets retaining the walls placed.
     public void restart(boolean doSaveWalls){
          if(doSaveWalls) {
              while(!excludedV.isStackEmpty()){ // unload sessions stack but retain the set

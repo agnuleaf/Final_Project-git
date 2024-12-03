@@ -112,6 +112,7 @@ public class GridDraw {
         draw.show();
     }
 
+
     /// Draws two distinct nodes as 'A' for Start and 'B' for Finish. Returns false if unable to place.
     public void drawEndpoint(GridPoint p){
         boolean isStart = grid.endpointsSize() == 1;   // should we draw start?
