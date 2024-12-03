@@ -169,14 +169,14 @@ public class MazeControlPanel extends JPanel {
 //                          removeLast(grid.removeLastWall());
                         if (tmp != null) {
                             gridDraw.eraseSquare(tmp);
-                            gridDraw.mainFrame.repaint();
+                            gridDraw.getFrame().repaint();
                         }
                     }
                     else if(mode != DEMO && (grid.endpointsSize() <= 2 )){
                         GridPoint tmp = grid.removeLastEndpoint();
                         if(tmp != null) {
                             gridDraw.eraseSquare(tmp);
-                            gridDraw.mainFrame.repaint();
+                            gridDraw.getFrame().repaint();
                         }
                     }
                 } else if (btnUndo.getText().equals(labelReset)) {
@@ -201,7 +201,7 @@ public class MazeControlPanel extends JPanel {
         GridPoint p = remove.get();
         if(p != null) {
             gridDraw.eraseSquare(p);
-            gridDraw.mainFrame.repaint();
+            gridDraw.getFrame().repaint();
         }
         return p;
     };
