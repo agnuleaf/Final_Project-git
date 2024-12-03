@@ -67,8 +67,6 @@ public record GridPoint(int x, int y) implements Comparable<GridPoint>{
     public static Comparator<GridPoint> compareX = Comparator.comparingInt(GridPoint::x);
     public static Comparator<GridPoint> compareY = Comparator.comparingInt(GridPoint::y);
 
-
-
     /// Distance squared between two points in Cartesian plane.
     public static double distSqEuclid(GridPoint p, GridPoint q){
         return (q.x - p.x)*(q.x - p.x) - (q.y - p.y)*(q.y - p.y);

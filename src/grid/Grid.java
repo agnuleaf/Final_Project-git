@@ -12,6 +12,9 @@ import edu.princeton.cs.algs4.StdRandom;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import static grid.GridPoint.distRectilinear;
+import static java.lang.Math.abs;
+
 /// Provides a dense graph representation of a 2D grid using [Graph] api, and conversions from its 0-based vertex array
 /// to 1-based coordinates of the positive XY plane presented as an immutable [GridPoint].
 /// ### Overview
@@ -30,7 +33,7 @@ import java.util.Iterator;
 public class Grid {
     private int width = 5;     // squares for x axis
     private int height ;
-    private StackSet excludedV;   //  walls from user input, can pop the most recent and search faster than stack
+    private StackSet<Integer> excludedV;   //  walls from user input, can pop the most recent and search faster than stack
     private Queue<Integer> endpoints;
     private final int endpointsAllowed = 2;  // only 2 endpoints at a time allowed
     private Graph graph;
@@ -44,6 +47,12 @@ public class Grid {
         endpoints = new Queue<>();
     }
 
+    public int getWidth(){
+        return width;
+    }
+    public int getHeight(){
+        return height;
+    }
     /// The number of walls placed for this phase.
     public int countWalls(){
         return excludedV.stackSize() ;
@@ -100,7 +109,10 @@ public class Grid {
         endpoints.enqueue(end);
         return pointAt(end);
     }
-
+    public GridPoint removeLastEndpoint(){
+        if(endpoints.isEmpty()) return null;
+        return pointAt(endpoints.dequeue());
+    }
     /// Converts and array of points in (x,y) grid coordinates to an array of graph vertices
     public int[] indexArrayOf(GridPoint[] points){
         int[] indexArray = new int[points.length];
@@ -158,6 +170,15 @@ public class Grid {
             (index) / width + 1,
             (index) % width + 1);
     }
+    /// Checks if two points are in the same quadrant.
+    /// @return - true if `p` and `q` are on the same quadrant.
+    public  boolean onSameQuad(GridPoint p, GridPoint q){
+        boolean sameX = (p.x() - width/2 > 0) && (q.x() - width/2 > 0);
+        boolean sameY = (p.y() - height/2 > 0) && (q.y() - height/2 > 0);
+        return sameX && sameY;
+    }
+
+
     /// Builds the graph with the grid's data then returns it.
     public Graph graph(){
         buildGraph();
@@ -188,22 +209,25 @@ public class Grid {
         return height*width;
     }
     int countUnoccupied(){
-        return count() - (endpointsSize() + countWalls());
+        return count() - (endpointsSize() + totalCountWalls());
     }
+
     /// Generates a random set of `GridPoint`s within the grid's bounds and under its limit
-    /// @return - set of `GridPoint`s
-    public SET<GridPoint> generateNodes(int count){
+    public SET<GridPoint> generateGridPoints(int count){
         int pointCount = Math.max(count, this.countUnoccupied());
         SET<GridPoint> uniqueNodes = new SET<>();
         for(int i = 0 ; i < pointCount; i++) {
-            GridPoint n;
-            do{
+            int tries = 0;
+            GridPoint n = new GridPoint(StdRandom.uniformInt(1, width), StdRandom.uniformInt(1, width));
+            while(uniqueNodes.contains(n) && (tries < 4 )){
                 n = new GridPoint(StdRandom.uniformInt(1, width), StdRandom.uniformInt(1, width));
-            }while(uniqueNodes.contains(n));
-            uniqueNodes.add(n);
+                tries++;
+            }
+            if(!uniqueNodes.contains(n)){ uniqueNodes.add(n); };
         }
         return uniqueNodes;
     }
+
     /// Resets the grid completely or resets retaining the walls placed.
     public void restart(boolean doSaveWalls){
          if(doSaveWalls) {
@@ -232,23 +256,24 @@ public class Grid {
         return uniqueNodes.toArray(new GridPoint[0]);
     }
 
+
     // Provides fast removal by recency and fast check for duplicates.
     // Inner class for debug: allows using pointAt and indexOf without making the grid dimensions (ticks) static
-    class StackSet implements Iterable <Integer>{
-        private final Stack<Integer> stack  ;
-        private final SET <Integer>  treeSet;
+    class StackSet<E extends Comparable<E>> implements Iterable <E>{
+        private final Stack<E> stack  ;
+        private final SET <E>  treeSet;
         StackSet(){
             stack    = new Stack<>();
             treeSet  = new SET<>();  // better to use HashSet rather than use compareTo in TreeSet
         }
-        boolean contains(int v){
+        boolean contains(E v){
             return treeSet.contains(v);
         }
         boolean isEmpty(){
             return treeSet.isEmpty();
         }
         boolean isStackEmpty() { return stack.isEmpty(); }
-        void push(int v){
+        void push(E v){
             if( !contains(v) ){
                 stack.push(v);
                 treeSet.add(v);
@@ -262,18 +287,18 @@ public class Grid {
 //            }
         }
         // only pops the stack, leaving the element in the set. For storing between sessions
-        int pop(){
+        E pop(){
             return stack.pop();
         }
-        int remove(){
+        E remove(){
 
-            int tmp = stack.pop();
+            E tmp = stack.pop();
 //            System.out.print(pointAt(tmp) + "popped");
             treeSet.remove(tmp);
 //            System.out.println("treeSet n:" + treeSet.size() + " stack n:" + stack.size());
             return tmp;
         }
-        int peek(){
+        E peek(){
             return stack.peek();
         }
         int size(){
@@ -283,12 +308,12 @@ public class Grid {
             return stack.size();
         }
 
-        Iterable<Integer> getSet(){
+        Iterable<E> getSet(){
             return treeSet;
         }
-        @Override
-        public Iterator<Integer> iterator() {
-            return stack.iterator();
+
+        public Iterator<E> iterator() {
+            return treeSet.iterator();
         }
     }
 }
