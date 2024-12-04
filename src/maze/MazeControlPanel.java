@@ -20,7 +20,7 @@ import static maze.MazeApp.AppMode.DEMO;
 /// @author Wesley Miller, Ty GreenBurg
 public class MazeControlPanel extends JPanel {
 
-    // state variables
+	// state variables
     private static boolean isRestartScreen;
     private static boolean isVisualRunning;
 

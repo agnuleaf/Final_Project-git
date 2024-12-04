@@ -84,12 +84,6 @@ public class MazeAppTest {
         }
     }
 
-    private static void testChallengeMode(){
-        MazeApp app = new MazeApp(2,MazeApp.AppMode.GAME);
-        app.setMode(MazeApp.AppMode.GAME);
-        app.gameMode();
-    }
-
     private static int selectMode(){
 		JFrame frame = new JFrame("Select Mode");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
