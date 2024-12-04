@@ -28,7 +28,6 @@ public class MazeAppTest {
         var q = new GridPoint(9, 8);
         JFrame mainFrame = app.frame;
         GridDraw gridDraw = app.gridDraw;
-        MazeControlPanel ctrlPanel = app.pnlControl;
         Grid grid = gridDraw.getGrid();
         grid.addEndpoint(p);
         gridDraw.drawEndpoint(p);

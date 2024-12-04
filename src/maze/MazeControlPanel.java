@@ -109,7 +109,6 @@ public class MazeControlPanel extends JPanel {
     void control(MazeApp.AppMode mode) {
         if(mode == GAME)
             gameInsructions();
-        // user input for grid placement
         drawCanvas.addMouseListener(new MouseAdapter() {
 
             /* Converts mouse event locations to the familiar grid coordinates and handles
@@ -122,7 +121,7 @@ public class MazeControlPanel extends JPanel {
                     GridPoint p = new GridPoint(            // convert to nearest grid center
                             (int) (Math.floor(x) + 1.0),
                             (int) (Math.floor(y) + 1.0));
-                    System.out.println(p);
+                    //   System.out.println(p);
                     if(mode != GAME){
                         if (grid.addEndpoint(p)) {
                             gridDraw.drawEndpoint(p);
@@ -143,9 +142,9 @@ public class MazeControlPanel extends JPanel {
             }
         });
 
-        // DEMO : press Run for Visualization. Once complete Continue allows retaining the current walls.
-        // GAME : Run Not used but automatically activated by placement of the second endpoint.
-        //      Continue continues the game
+        /* DEMO : press Run for Visualization. Once complete Continue allows retaining the current walls.
+           GAME : Run Not used but automatically activated by placement of the second endpoint.
+         */
         btnRun.addActionListener(e ->  {
             if(!isVisualRunning) {
                 if (btnRun.getText().equals(labelRun) && grid.endpointsSize() >= 2){
@@ -168,8 +167,9 @@ public class MazeControlPanel extends JPanel {
             }
         });
 
-        // DEMO: Undo removes recent placement of a wall. Reset clears the grid.
-        // GAME: Undo removes the first endpoint if placed. Reset clears the grid and regenerates a new random wall map.
+        /* DEMO: Undo removes recent placement of a wall. Reset clears the grid.
+         * GAME: Undo removes the first endpoint if placed. Reset clears the grid and regenerates a new random wall map.
+         */
         btnUndo.addActionListener(e -> {
             if(!isVisualRunning){
                 if (btnUndo.getText().equals(labelUndo)){
@@ -182,7 +182,7 @@ public class MazeControlPanel extends JPanel {
                         }
                     }
                     else if(mode != DEMO && (grid.endpointsSize() <= 2 )){
-                        GridPoint tmp = grid.removeLastEndpoint();
+                        GridPoint tmp = grid.removeEndpoint();
                         if(tmp != null) {
                             gridDraw.eraseSquare(tmp);
                             gridDraw.getFrame().repaint();
@@ -214,11 +214,9 @@ public class MazeControlPanel extends JPanel {
         if (grid.endpointsSize() == 0 && grid.addEndpoint(p)) {
             gridDraw.drawEndpoint(p);
         } else if (grid.endpointsSize() == 1) { // check placement is correct
-            boolean sameQuad = false;
-            boolean tooClose = false;
 
-            sameQuad = !grid.onDifferentQuads(p, grid.getStart());
-            tooClose = areTooClose(p, grid.getStart());
+            boolean sameQuad = !grid.onDifferentQuads(p, grid.getStart());
+            boolean tooClose = areTooClose(p, grid.getStart());
 
         if (!sameQuad && !tooClose) { // ok to add
             if (grid.addEndpoint(p))
@@ -233,7 +231,7 @@ public class MazeControlPanel extends JPanel {
     // Checks if two points and spaced too close for placement in Game mode.
     private boolean areTooClose(GridPoint p, GridPoint q){
         int space = 5 * (1 +  grid.getWidth()/25);
-        System.out.println("dist: "+  distRectilinear(p, q) + " space:"+ space);
+        //  System.out.println("dist: "+  distRectilinear(p, q) + " space:"+ space);
         return distRectilinear(p, q) <= space;
     }
 
@@ -328,7 +326,6 @@ public class MazeControlPanel extends JPanel {
             rounds++;
             lastRunFailed = false;
             visualComplete();
-            System.out.println("thread Sim complete");
         }).start();
     }
     // Run at the conclusion of the visualization thread for both success and failure to find a path.
@@ -350,13 +347,13 @@ public class MazeControlPanel extends JPanel {
     // Keeps track of the score and coverage.
     private void scoreSession() {
         double totalWalls = grid.totalCountWalls();
-        coverage = ( totalWalls / grid.getWidth() * grid.getHeight() );
+        coverage = 100 * ( totalWalls / (grid.getWidth() * grid.getHeight() ));
         String msgScore = String.format("rounds: %d |  ", rounds);
         String msgCoverage =  String.format(" %3.1f%% |", coverage);
         instructions.setText(msgScore + " " + msgCoverage);
     }
 
-    // Converts that last path to a wall, for a game challenge.
+    // Converts last path to a wall for the game.
     void pathToWalls(Queue<Integer> path){
         if(path == null) return;
         while( !path.isEmpty()) {

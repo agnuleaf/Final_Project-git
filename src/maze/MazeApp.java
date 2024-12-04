@@ -11,14 +11,16 @@ import static javax.swing.SwingConstants.CENTER;
 public class MazeApp {
 
 	int sections = 2;	// multiples of 5 squares on the axis
-	int tPause = 1;	// pause (ms) between draw . I think it is much slower than
-	AppMode appMode = AppMode.DEMO;
-	GridDraw 		gridDraw;		//
-	Draw 			draw  ;			//
-	MazeControlPanel pnlControl;	//
-	JLabel drawCanvas;				// algs4 Draw label
-	JFrame frame;					// main JFrame
-	JPanel pnlMain;					// contentPane holds the canvas, button panel and instructions label
+	int tPause = 1;	    // pause (ms) between draw . I think it is much slower than
+	private AppMode appMode = AppMode.DEMO;
+
+	GridDraw gridDraw;
+	JFrame 	 frame;					// main JFrame
+	MazeControlPanel pnlControl;
+
+	private Draw    draw  ;			//
+	private JLabel  drawCanvas;		// algs4 Draw label
+	private JPanel  pnlMain;	    // contentPane holds the canvas, button panel and instructions label
 
 	JLabel instructions;			// instructions label
 	private static final Font fontLabel = new Font("Sans", Font.BOLD, 16);
@@ -84,7 +86,7 @@ public class MazeApp {
 	}
 	// initiates the game mode
 	void gameMode(){
-		double density = 0.5;   // does not give variety
+		double density = 0.4;   // does not give variety
 		gridDraw.setGridThickness(3);
 		gridDraw.drawEmptyGrid();
 		gridDraw.generateRandomWalls(density);
@@ -134,11 +136,11 @@ public class MazeApp {
 	}
 	/// The EDT is launched here and all the maze logic. Animation occurs on a separate thread.
 	public static void main(String[] args) {
+
 		SwingUtilities.invokeLater(() -> {
 			int m = startupDialog();
-			System.out.println(m);
-			MazeApp maze = new MazeApp(2, AppMode.getMode(m));
-			System.out.println(maze.appMode);
+			m = 2*m + 2;
+			MazeApp maze = new MazeApp(m, AppMode.getMode(m));
 			maze.pnlControl.control(maze.appMode); // run event handler
 		});
 	}

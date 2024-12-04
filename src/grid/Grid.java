@@ -7,6 +7,7 @@ import edu.princeton.cs.algs4.SET;
 import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.StdRandom;
 import java.util.Iterator;
+
 /// Provides a dense graph representation of a 2D grid using [Graph] api, and conversions from its 0-based vertex array
 /// to 1-based coordinates of the positive XY plane presented as an immutable [GridPoint].
 /// ### Overview
@@ -21,10 +22,10 @@ import java.util.Iterator;
 /// [Lattice graph](https://en.wikipedia.org/wiki/Lattice_graph)
 /// [Lattice path](https://en.wikipedia.org/wiki/Lattice_path)
 /// [Hanan Grid](https://en.wikipedia.org/wiki/Hanan_grid)
-/// @author Wesley Miller
+/// @author Wesley Miller, Ty GreenBurg
 public class Grid {
-    private int width = 5;     // squares for x axis
-    private int height ;
+    private int width;     // squares for x axis
+    private int height ;       // height is a placeholder, it takes width's value
     private StackSet<Integer> excludedV;   //  walls from user input, can pop the most recent and search faster than stack
     private Queue<Integer> endpoints;
     private Graph graph;
@@ -38,33 +39,43 @@ public class Grid {
         endpoints = new Queue<>();
     }
     /// Returns the width in squares of the grid
+    /// @return the width of the grid in squares
     public int getWidth(){
         return width;
     }
+
     /// Returns the height in squares of the grid
+    /// @return the height of the grid in squares
     public int getHeight(){
         return height;
     }
+
     /// The number of walls placed for this phase.
+    /// @return count of walls as maintained by the [Stack]
     public int countWalls(){
         return excludedV.stackSize() ;
     }
+
     /// The total number of walls in the grid.
+    /// @return count of walls as maintained by the [SET].
     public int totalCountWalls(){
         return excludedV.size();
     }
+
     /// Gets all walls in the grid.
+    /// @return the walls in graph vertex form
     public Iterable<Integer> getWalls(){
         return excludedV.getSet();
     }
+
     /// The most recently added endpoint's place in Queue.
     public int endpointsSize(){
         return endpoints.size();
     }
 
     /// Tries to add endpoint to grid, returning true if add is successful.
+    /// @return whether the addition was a success or not.
     public boolean addEndpoint(GridPoint p) {
-        // only 2 endpoints at a time allowed
         int endpointsAllowed = 2;
         if (!isEndpoint(p) && !isWall(p) && endpointsSize() < endpointsAllowed) {
             endpoints.enqueue(indexOf(p));
@@ -90,10 +101,13 @@ public class Grid {
     }
 
     /// Gets the start endpoint
+    /// @return the first endpoint placed
     public GridPoint getStart(){
         return pointAt(endpoints.peek());
     }
+
     ///  Gets the final endpoint
+    /// @return the last endpoint
     public GridPoint getEnd(){
         int start = endpoints.dequeue();
         int end = endpoints.dequeue();
@@ -101,26 +115,13 @@ public class Grid {
         endpoints.enqueue(end);
         return pointAt(end);
     }
-    public GridPoint removeLastEndpoint(){
+
+    /// Removes the endpoint first placed, this is not available in DEMO mode. To the player in GAME,
+    ///  the only endpoint available to remove is the first one.
+    /// @return the endpoint removed.
+    public GridPoint removeEndpoint(){
         if(endpoints.isEmpty()) return null;
         return pointAt(endpoints.dequeue());
-    }
-    /// Converts and array of points in (x,y) grid coordinates to an array of graph vertices
-    public int[] indexArrayOf(GridPoint[] points){
-        int[] indexArray = new int[points.length];
-        for(int i = 0 ; i < points.length ; i++) {
-            indexArray[i] = indexOf(points[i]);
-        }
-        return indexArray;
-    }
-
-    ///  Converts an array of points as (x,y) grid coordinates to graph vertices
-    public Iterable<Integer> indicesOf(GridPoint[] points) {
-        Bag<Integer> indices = new Bag<>();
-        for(int i = 1 ; i < points.length ; i+=2) {
-            indices.add(indexOf(points[i]));
-        }
-        return indices;
     }
 
     /// Checks to add wall unless an endpoint or wall already exists there.
@@ -163,6 +164,7 @@ public class Grid {
             (index) / width + 1,
             (index) % width + 1);
     }
+
     /// Checks if two points are in the different quadrants of the grid.
     /// @return - true if `p` and `q` are in different quadrants.
     public  boolean onDifferentQuads(GridPoint p, GridPoint q){
@@ -174,7 +176,6 @@ public class Grid {
     /// Returns a [Graph] object from representing the current grid.
     /// @return the unweighted undirected graph
     public Graph graph(){
-//        buildGraph();
         return graph;
     }
 
@@ -198,12 +199,14 @@ public class Grid {
         return graph;
     }
 
-    // The total number of squares in the grid, including empty and nonempty
-    int count(){
+    /// Returns the total number of squares in the grid, including empty and nonempty.
+    /// @return the count of squares (width x height).
+    public int count(){
         return height*width;
     }
-    // The total count of unoccupied squares (no walls or endpoints).
-    int countUnoccupied(){
+    /// Returns the total count of unoccupied squares (no walls or endpoints).
+    /// @return count of empty squares in total.
+    public int countUnoccupied(){
         return count() - (endpointsSize() + totalCountWalls());
     }
 
