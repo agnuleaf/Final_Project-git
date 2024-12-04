@@ -30,128 +30,124 @@ import java.beans.PropertyChangeListener;
 ///
 /// @author Robert Sedgewick
 /// @author Kevin Wayne
-public class BreadthFirstSearchView implements PropertyChangeListener {
+public class BreadthFirstSearchView {
 
-        private static final int INFINITY = Integer.MAX_VALUE;
-        private boolean[] marked;  // marked[v] = is there an s-v path
-        private int[] edgeTo;      // edgeTo[v] = previous edge on shortest s-v path
-        private int[] distTo;      // distTo[v] = number of edges shortest s-v path
+    private static final int INFINITY = Integer.MAX_VALUE;
+    private boolean[] marked;  // marked[v] = is there an s-v path
+    private int[] edgeTo;      // edgeTo[v] = previous edge on shortest s-v path
+    private int[] distTo;      // distTo[v] = number of edges shortest s-v path
 
-        private Grid grid;
-        private GridPoint p;
-        private Draw draw;     // draw to offscreen with draw.show(), repaint with draw.getJLabel().repaint(), display Disabled
-        private GridDraw gridDraw;
-//        private int tPause;
-        public BreadthFirstSearchView(GridDraw gridDraw) {
-            // For displaying the visited nodes
-            this.gridDraw = gridDraw;
-            grid = gridDraw.getGrid();
-            p = gridDraw.getGrid().getStart();
-//            gridDraw.getGrid().getEnd();
-//            tPause = gridDraw.getPause();
-            draw = gridDraw.getDraw();
+    private Grid grid;
+    private GridPoint p;
 
-            // Original Constructor below
-            Graph graph = grid.graph();
-            marked = new boolean[graph.V()];
-            distTo = new int[graph.V()];
-            edgeTo = new int[graph.V()];
-            int s = grid.indexOf(p);
-            validateVertex(s);
+    //        private int tPause;
+
+    /**
+     * Constructor used to map the possible connections in the unweighted graph.
+     * @param gridDraw - used to access the `Grid` object which holds the [Graph] object, used to vertices
+     *                 in the order they are visited by the breadth first search algorithm.
+     */
+    public BreadthFirstSearchView(GridDraw gridDraw) {
+        // For displaying the visited nodes
+        grid = gridDraw.getGrid();
+        p = gridDraw.getGrid().getStart();
+
+        // Original Constructor below
+        Graph graph = grid.buildGraph();
+        marked = new boolean[graph.V()];
+        distTo = new int[graph.V()];
+        edgeTo = new int[graph.V()];
+        int s = grid.indexOf(p);
+        validateVertex(s);
     }
 
 
-    /// Runs the breadth first search method `bfs` with an internal timer from `algs4.Draw` to add delay between drawing
-    ///  each visited vertex. Call this method from a new `Thread` when running on the Event Dispatch Thread,
+    /// Runs the breadth first search method `bfs` and exports the vertices in the order they are visited, for external
+    /// animation. Call this method from a new `Thread` when running on the Event Dispatch Thread,
     /// or else all individual draw calls will be combined and occur simultaneously after the delay, defeating
     /// the attempt at animation.
+    /// @return the `Queue` of visited vertices as `GridPoint`s
     public Queue<GridPoint> viewWave() {
-       return bfs(grid.indexOf(p));
+        return bfs(grid.indexOf(p));
     }
 
-        // breadth-first search from a single source
-        private Queue<GridPoint> bfs( int s) {
-            Queue<GridPoint> qConverted = new Queue<>();
-            Graph graph = grid.graph();
-            Queue<Integer> q = new Queue<>();
-            for (int v = 0; v < graph.V(); v++)
-                distTo[v] = INFINITY;
-            distTo[s] = 0;
-            marked[s] = true;
-            q.enqueue(s);
+    // breadth-first search from a single source
+    private Queue<GridPoint> bfs(int s) {
+        Queue<GridPoint> qConverted = new Queue<>();
+        Graph graph = grid.graph();
+        Queue<Integer> q = new Queue<>();
+        for (int v = 0; v < graph.V(); v++)
+            distTo[v] = INFINITY;
+        distTo[s] = 0;
+        marked[s] = true;
+        q.enqueue(s);
 
-            while (!q.isEmpty()) {
-                int v = q.dequeue();
-                for (int w : graph.adj(v)) {
-                    if (!marked[w]) {
-                        edgeTo[w] = v;
-                        distTo[w] = distTo[v] + 1;
-                        marked[w] = true;
-                        q.enqueue(w);
-                        qConverted.enqueue(grid.pointAt(w));
-//                        gridDraw.discovered(grid.pointAt(w));
-//                        draw.pause(tPause);
-//                        draw.show();
-//                        draw.getJLabel().paintImmediately(draw.getJLabel().getBounds());
-                    }
+        while (!q.isEmpty()) {
+            int v = q.dequeue();
+            for (int w : graph.adj(v)) {
+                if (!marked[w]) {
+                    edgeTo[w] = v;
+                    distTo[w] = distTo[v] + 1;
+                    marked[w] = true;
+                    q.enqueue(w);
+                    qConverted.enqueue(grid.pointAt(w));
                 }
             }
-            return qConverted;
         }
+        return qConverted;
+    }
+// NO MODIFICATIONS BELOW
+    /**
+     * Is there a path between the source vertex {@code s} (or sources) and vertex {@code v}?
+     *
+     * @param v the vertex
+     * @return {@code true} if there is a path, and {@code false} otherwise
+     * @throws IllegalArgumentException unless {@code 0 <= v < V}
+     */
+    public boolean hasPathTo(int v) {
+        validateVertex(v);
+        return marked[v];
+    }
 
-        /**
-         * Is there a path between the source vertex {@code s} (or sources) and vertex {@code v}?
-         * @param v the vertex
-         * @return {@code true} if there is a path, and {@code false} otherwise
-         * @throws IllegalArgumentException unless {@code 0 <= v < V}
-         */
-        public boolean hasPathTo(int v) {
-            validateVertex(v);
-            return marked[v];
-        }
+    /**
+     * Returns the number of edges in a shortest path between the source vertex {@code s}
+     * (or sources) and vertex {@code v}?
+     *
+     * @param v the vertex
+     * @return the number of edges in such a shortest path
+     * (or {@code Integer.MAX_VALUE} if there is no such path)
+     * @throws IllegalArgumentException unless {@code 0 <= v < V}
+     */
+    public int distTo(int v) {
+        validateVertex(v);
+        return distTo[v];
+    }
 
-        /**
-         * Returns the number of edges in a shortest path between the source vertex {@code s}
-         * (or sources) and vertex {@code v}?
-         * @param v the vertex
-         * @return the number of edges in such a shortest path
-         *         (or {@code Integer.MAX_VALUE} if there is no such path)
-         * @throws IllegalArgumentException unless {@code 0 <= v < V}
-         */
-        public int distTo(int v) {
-            validateVertex(v);
-            return distTo[v];
-        }
-
-        /**
-         * Returns a shortest path between the source vertex {@code s} (or sources)
-         * and {@code v}, or {@code null} if no such path.
-         * @param  v the vertex
-         * @return the sequence of vertices on a shortest path, as an Iterable
-         * @throws IllegalArgumentException unless {@code 0 <= v < V}
-         */
-        public Iterable<Integer> pathTo(int v) {
-            validateVertex(v);
-            if (!hasPathTo(v)) return null;
-            Stack<Integer> path = new Stack<>();
-            int x;
-            for (x = v; distTo[x] != 0; x = edgeTo[x])
-                path.push(x);
+    /**
+     * Returns a shortest path between the source vertex {@code s} (or sources)
+     * and {@code v}, or {@code null} if no such path.
+     *
+     * @param v the vertex
+     * @return the sequence of vertices on a shortest path, as an Iterable
+     * @throws IllegalArgumentException unless {@code 0 <= v < V}
+     */
+    public Iterable<Integer> pathTo(int v) {
+        validateVertex(v);
+        if (!hasPathTo(v)) return null;
+        Stack<Integer> path = new Stack<>();
+        int x;
+        for (x = v; distTo[x] != 0; x = edgeTo[x])
             path.push(x);
-            return path;
-        }
+        path.push(x);
+        return path;
+    }
 
-        // throw an IllegalArgumentException unless {@code 0 <= v < V}
-        private void validateVertex(int v) {
-            int V = marked.length;
-            if (v < 0 || v >= V)
-                throw new IllegalArgumentException("vertex " + v + " is not between 0 and " + (V-1));
-        }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-
-        }
+    // throw an IllegalArgumentException unless {@code 0 <= v < V}
+    private void validateVertex(int v) {
+        int V = marked.length;
+        if (v < 0 || v >= V)
+            throw new IllegalArgumentException("vertex " + v + " is not between 0 and " + (V - 1));
+    }
 }
 
 
