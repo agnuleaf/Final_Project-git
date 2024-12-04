@@ -238,7 +238,7 @@ public class MazeControlPanel extends JPanel {
 
     // Checks if two points and spaced too close for placement in Challenge mode.
     private boolean areTooClose(GridPoint p, GridPoint q){
-        int space = (grid.getWidth() * grid.getHeight()) / 25;
+        int space = 5 * (1 +  grid.getWidth()/25);
         System.out.println("dist: "+  distRectilinear(p, q) + " space:"+ space);
         return distRectilinear(p, q) <= space;
     }
