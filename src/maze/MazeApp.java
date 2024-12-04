@@ -139,8 +139,8 @@ public class MazeApp {
 
 		SwingUtilities.invokeLater(() -> {
 			int m = startupDialog();
-			m = 2*m + 2;
-			MazeApp maze = new MazeApp(m, AppMode.getMode(m));
+			int squares = m + 2;
+			MazeApp maze = new MazeApp(squares, AppMode.getMode(m));
 			maze.pnlControl.control(maze.appMode); // run event handler
 		});
 	}
