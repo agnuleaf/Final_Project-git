@@ -8,15 +8,12 @@ import javax.swing.*;
 import java.awt.*;
 
 import java.awt.event.*;
-import java.util.Comparator;
 import java.util.function.Supplier;
 
 import static grid.GridPoint.distRectilinear;
 import static java.awt.Color.PINK;
-import static java.lang.Math.max;
 import static maze.MazeApp.AppMode.GAME;
 import static maze.MazeApp.AppMode.DEMO;
-//import static maze.MazeApp.tPause;
 
 /// Collects user input from mouse and keyboard events.
 public class MazeControlPanel extends JPanel {
@@ -32,7 +29,7 @@ public class MazeControlPanel extends JPanel {
     JButton btnRun;
     private final JLabel drawCanvas;
     private final JLabel instructions;
-
+    JLabel lblTips;
     // canvas variables
     final int DEFAULT_SIZE = 512;
     int width = DEFAULT_SIZE; //384;
@@ -44,11 +41,10 @@ public class MazeControlPanel extends JPanel {
 
     // challenge mode
     private MazeApp.AppMode mode;
-    private int MostRounds = 0;
+//    private int MostRounds = 0;
     private double topCoverage = 0.0;
     private int rounds = 0;
     private double coverage = 0.0;
-    private JLabel lblScore;
     private final Queue<Integer> path = new Queue<>();
     private double density = 1.0;
     private boolean lastRunFailed;
@@ -66,18 +62,22 @@ public class MazeControlPanel extends JPanel {
 
         setLayout(new BorderLayout());
         btnUndo = new JButton("Undo");
+        lblTips = new JLabel("Place A & B, Cover the Most Squares");
         btnRun = new JButton("Run");
-        spacing = gridDraw.getSquares()*gridDraw.getSquares() / 25;
-//        if(mode == GAME){
-//            lblScore = new JLabel(" 0");
-//            lblScore.setFont(MazeApp.AppFont.TITLE.font);
-//            add(lblScore,BorderLayout.EAST);
-//        }
-
+        if(mode == DEMO) {
+            add(btnRun, BorderLayout.CENTER);
+            btnRun.setFont(MazeApp.AppFont.LABEL.font);
+        }
+        if(mode == GAME){
+            add(btnRun);
+            btnRun.setVisible(false);
+            btnRun.setEnabled(true);
+            add(lblTips, BorderLayout.CENTER);
+            lblTips.setFont(MazeApp.AppFont.LABEL.font);
+        }
+        spacing = gridDraw.getSquares() * gridDraw.getSquares() / 25;
         add(btnUndo, BorderLayout.WEST);
-        add(btnRun, BorderLayout.CENTER);
         btnUndo.setFont(MazeApp.AppFont.LABEL.font);
-        btnRun.setFont(MazeApp.AppFont.LABEL.font);
         System.out.println("mode "+ mode);
     }
 
@@ -92,6 +92,7 @@ public class MazeControlPanel extends JPanel {
 
     String ChallengeStart = "Paths Turn to Walls";
     String ChallengeRun = "Finding Path";
+    // redefines some labels
     void gameInsructions(){
         instrInputA = ChallengeStart;
         instrInputB = ChallengeRun;
@@ -101,14 +102,18 @@ public class MazeControlPanel extends JPanel {
     void setMode(MazeApp.AppMode mode){
         this.mode = mode;
     }
-    // Runs program logic and handles mouse and button input events.
+
+    /// Runs the main program logic and handles mouse and button input events.
+    /// @param mode defined and selected from the [MazeApp] to dictate the program behavior as a demo or mini game.
     void control(MazeApp.AppMode mode) {
         if(mode == GAME)
             gameInsructions();
         // user input for grid placement
         drawCanvas.addMouseListener(new MouseAdapter() {
+            /// Mouse click event handler. Converts mouse event locations to the familiar grid coordinates and handles
+            /// placement of grid shapes dictated by the program's state.
+            /// @param mouseEvent used to grab the x and y screen space coordinates
             public void mouseClicked(MouseEvent mouseEvent) {
-
                 if (!isVisualRunning  && !isRestartScreen) {
                     double x = userX(mouseEvent.getX()); // "borrowed" from algs4.Draw to convert mouse press locations
                     double y = userY(mouseEvent.getY()); //  to user friendly coordinates in the draw canvas
@@ -136,8 +141,9 @@ public class MazeControlPanel extends JPanel {
             }
         });
 
-        // Run Visualization and Continue with the same walls
-
+        // DEMO : press Run for Visualization. Once complete Continue allows retaining the current walls.
+        // GAME : Run Not used but automatically activated by placement of the second endpoint.
+        //      Continue continues the game
         btnRun.addActionListener(e ->  {
             if(!isVisualRunning) {
                 if (btnRun.getText().equals(labelRun) && grid.endpointsSize() >= 2){
@@ -160,7 +166,8 @@ public class MazeControlPanel extends JPanel {
             }
         });
 
-        // Undo previous recent placement or Clear and Restart after Visualization
+        // DEMO: Undo removes recent placement of a wall. Reset clears the grid.
+        // GAME: Undo removes the first endpoint if placed. Reset clears the grid and regenerates a new random wall map.
         btnUndo.addActionListener(e -> {
             if(!isVisualRunning){
                 if (btnUndo.getText().equals(labelUndo)){
@@ -246,6 +253,7 @@ public class MazeControlPanel extends JPanel {
         btnUndo.setText(labelUndo);
         btnUndo.setVisible(true);
         btnRun.setText(labelRun);
+
         instructions.setText(instrInputA);
         gridDraw.drawEmptyGrid();
 
@@ -338,6 +346,7 @@ public class MazeControlPanel extends JPanel {
     	isRestartScreen = true;
         btnUndo.setText(labelReset);
         btnUndo.setEnabled(true);
+        lblTips.setText("Click Anywhere to" + labelContinue);
         btnRun.setText(labelContinue);
         btnRun.setEnabled(true);
         if(mode == DEMO)

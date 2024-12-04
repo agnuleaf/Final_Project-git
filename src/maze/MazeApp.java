@@ -8,8 +8,8 @@ import java.awt.*;
 
 import static javax.swing.SwingConstants.CENTER;
 
-/// Main App to run the interactive maze gui. Holds reference to the main `JFrame`, and
-///
+/// Main App to run both the interactive breadth first search maze gui, and a minigame challenge.
+/// Creates the `JFrame`, `MazeControlPanel` and runs on the Event Dispatch Thread.
 public class MazeApp {
 
 	int sections = 2;	// multiples of 5 squares on the axis
@@ -34,6 +34,7 @@ public class MazeApp {
 			this.font = font;
 		}
 	}
+	/// Maze GUI constructor for declaring the mode and gridsize.
 	public MazeApp(int grids, AppMode mode){
 			this(grids, 1, mode);
 			setMode(mode);
@@ -48,9 +49,9 @@ public class MazeApp {
 	}
 
 	/// Constructor for the main Maze App.
-	/// @param sections - the number of 5-squares sections along an axis
-	/// @param pause - ms pause between draw calls
-	/// @param mode - demo or game mode
+	/// @param sections  the number of 5-squares sections along an axis
+	/// @param pause  ms pause between draw calls
+	/// @param mode  demo or game mode
 	public MazeApp(int sections, int pause, AppMode mode){
 		this.sections = sections;
 		this.appMode = mode;
@@ -113,6 +114,7 @@ public class MazeApp {
 		this.pnlControl.setMode(appMode);
 	}
 
+	/// Enum to dictate the maze mode. It is accessed by [MazeControlPanel] .
 	public enum AppMode {
 		DEMO(0),
 		GAME(1);
@@ -120,6 +122,7 @@ public class MazeApp {
 		AppMode(int mode){
 			this.mode = mode;
 		}
+
 		static AppMode getMode(int code){
 			if(code == 0){
 				return DEMO;
@@ -127,6 +130,7 @@ public class MazeApp {
 			else return GAME;
 		}
 	}
+	// The EDT is launched here.
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			int m = startupDialog();

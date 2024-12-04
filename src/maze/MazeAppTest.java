@@ -10,14 +10,17 @@ import java.awt.*;
 
 import static java.awt.FlowLayout.CENTER;
 
+/// Test Class for the Maze gui app, drawing methods, and 2d grid operations.
 public class MazeAppTest {
+    /// place test methods here
     public static void main(String[] args) {
 //quickStartA();
 //        testChallengeMode();
        testMazeApp();
     }
 
-    public static void quickStartA() {
+    // grid with predefined walls and endpoints
+    private static void quickStartA() {
         MazeApp app = new MazeApp();
         app.setMode(MazeApp.AppMode.DEMO);
         app.pnlControl.control(MazeApp.AppMode.DEMO);
@@ -69,6 +72,7 @@ public class MazeAppTest {
 //		wavefront.view();
     }
 
+    // tests the intro dialog and full app
     private static void testMazeApp(){
         int m = selectMode();
         System.out.println(m);

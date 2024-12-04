@@ -39,18 +39,18 @@ public class BreadthFirstSearchView {
 
     private Grid grid;
     private GridPoint p;
-    private Draw draw;     // draw to offscreen with draw.show(), repaint with draw.getJLabel().repaint(), display Disabled
-    private GridDraw gridDraw;
 
     //        private int tPause;
+
+    /**
+     * Constructor used to map the possible connections in the unweighted graph.
+     * @param gridDraw - used to access the `Grid` object which holds the [Graph] object, used to vertices
+     *                 in the order they are visited by the breadth first search algorithm.
+     */
     public BreadthFirstSearchView(GridDraw gridDraw) {
         // For displaying the visited nodes
-        this.gridDraw = gridDraw;
         grid = gridDraw.getGrid();
         p = gridDraw.getGrid().getStart();
-//            gridDraw.getGrid().getEnd();
-//            tPause = gridDraw.getPause();
-        draw = gridDraw.getDraw();
 
         // Original Constructor below
         Graph graph = grid.buildGraph();
@@ -62,10 +62,11 @@ public class BreadthFirstSearchView {
     }
 
 
-    /// Runs the breadth first search method `bfs` with an internal timer from `algs4.Draw` to add delay between drawing
-    ///  each visited vertex. Call this method from a new `Thread` when running on the Event Dispatch Thread,
+    /// Runs the breadth first search method `bfs` and exports the vertices in the order they are visited, for external
+    /// animation. Call this method from a new `Thread` when running on the Event Dispatch Thread,
     /// or else all individual draw calls will be combined and occur simultaneously after the delay, defeating
     /// the attempt at animation.
+    /// @return the `Queue` of visited vertices as `GridPoint`s
     public Queue<GridPoint> viewWave() {
         return bfs(grid.indexOf(p));
     }
@@ -90,16 +91,12 @@ public class BreadthFirstSearchView {
                     marked[w] = true;
                     q.enqueue(w);
                     qConverted.enqueue(grid.pointAt(w));
-//                        gridDraw.discovered(grid.pointAt(w));
-//                        draw.pause(tPause);
-//                        draw.show();
-//                        draw.getJLabel().paintImmediately(draw.getJLabel().getBounds());
                 }
             }
         }
         return qConverted;
     }
-
+// NO MODIFICATIONS BELOW
     /**
      * Is there a path between the source vertex {@code s} (or sources) and vertex {@code v}?
      *
