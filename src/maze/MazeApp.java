@@ -2,12 +2,9 @@ package maze;
 
 import edu.princeton.cs.algs4.Draw;
 import grid.GridDraw;
-
 import javax.swing.*;
 import java.awt.*;
-
 import static javax.swing.SwingConstants.CENTER;
-
 /// Main App to run both the interactive breadth first search maze gui, and a minigame challenge.
 /// Creates the `JFrame`, `MazeControlPanel` and runs on the Event Dispatch Thread.
 /// @author Wesley Miller,  Ty Greenburg
@@ -135,7 +132,7 @@ public class MazeApp {
 			else return GAME;
 		}
 	}
-	// The EDT is launched here.
+	/// The EDT is launched here and all the maze logic. Animation occurs on a separate thread.
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			int m = startupDialog();

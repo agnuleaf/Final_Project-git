@@ -149,7 +149,7 @@ public class Grid {
     }
 
     /// Converts a `GridPoint` as 1-based (x, y) coordinates of node to 0-based indexed vertex in `Graph`.
-    /// @param p - the `GridPoint` to check
+    /// @param p  the `GridPoint` to check
     public int indexOf(GridPoint p){
         if(p.x() == 0 || p.y() == 0)
             return -1;
@@ -220,7 +220,7 @@ public class Grid {
     }
 
     /// Resets the grid completely or resets retaining the walls placed.
-    /// @param doSaveWalls - true if walls should be saved (ie only the stack history is cleared),
+    /// @param doSaveWalls true if walls should be saved (ie only the stack history is cleared),
     /// false if all history should be cleared.
     public void restart(boolean doSaveWalls){
          if(doSaveWalls) {
@@ -233,7 +233,9 @@ public class Grid {
          endpoints = new Queue<>();
     }
 
-    // Provides fast removal by recency and fast check for duplicates. Used to store the walls in the grid.
+    // Combined data structure to provide fast removal by recency and fast check for duplicates.
+    // Used to store the walls in the grid. In Demo mode : the stack is for the most recent user history,
+    // the set is it's entirety
     class StackSet<E extends Comparable<E>> implements Iterable <E>{
         final Stack<E> stack  ;
         final SET <E>  treeSet;
@@ -262,9 +264,7 @@ public class Grid {
         E remove(){
 
             E tmp = stack.pop();
-//            System.out.print(pointAt(tmp) + "popped");
             treeSet.remove(tmp);
-//            System.out.println("treeSet n:" + treeSet.size() + " stack n:" + stack.size());
             return tmp;
         }
         E peek(){

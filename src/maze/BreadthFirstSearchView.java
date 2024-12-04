@@ -6,11 +6,6 @@ import grid.GridPoint;
 import grid.Grid;
 import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.Stack;
-import edu.princeton.cs.algs4.Draw;
-
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /// The {@code BreadthFirstPaths} class represents a data type for finding
 /// shortest paths (number of edges) from a source vertex <em>s</em>
@@ -39,8 +34,6 @@ public class BreadthFirstSearchView {
 
     private Grid grid;
     private GridPoint p;
-
-    //        private int tPause;
 
     /**
      * Constructor used to map the possible connections in the unweighted graph.

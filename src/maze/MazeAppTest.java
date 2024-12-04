@@ -12,10 +12,10 @@ import static java.awt.FlowLayout.CENTER;
 
 /// Test Class for the Maze gui app, drawing methods, and 2d grid operations.
 public class MazeAppTest {
-    /// place test methods here
+    // place test methods here
     public static void main(String[] args) {
-//quickStartA();
-//        testChallengeMode();
+    // quickStartA();
+    //        testChallengeMode();
        testMazeApp();
     }
 
@@ -84,11 +84,13 @@ public class MazeAppTest {
             quickStartA();
         }
     }
+
     private static void testChallengeMode(){
         MazeApp app = new MazeApp(2,MazeApp.AppMode.GAME);
         app.setMode(MazeApp.AppMode.GAME);
         app.gameMode();
     }
+
     private static int selectMode(){
 		JFrame frame = new JFrame("Select Mode");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -100,7 +102,7 @@ public class MazeAppTest {
                 JOptionPane.QUESTION_MESSAGE);
 	}
 
-    /// For testing the graphics and drawing functions.
+    // For testing the graphics and drawing functions.
     void gridDrawTest(){
         // @formatter:off
         JFrame frame = new JFrame();
