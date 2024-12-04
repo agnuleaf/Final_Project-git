@@ -213,8 +213,9 @@ public class GridDraw {
     /// @param density where 0 is empty and 1 means the generator was ran for at least as many times as the total number squares in the grid.
     public void generateRandomWalls(double density) {
         Grid grid = getGrid();
-        int total = squares * squares;
-        Iterable<GridPoint> points = grid.generateGridPoints((int) (total * density));
+        double total = (double)squares * squares;
+        double squaresToGen = total * density;
+        Iterable<GridPoint> points = grid.generateGridPoints((int)(total * density));
         for (GridPoint p : points) {
             if (grid.addWall(p)) {
                 drawWall(p);

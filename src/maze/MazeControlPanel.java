@@ -43,7 +43,7 @@ public class MazeControlPanel extends JPanel {
     private MazeApp.AppMode mode;
 //    private int MostRounds = 0;
     private double topCoverage = 0.0;
-    private int rounds = 0;
+    private int rounds = 1;
     private double coverage = 0.0;
     private final Queue<Integer> path = new Queue<>();
     private double density = 1.0;
@@ -253,7 +253,7 @@ public class MazeControlPanel extends JPanel {
         btnUndo.setText(labelUndo);
         btnUndo.setVisible(true);
         btnRun.setText(labelRun);
-
+        lblTips.setText(String.format("Round %d . %3.1f%% Coverage ", rounds, coverage ));
         instructions.setText(instrInputA);
         gridDraw.drawEmptyGrid();
 
@@ -262,7 +262,7 @@ public class MazeControlPanel extends JPanel {
                 pathToWalls(path);
             }
             else {
-                rounds = 0;
+                rounds = 1;
                 grid.restart(false);  // clear grid memory
                 gridDraw.generateRandomWalls(density); // generate and draw random walls
             }
@@ -358,19 +358,15 @@ public class MazeControlPanel extends JPanel {
     }
 
     private void scoreSession() {
-//        MostRounds = max(MostRounds, rounds);
-//        String msgScore = (((rounds > MostRounds)? "Most Rounds! " : "Rounds: ") + rounds);
-        double totalWalls = (double)grid.totalCountWalls();
+        double totalWalls = grid.totalCountWalls();
         System.out.println(totalWalls);
         System.out.println(grid.getWidth() * grid.getHeight());
         coverage = ( totalWalls / grid.getWidth() * grid.getHeight() );
         String msgScore = String.format("rounds: %d |  ", rounds);
         String msgCoverage =  String.format(" %3.1f%% |", coverage);
-//        double tmp = topCoverage;
-//        topCoverage = max(topCoverage, coverage);
-//        String msgCoverage = ((lastRunFailed && (topCoverage - tmp) > 0.0001)? "Top Coverage! ": "Coverage ") + coverage + "%";
 
-        instructions.setText(msgScore + " " + msgCoverage + " " + (lastRunFailed  /* && largeCC()*/ ? " You Missed a Path!" : ""));
+        instructions.setText(msgScore + " " + msgCoverage);
+                //+ " " + (lastRunFailed  *//* && largeCC()*//* ? " You Missed a Path!" : "";
 
     }
 
@@ -389,12 +385,7 @@ public class MazeControlPanel extends JPanel {
                         "T": "F\n\t"+ Thread.currentThread().getName()));
     }
 
-    public void setWidthHeight ( int width, int height){
-        this.width = width;
-        this.height = height;
-    }
-
-    // todo work in progress
+    // work in progress
     // filters out the connected components that don't meet the spacing requirement.
     // then checks if one crosses a 5x5 section and
     private Iterable<Integer> largeCC(){

@@ -85,7 +85,7 @@ public class MazeApp {
 		draw.show(); frame.repaint();
 	}
 	void gameMode(){
-		double density = 1.0;   // does not give variety
+		double density = 0.5;   // does not give variety
 		gridDraw.setGridThickness(3);
 		gridDraw.drawEmptyGrid();
 		gridDraw.generateRandomWalls(density);
@@ -135,7 +135,7 @@ public class MazeApp {
 		SwingUtilities.invokeLater(() -> {
 			int m = startupDialog();
 			System.out.println(m);
-			MazeApp maze = new MazeApp(2, AppMode.getMode(m));
+			MazeApp maze = new MazeApp(4, AppMode.getMode(m));
 			System.out.println(maze.appMode);
 			maze.pnlControl.control(maze.appMode); // run event handler
 		});

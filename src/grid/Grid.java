@@ -207,21 +207,16 @@ public class Grid {
         return count() - (endpointsSize() + totalCountWalls());
     }
 
-    /// Generates a random set of `GridPoint`s within the grid's bounds and under its limit
-    /// @return a random set of `GridPoint`s within the grid's bounds.
-    public SET<GridPoint> generateGridPoints(int count){
-        int pointCount = Math.max(count, this.countUnoccupied());
-        SET<GridPoint> uniqueNodes = new SET<>();
+    /// Generates a random bag of `GridPoint`s within the grid's bounds and under its limit
+    /// @return a random unordered and likely redundant bag of `GridPoint`s within the grid's bounds.
+    public Bag<GridPoint> generateGridPoints(int count){
+        int pointCount = Math.min(count, this.countUnoccupied());
+        Bag<GridPoint> randomPoints = new Bag<>();
         for(int i = 0 ; i < pointCount; i++) {
-            int tries = 0;
-            GridPoint n = new GridPoint(StdRandom.uniformInt(1, width), StdRandom.uniformInt(1, width));
-            while(uniqueNodes.contains(n) && (tries < 4 )){
-                n = new GridPoint(StdRandom.uniformInt(1, width), StdRandom.uniformInt(1, width));
-                tries++;
-            }
-            if(!uniqueNodes.contains(n)){ uniqueNodes.add(n); };
+            randomPoints.add(new GridPoint(StdRandom.uniformInt(1, width+1),
+                    StdRandom.uniformInt(1, width+1)));
         }
-        return uniqueNodes;
+        return randomPoints;
     }
 
     /// Resets the grid completely or resets retaining the walls placed.
