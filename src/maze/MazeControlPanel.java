@@ -15,10 +15,13 @@ import static java.awt.Color.PINK;
 import static maze.MazeApp.AppMode.GAME;
 import static maze.MazeApp.AppMode.DEMO;
 
-/// Collects user input from mouse and keyboard events.
+/**
+ * Collects user input from mouse and keyboard events.
+ * @author Wesley Miller, Ty Greenburg
+ */
 public class MazeControlPanel extends JPanel {
 
-    // state variables
+	// state variables
     private static boolean isRestartScreen;
     private static boolean isVisualRunning;
 
@@ -29,7 +32,7 @@ public class MazeControlPanel extends JPanel {
     JButton btnRun;
     private final JLabel drawCanvas;
     private final JLabel instructions;
-    JLabel lblTips;
+
     // canvas variables
     final int DEFAULT_SIZE = 512;
     int width = DEFAULT_SIZE; //384;
@@ -41,15 +44,19 @@ public class MazeControlPanel extends JPanel {
 
     // challenge mode
     private MazeApp.AppMode mode;
-//    private int MostRounds = 0;
-    private double topCoverage = 0.0;
-    private int rounds = 1;
+    private int rounds = 0;
     private double coverage = 0.0;
     private final Queue<Integer> path = new Queue<>();
     private double density = 1.0;
     private boolean lastRunFailed;
     private int spacing;
-    /// Constructor for the control panel.
+ 
+    /**
+     * Creates the control panel
+     * @param gridDraw Display of the grid
+     * @param instructions  for the display
+     * @param mode of the display
+     */
     MazeControlPanel(GridDraw gridDraw, JLabel instructions, MazeApp.AppMode mode) {
         this.gridDraw = gridDraw;
         this.instructions = instructions;
@@ -62,22 +69,13 @@ public class MazeControlPanel extends JPanel {
 
         setLayout(new BorderLayout());
         btnUndo = new JButton("Undo");
-        lblTips = new JLabel("Place A & B, Cover the Most Squares");
         btnRun = new JButton("Run");
-        if(mode == DEMO) {
-            add(btnRun, BorderLayout.CENTER);
-            btnRun.setFont(MazeApp.AppFont.LABEL.font);
-        }
-        if(mode == GAME){
-            add(btnRun);
-            btnRun.setVisible(false);
-            btnRun.setEnabled(true);
-            add(lblTips, BorderLayout.CENTER);
-            lblTips.setFont(MazeApp.AppFont.LABEL.font);
-        }
-        spacing = gridDraw.getSquares() * gridDraw.getSquares() / 25;
+        spacing = gridDraw.getSquares()*gridDraw.getSquares() / 25;
+
         add(btnUndo, BorderLayout.WEST);
+        add(btnRun, BorderLayout.CENTER);
         btnUndo.setFont(MazeApp.AppFont.LABEL.font);
+        btnRun.setFont(MazeApp.AppFont.LABEL.font);
         System.out.println("mode "+ mode);
     }
 
@@ -92,32 +90,40 @@ public class MazeControlPanel extends JPanel {
 
     String ChallengeStart = "Paths Turn to Walls";
     String ChallengeRun = "Finding Path";
-    // redefines some labels
+    
+    /**
+     * Instructions to the game
+     */
     void gameInsructions(){
         instrInputA = ChallengeStart;
         instrInputB = ChallengeRun;
         instrRunning = ChallengeRun;
         instrRestart = instrInputA;
     }
+    
+    /**
+     * Sets the mode of the app
+     * @param mode of the app
+     */
     void setMode(MazeApp.AppMode mode){
         this.mode = mode;
     }
-
-    /// Runs the main program logic and handles mouse and button input events.
-    /// @param mode defined and selected from the [MazeApp] to dictate the program behavior as a demo or mini game.
+    
+    /**
+     * Creates all the user interactions
+     * @param mode of the app
+     */
     void control(MazeApp.AppMode mode) {
         if(mode == GAME)
             gameInsructions();
         // user input for grid placement
         drawCanvas.addMouseListener(new MouseAdapter() {
-            /// Mouse click event handler. Converts mouse event locations to the familiar grid coordinates and handles
-            /// placement of grid shapes dictated by the program's state.
-            /// @param mouseEvent used to grab the x and y screen space coordinates
             public void mouseClicked(MouseEvent mouseEvent) {
+
                 if (!isVisualRunning  && !isRestartScreen) {
                     double x = userX(mouseEvent.getX()); // "borrowed" from algs4.Draw to convert mouse press locations
                     double y = userY(mouseEvent.getY()); //  to user friendly coordinates in the draw canvas
-                    GridPoint p = new GridPoint(            // convert to nearest grid center
+                    GridPoint p = new GridPoint(         //  convert to nearest grid center
                             (int) (Math.floor(x) + 1.0),
                             (int) (Math.floor(y) + 1.0));
                     System.out.println(p);
@@ -141,9 +147,7 @@ public class MazeControlPanel extends JPanel {
             }
         });
 
-        // DEMO : press Run for Visualization. Once complete Continue allows retaining the current walls.
-        // GAME : Run Not used but automatically activated by placement of the second endpoint.
-        //      Continue continues the game
+        // Run Visualization and Continue with the same walls
         btnRun.addActionListener(e ->  {
             if(!isVisualRunning) {
                 if (btnRun.getText().equals(labelRun) && grid.endpointsSize() >= 2){
@@ -166,24 +170,22 @@ public class MazeControlPanel extends JPanel {
             }
         });
 
-        // DEMO: Undo removes recent placement of a wall. Reset clears the grid.
-        // GAME: Undo removes the first endpoint if placed. Reset clears the grid and regenerates a new random wall map.
+        // Undo previous recent placement or Clear and Restart after Visualization
         btnUndo.addActionListener(e -> {
             if(!isVisualRunning){
                 if (btnUndo.getText().equals(labelUndo)){
                     if ((grid.endpointsSize() >= 2) && (grid.countWalls() > 0)) {
                         GridPoint tmp = grid.removeLastWall();
-//                          removeLast(grid.removeLastWall());
                         if (tmp != null) {
                             gridDraw.eraseSquare(tmp);
-                            gridDraw.getFrame().repaint();
+                            gridDraw.mainFrame.repaint();
                         }
                     }
                     else if(mode != DEMO && (grid.endpointsSize() <= 2 )){
                         GridPoint tmp = grid.removeLastEndpoint();
                         if(tmp != null) {
                             gridDraw.eraseSquare(tmp);
-                            gridDraw.getFrame().repaint();
+                            gridDraw.mainFrame.repaint();
                         }
                     }
                 } else if (btnUndo.getText().equals(labelReset)) {
@@ -204,15 +206,24 @@ public class MazeControlPanel extends JPanel {
         });
     }
 
+    /**
+     * removes the most recent point
+     * @param remove last point
+     * @return the point
+     */
     GridPoint removeLast(Supplier<GridPoint> remove){
         GridPoint p = remove.get();
         if(p != null) {
             gridDraw.eraseSquare(p);
-            gridDraw.getFrame().repaint();
+            gridDraw.mainFrame.repaint();
         }
         return p;
     };
-    // Challenge mode endpoints must be in different quadrants.
+    
+    /**
+     * Challenge mode endpoints must be in different quadrants.
+     * @param p
+     */
     private void challengePlaceEndpoints(GridPoint p) {
         String msgQuad = "Place in Different Quadrant. ";
         String msgTooClose = "Too close! Place " + spacing +" Apart";
@@ -236,24 +247,28 @@ public class MazeControlPanel extends JPanel {
     }
         }
 
-    // Checks if two points and spaced too close for placement in Challenge mode.
+    /**
+     * Checks if two points and spaced too close for placement in Challenge mode.
+     * @param p point 1
+     * @param q point 2
+     * @return true or false based on the space between
+     */
     private boolean areTooClose(GridPoint p, GridPoint q){
-        int space = 5 * (1 +  grid.getWidth()/25);
+        int space = (grid.getWidth() * grid.getHeight()) / 25;
         System.out.println("dist: "+  distRectilinear(p, q) + " space:"+ space);
         return distRectilinear(p, q) <= space;
     }
-    private void updateScore(){
 
-    }
-
-
-    // Common maze reset helper
+    /**
+     * Helps restart the maze
+     * @param reset
+     * @param mode
+     */
     private void restartMaze(MazeReset reset, MazeApp.AppMode mode) {
 
         btnUndo.setText(labelUndo);
         btnUndo.setVisible(true);
         btnRun.setText(labelRun);
-        lblTips.setText(String.format("Round %d . %3.1f%% Coverage ", rounds, coverage ));
         instructions.setText(instrInputA);
         gridDraw.drawEmptyGrid();
 
@@ -262,7 +277,7 @@ public class MazeControlPanel extends JPanel {
                 pathToWalls(path);
             }
             else {
-                rounds = 1;
+                rounds = 0;
                 grid.restart(false);  // clear grid memory
                 gridDraw.generateRandomWalls(density); // generate and draw random walls
             }
@@ -282,7 +297,10 @@ public class MazeControlPanel extends JPanel {
         isVisualRunning = false;
 
     }
-    // for clarity
+
+    /**
+     * for clarity
+     */
     enum MazeReset{
         CLEARALL(false),
         SAVE(true);
@@ -292,9 +310,11 @@ public class MazeControlPanel extends JPanel {
         }
     }
 
-    /// The animation method for breadth-first search visualization. Starts a new `Thread` to bypasses Swing's
-    /// optimization by combining draw calls. `algs4.Draw` timer is used to add delay between frame.
-    /// @param pause - the length of time between animation updates
+    /**
+     * The animation method for breadth-first search visualization. Starts a new `Thread` to bypasses Swing's
+     * optimization by combining draw calls. `algs4.Draw` timer is used to add delay between frame.
+     * @param pause - the length of time between animation updates
+     */
     void newThreadVisualization(int pause) {
         new Thread(() -> {
             BreadthFirstSearchView wavefront = new BreadthFirstSearchView(gridDraw);
@@ -342,11 +362,13 @@ public class MazeControlPanel extends JPanel {
         }).start();
     }
     
+    /**
+     * Runs when the visual is complete
+     */
     private void visualComplete() {
     	isRestartScreen = true;
         btnUndo.setText(labelReset);
         btnUndo.setEnabled(true);
-        lblTips.setText("Click Anywhere to" + labelContinue);
         btnRun.setText(labelContinue);
         btnRun.setEnabled(true);
         if(mode == DEMO)
@@ -357,79 +379,61 @@ public class MazeControlPanel extends JPanel {
         isVisualRunning = false;
     }
 
+    /**
+     * Scores the session
+     */
     private void scoreSession() {
-        double totalWalls = grid.totalCountWalls();
+        double totalWalls = (double)grid.totalCountWalls();
         System.out.println(totalWalls);
         System.out.println(grid.getWidth() * grid.getHeight());
         coverage = ( totalWalls / grid.getWidth() * grid.getHeight() );
         String msgScore = String.format("rounds: %d |  ", rounds);
         String msgCoverage =  String.format(" %3.1f%% |", coverage);
-
-        instructions.setText(msgScore + " " + msgCoverage);
-                //+ " " + (lastRunFailed  *//* && largeCC()*//* ? " You Missed a Path!" : "";
+        instructions.setText(msgScore + " " + msgCoverage + " " + (lastRunFailed ? " You Missed a Path!" : ""));
 
     }
 
-    // Converts that last path to a wall, for a game challenge.
+    /**
+     * Changes path to walls
+     * @param path  path taken
+     */
     void pathToWalls(Queue<Integer> path){
         if(path == null) return;
-
         while( !path.isEmpty()) {
             grid.addWall(grid.pointAt(path.dequeue()));
         }
     }
 
+    /**
+     * debug method used to helping find errors
+     */
     void printThreadDebug(){
         System.out.println("is EDT?: " +
                 (javax.swing.SwingUtilities.isEventDispatchThread() ?
                         "T": "F\n\t"+ Thread.currentThread().getName()));
     }
 
-    // work in progress
-    // filters out the connected components that don't meet the spacing requirement.
-    // then checks if one crosses a 5x5 section and
-    private Iterable<Integer> largeCC(){
-        Graph graph = gridDraw.getGrid().graph();
-        int distRequired = spacing + 2;
-        CC cc = new CC( graph );
-        LinearProbingHashST<Integer, Bag<Integer>> stIdV = new LinearProbingHashST<>();
-
-        Bag<Integer> viablePath = new Bag<>();
-        for(int v = 0; v < graph.V() ; v++){
-            if(!grid.isWall(grid.pointAt(v)) && (cc.size(v) > distRequired )) { // ignore cc with size < spacing
-                if(stIdV.contains(cc.id(v))) {
-                   stIdV.get(cc.id(v)).add(v);
-                }
-                else{
-                    Bag<Integer> bag = new Bag<>();
-                    bag.add(v);
-                    stIdV.put(cc.id(v), bag);
-                }
-            }
-        }
-        return viablePath;
+    /**
+     * Sets width and height
+     * @param width
+     * @param height
+     */
+    public void setWidthHeight ( int width, int height){
+        this.width = width;
+        this.height = height;
     }
 
-//    // returns the ids of the values that meet a minimum distance requirement in a 2D grid.
-//    private Iterable<Integer> validPaths (ST<Integer, Iterable<Integer>> stIdV, int minDistRequired){
-//
-//        Bag<Queue<Integer>> minDistMet = new Bag<>();
-//        for(int id : stIdV.keys()){
-//            Stack<Integer> stack = new Stack<>();
-//            int maxDist = 0; int minDist = -1; int lastV = -1; boolean diffQuad = false;
-//            for(int v : stIdV.get(id)){
-//                lastV = (stack.peek() == null ?  v : stack.peek());
-//                minDist =
-//                maxDist = max(maxDist, GridPoint.distRectilinear(grid.pointAt(v), grid.pointAt(lastV)));
-//                stack.push(v);
-//            }
-//            if(maxDist)
-//        }
-//        return minDistMet;
-//    }
-
-    // From algs4.Draw . Helpers to convert from native coordintes to user friendly ones.
+    /**
+     * From algs4.Draw . Helpers to convert from native coordintes to user friendly ones.
+     * @param x value
+     * @return user friendly value
+     */
     private double userX  (double x) { return xmin + x * (xmax - xmin) / width;    }
+    /**
+     * From algs4.Draw . Helpers to convert from native coordintes to user friendly ones.
+     * @param y value
+     * @return user friendly value
+     */
     private double userY  (double y) { return ymax - y * (ymax - ymin) / height;   }
 
 }

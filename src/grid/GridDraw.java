@@ -4,7 +4,10 @@ import edu.princeton.cs.algs4.*;
 import javax.swing.*;
 import java.awt.*;
 
-/// Wraps `algs4.Draw` shape painting methods for painting on a 2D grid.
+/**
+ * Wraps `algs4.Draw` shape painting methods for painting on a 2D grid.
+ * @author Wesley Miller, Ty Greenburg
+ */
 public class GridDraw {
 
     private static final double shift =  -0.5;  // shift placement of shapes
@@ -14,68 +17,104 @@ public class GridDraw {
     private final Color gridColor = Color.LIGHT_GRAY;
     private double gridThickness = 1.0;
     private int squares;
-    //    private int height;
-    private int tPause = 10;
-    private  JFrame mainFrame;
+    private int tPause = 50;     // pause time between draws todo speed of animation
 
+    private static double THICK_PEN_RADIUS = 0.002 * 10;
+    public JFrame mainFrame;
+    
+    /**
+     * Constructor for the grid
+     * @param squares number of squares in the grid
+     * @param frame to draw them on
+     */
     public GridDraw(int squares, JFrame frame) {
         mainFrame = frame;
         this.squares = squares;
-        //        height = width;
         grid = new Grid(squares);
 
         this.draw = new Draw();
-//        this.tPause = tPause;
         draw.enableDoubleBuffering();
         draw.setXscale(0,squares);
         draw.setYscale(0,squares);
     }
 
-    /// Returns the parent JFrame, used for calls to `repaint`.
-    /// @return the main JFrame
+    /**
+     * Returns the JFrame
+     * @return Jframe
+     */
     public JFrame getFrame(){
         return mainFrame;
     }
-    /// Gets the instance of the `Grid`, useful for converting between [Graph] vertices and `GridPoint`s.
-    /// @return the grid object
+    
+    /**
+     * Returns the grid
+     * @return Grid
+     */
     public Grid getGrid(){
         return grid;
     }
-    /// Sets the time delay between animation updates in milliseconds. Used by the [Draw] timer.
-    /// @param msTime - the time in ms to pause between animation frames.
+    
+    /**
+     * Sets the pause time (ms)
+     * @param msTime
+     */
     public void setPause(int msTime){
         tPause = msTime;
     }
-    /// The time delay between animation updates in milliseconds.
-    /// @return time between draw calls
+
+    /**
+     * Time in milliseconds of the pause
+     * @return pause (ms)
+     */
     public int getPause(){
         return tPause;
     }
-    /// Returns number of squares per side
+    
+    /**
+     * Returns the number of squares per side
+     * @return squares per side
+     */
     public int getSquares(){
         return squares;
     }
-    /// Returns the `Draw` instance
-    /// @return `Draw` instance
+    
+    /**
+     * Returns the Draw
+     * @return Draw
+     */
     public Draw getDraw() {
         return draw;
     }
-    ///  Returns the `Draw` instance's `JLabel` for including in another `JFrame`.
-    /// @return the JLabel for the `Draw` instance
+    
+    /**
+     * Gives the Draws instance of JLabel
+     * @return Jlabel
+     */
     public JLabel getDrawLabel () {  return draw.getJLabel(); }
 
-    /// Draws a black square for a wall
+    /**
+     * Draws a black square for a wall
+     * @param point
+     */
     public void drawWall(GridPoint p){
         draw.setPenRadius();
         draw.setPenColor();
         fillSquare(p, draw.getPenColor());
     }
-    /// Makes the grid more or less visible.
-    /// @param multiplier - multiplies the drawing pen thickness for the gridlines.
+
+    /**
+     * Makes the grid more or less visible.
+     * @param multiplier
+     */
     public void setGridThickness(int multiplier){
         gridThickness = multiplier;
     }
-    // Fills the square with the given color
+
+    /**
+     * Fills the square with the given color
+     * @param point
+     * @param color
+     */
     private void fillSquare(GridPoint p, Color color){
         draw.setPenRadius();
         draw.setPenColor(color);
@@ -86,9 +125,10 @@ public class GridDraw {
         draw.setPenRadius();
     }
 
-    /// Visually erases a single grid square centered at p, by painting the grid background over it.
-    /// @param p - the `GridPoint` whose contents will be erased. `GridPoint` can be thought out as the center
-    ///  of the square.
+    /**
+     * Visually erases a single grid square centered at p
+     * @param point
+     */
     public void eraseSquare( GridPoint p ){
 
         fillSquare(p, backgroundColor);
@@ -119,10 +159,12 @@ public class GridDraw {
         draw.show();
     }
 
-    /// Draws two distinct nodes as 'A' for Start and 'B' for Finish. Returns false if unable to place.
-    /// @param p - the location of the endpoint to draw
+    /**
+     * Draws two distinct nodes as 'A' for Start and 'B' for Finish. Returns false if unable to place
+     * @param point
+     */
     public void drawEndpoint(GridPoint p){
-        boolean isStart = grid.endpointsSize() == 1;   // should we draw start?
+        boolean isStart = grid.endpointsSize() == 1;
         draw.setPenRadius(0.01);
             Color color = (isStart? Draw.GREEN.darker() : Draw.RED.darker());
             draw.setPenColor(color);
@@ -144,16 +186,16 @@ public class GridDraw {
             draw.text(p.x() + shift,p.y() + shift, (isStart? "A" : "B"));
             draw.setPenColor();
             draw.setPenRadius();
-
     }
 
-    /// During a search animation the visited squares are brightened with a translucent overlay.
-    /// @param p - the `GridPoint` square to color
-    /// @param color - the base color to color the square with a constant translucency.
+    /**
+     * GridDraws the nodes visited as light, translucent overlay.
+     * @param point
+     * @param color
+     */
     public void discovered(GridPoint p, Color color){
         draw.setPenRadius();
         draw.setPenColor(alphaColor(color, 80));
-//        draw.setPenColor(new Color(255,155,175,80));// Color.PINK.);
         draw.setPenRadius();
         draw.filledSquare(
                 p.x() + shift,
@@ -161,7 +203,13 @@ public class GridDraw {
                 0.5);
         draw.setPenRadius();
     }
-    // Adds translucency as the alpha value to a color. higher alpha = high opacity.
+    
+    /**
+     * Adds translucency as the alpha value to a color. higher alpha = high opacity
+     * @param color
+     * @param alpha
+     * @return translucent color
+     */
     private Color alphaColor(Color color, int alpha){
         return new Color( // add alpha to path color for transparency
                 color.getRGB()   & 0xff0000 >>16,
@@ -170,20 +218,60 @@ public class GridDraw {
                 alpha            & 0xff
         );
     }
-    /// GridDraws the path taken
-    /// @param p - the 'from' `GridPoint`
-    /// @param q - the 'to' `GridPoint`
-    /// @param color - the color of the path
+    
+    /**
+     * Colors the path to the other point
+     * @param p point 1
+     * @param q point 2
+     * @param color
+     */
     public void path(GridPoint p, GridPoint q, Color color){
         draw.setPenColor(color);
-        double THICK_PEN_RADIUS = 0.002 * 10;
         draw.setPenRadius(THICK_PEN_RADIUS);
         draw.line(p.x() + shift, p.y() + shift, q.x() + shift, q.y() + shift );
 
     }
 
-    /// GridDraws a title message in the top center of the grid
-    /// @param msg - message to display
+    /**
+     * Draws a faint circle outline
+     * @param p point
+     * @param color
+     */
+    public void circleOutline( GridPoint p, Color color){
+        draw.setPenRadius();
+        draw.setPenColor(color);
+        draw.circle(
+                p.x() + shift,
+                p.y() + shift,
+                0.2);
+        draw.setPenRadius();
+    }
+
+    /**
+     * Places Text on the point
+     * @param p point
+     * @param msg message
+     */
+    public void placeText(GridPoint p, String msg){
+        if(p.x() < squares / 2){ // left justify
+            draw.setPenColor(gridColor);
+            draw.filledRectangle(p.x() + 0.5,p.y(),0.8,0.4);
+            draw.setPenColor(backgroundColor.darker());
+            draw.rectangle(p.x(),p.y(), 0.8, 0.4);
+            draw.textLeft(p.x() + 0.2,p.y(),msg);
+        }else {
+            draw.setPenColor(gridColor);
+            draw.filledRectangle(p.x() - 0.5 ,p.y(),0.8,0.4);
+            draw.setPenColor(backgroundColor.darker());
+            draw.rectangle(p.x(),p.y(), 0.8, 0.4);
+            draw.textLeft(p.x() - 0.2,p.y(),msg);
+        }
+    }
+    
+    /**
+     * GridDraws a title message in the top center of the grid
+     * @param msg Message
+     */
     public void showMessage(String msg){
         draw.setPenColor(Color.BLACK);
         draw.filledRectangle(squares / 2.0 , squares - 2 , 2, 1);
@@ -193,7 +281,10 @@ public class GridDraw {
         draw.setPenColor();
         draw.text(squares / 2.0, squares -2 , msg);
     }
-    /// Draws a grid in 5-square blocks, with light-gray lines and dark-gray background
+    
+    /**
+     * Draws grid in 5-square blocks, dark-gray background
+     */
     public void drawEmptyGrid(){
 
         draw.clear(Color.DARK_GRAY);
@@ -209,12 +300,15 @@ public class GridDraw {
         }
         draw.setPenColor(Draw.BLACK);
     }
-    /// Generates and draws random walls in the grid.
-    /// @param density where 0 is empty and 1 means the generator was ran for at least as many times as the total number squares in the grid.
+
+    /**
+     * Generates and draws random walls in the grid
+     * @param density where 0 is empty and 1 means the generator was ran for at least as many times as the total number squares in the grid
+     */
     public void generateRandomWalls(double density) {
         Grid grid = getGrid();
-        double total = (double)squares * squares;
-        Iterable<GridPoint> points = grid.generateGridPoints((int)(total * density));
+        int total = squares * squares;
+        Iterable<GridPoint> points = grid.generateGridPoints((int) (total * density));
         for (GridPoint p : points) {
             if (grid.addWall(p)) {
                 drawWall(p);

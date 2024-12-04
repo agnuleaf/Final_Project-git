@@ -8,16 +8,18 @@ import java.awt.*;
 
 import static javax.swing.SwingConstants.CENTER;
 
-/// Main App to run both the interactive breadth first search maze gui, and a minigame challenge.
-/// Creates the `JFrame`, `MazeControlPanel` and runs on the Event Dispatch Thread.
+/**
+ * Main App to run the interactive maze gui. Holds reference to the main `JFrame`
+ * @author Wesley Miller, Ty Greenburg
+ */
 public class MazeApp {
 
 	int sections = 2;	// multiples of 5 squares on the axis
-	int tPause = 1;	// pause (ms) between draw . I think it is much slower than
+	int tPause = 1;	// pause (ms) between draw 
 	AppMode appMode = AppMode.DEMO;
-	GridDraw 		gridDraw;		//
-	Draw 			draw  ;			//
-	MazeControlPanel pnlControl;	//
+	GridDraw gridDraw;		
+	Draw draw  ;			
+	MazeControlPanel pnlControl;	
 	JLabel drawCanvas;				// algs4 Draw label
 	JFrame frame;					// main JFrame
 	JPanel pnlMain;					// contentPane holds the canvas, button panel and instructions label
@@ -30,11 +32,19 @@ public class MazeApp {
 		TITLE(MazeApp.fontTitle);
 
 		Font font;
+		/**
+		 * changes the font
+		 * @param font 
+		 */
 		AppFont(Font font){
 			this.font = font;
 		}
 	}
-	/// Maze GUI constructor for declaring the mode and gridsize.
+	/**
+	 * Constructor for the mazeApp
+	 * @param grids
+	 * @param mode what mode was selected
+	 */
 	public MazeApp(int grids, AppMode mode){
 			this(grids, 1, mode);
 			setMode(mode);
@@ -42,16 +52,21 @@ public class MazeApp {
 				gameMode();
 			}
 	}
-	/// Maze GUI Constructor with a 10x10 grid.
+
+	/**
+	 * Maze GUI Constructor with a 10x10 grid.
+	 */
 	public MazeApp() {
 		this(2,10, AppMode.DEMO);
 		setMode(AppMode.DEMO);
 	}
 
-	/// Constructor for the main Maze App.
-	/// @param sections  the number of 5-squares sections along an axis
-	/// @param pause  ms pause between draw calls
-	/// @param mode  demo or game mode
+	/**
+	 * Constructor for the main Maze App
+	 * @param sections - the number of 5-squares sections along an axis
+	 * @param pause - ms pause between draw calls
+	 * @param mode - demo or game mode
+	 */
 	public MazeApp(int sections, int pause, AppMode mode){
 		this.sections = sections;
 		this.appMode = mode;
@@ -84,19 +99,23 @@ public class MazeApp {
 		gridDraw.drawEmptyGrid();
 		draw.show(); frame.repaint();
 	}
+	
 	void gameMode(){
-		double density = 0.5;   // does not give variety
+		double density = 1.0;   // does not give variety
 		gridDraw.setGridThickness(3);
 		gridDraw.drawEmptyGrid();
 		gridDraw.generateRandomWalls(density);
 		gridDraw.getDraw().show();
 		gridDraw.getDrawLabel().repaint();
 	}
-	/// Optional challenge mode:
-	/// - Walls are randomly generated for the first round.
-	/// - Each round the user must place a start and end point on opposing halves of the grid.
-	/// - Paths are converted into walls if a path exits.
-	/// @return 0 for DEMO mode and 1 for CHALLENGE
+
+	/**
+	 * Optional challenge mode:
+	 *  - Walls are randomly generated for the first round.
+	 *  - Each round the user must place a start and end point on opposing halves of the grid.
+	 *  - Paths are converted into walls if a path exits.
+	 * @return 0 for DEMO mode and 1 for CHALLENGE
+	 */
 	static int startupDialog(){
 		JFrame frame = new JFrame("Select Mode");
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -107,14 +126,17 @@ public class MazeApp {
 				JOptionPane.YES_NO_OPTION,
 				JOptionPane.QUESTION_MESSAGE);
 	}
-	// sets the mode to DEMO: demonstrate placement and pathfinding or
-	// GAME: survive as many rounds and cover as many squares by placing endpoints
+
+	/**
+	 * sets the mode to DEMO: demonstrate placement and pathfinding or
+	 *  GAME: survive as many rounds and cover as many squares by placing endpoints
+	 * @param appMode
+	 */
 	void setMode(AppMode appMode){
 		this.appMode = appMode;
 		this.pnlControl.setMode(appMode);
 	}
 
-	/// Enum to dictate the maze mode. It is accessed by [MazeControlPanel] .
 	public enum AppMode {
 		DEMO(0),
 		GAME(1);
@@ -122,7 +144,6 @@ public class MazeApp {
 		AppMode(int mode){
 			this.mode = mode;
 		}
-
 		static AppMode getMode(int code){
 			if(code == 0){
 				return DEMO;
@@ -130,7 +151,11 @@ public class MazeApp {
 			else return GAME;
 		}
 	}
-	// The EDT is launched here.
+	
+	/**
+	 * To launch the MazeApp
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			int m = startupDialog();

@@ -6,11 +6,6 @@ import grid.GridPoint;
 import grid.Grid;
 import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.Stack;
-import edu.princeton.cs.algs4.Draw;
-
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /// The {@code BreadthFirstPaths} class represents a data type for finding
 /// shortest paths (number of edges) from a source vertex <em>s</em>
@@ -39,18 +34,15 @@ public class BreadthFirstSearchView {
 
     private Grid grid;
     private GridPoint p;
-
-    //        private int tPause;
-
+    
     /**
-     * Constructor used to map the possible connections in the unweighted graph.
-     * @param gridDraw - used to access the `Grid` object which holds the [Graph] object, used to vertices
-     *                 in the order they are visited by the breadth first search algorithm.
+     * finds the shortest path for the grid
+     * @param gridDraw
      */
     public BreadthFirstSearchView(GridDraw gridDraw) {
-        // For displaying the visited nodes
         grid = gridDraw.getGrid();
         p = gridDraw.getGrid().getStart();
+        gridDraw.getDraw();
 
         // Original Constructor below
         Graph graph = grid.buildGraph();
@@ -61,17 +53,22 @@ public class BreadthFirstSearchView {
         validateVertex(s);
     }
 
-
-    /// Runs the breadth first search method `bfs` and exports the vertices in the order they are visited, for external
-    /// animation. Call this method from a new `Thread` when running on the Event Dispatch Thread,
-    /// or else all individual draw calls will be combined and occur simultaneously after the delay, defeating
-    /// the attempt at animation.
-    /// @return the `Queue` of visited vertices as `GridPoint`s
+    /**
+     * Runs the breadth first search method `bfs` with an internal timer from `algs4.Draw` to add delay between drawing
+     *  each visited vertex. Call this method from a new `Thread` when running on the Event Dispatch Thread,
+     *  or else all individual draw calls will be combined and occur simultaneously after the delay, defeating
+     *  the attempt at animation.
+     * @return the animation of the wave
+     */
     public Queue<GridPoint> viewWave() {
         return bfs(grid.indexOf(p));
     }
 
-    // breadth-first search from a single source
+    /**
+     * breadth-first search from a single source
+     * @param s
+     * @return path
+     */
     private Queue<GridPoint> bfs(int s) {
         Queue<GridPoint> qConverted = new Queue<>();
         Graph graph = grid.graph();
@@ -96,7 +93,7 @@ public class BreadthFirstSearchView {
         }
         return qConverted;
     }
-// NO MODIFICATIONS BELOW
+
     /**
      * Is there a path between the source vertex {@code s} (or sources) and vertex {@code v}?
      *
