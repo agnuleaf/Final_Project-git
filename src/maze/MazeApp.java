@@ -43,7 +43,7 @@ public class MazeApp {
 				gameMode();
 			}
 	}
-	/// Maze GUI Constructor with a 10x10 grid.
+	/// Maze GUI Constructor with a 10x10 grid with >10ms animation delay.
 	public MazeApp() {
 		this(2,10, AppMode.DEMO);
 		setMode(AppMode.DEMO);
@@ -85,6 +85,7 @@ public class MazeApp {
 		gridDraw.drawEmptyGrid();
 		draw.show(); frame.repaint();
 	}
+	// initiates the game mode
 	void gameMode(){
 		double density = 0.5;   // does not give variety
 		gridDraw.setGridThickness(3);
@@ -93,10 +94,13 @@ public class MazeApp {
 		gridDraw.getDraw().show();
 		gridDraw.getDrawLabel().repaint();
 	}
-	/// Optional challenge mode:
-	/// - Walls are randomly generated for the first round.
-	/// - Each round the user must place a start and end point on opposing halves of the grid.
+	///  Startup dialog to choose Demo or not. Choosing NO results in the Game Mode:
+	/// In Game Mode:
+	/// - Walls are randomly generated at the start of the first round.
+	/// - Each round the player places a start and end point on different quadrants of the grid.
 	/// - Paths are converted into walls if a path exits.
+	/// - Continue with the goal of maximum coverage until the all remaining paths are too short to be valid
+	/// ( ~5 squares or more).
 	/// @return 0 for DEMO mode and 1 for CHALLENGE
 	static int startupDialog(){
 		JFrame frame = new JFrame("Select Mode");
