@@ -10,6 +10,7 @@ import static javax.swing.SwingConstants.CENTER;
 
 /// Main App to run both the interactive breadth first search maze gui, and a minigame challenge.
 /// Creates the `JFrame`, `MazeControlPanel` and runs on the Event Dispatch Thread.
+/// @author Wesley Miller,  Ty Greenburg
 public class MazeApp {
 
 	int sections = 2;	// multiples of 5 squares on the axis
