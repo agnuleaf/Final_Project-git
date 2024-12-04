@@ -214,7 +214,6 @@ public class GridDraw {
     public void generateRandomWalls(double density) {
         Grid grid = getGrid();
         double total = (double)squares * squares;
-        double squaresToGen = total * density;
         Iterable<GridPoint> points = grid.generateGridPoints((int)(total * density));
         for (GridPoint p : points) {
             if (grid.addWall(p)) {
